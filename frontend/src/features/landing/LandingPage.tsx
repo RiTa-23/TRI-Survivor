@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function LandingPage() {
 
@@ -20,16 +21,14 @@ export default function LandingPage() {
                 </div>
 
                 <div className="pt-8 md:pt-0 flex-none">
-                    <Link
-                        to="/auth"
-                        className={cn(
-                            "px-12 py-6 bg-white text-slate-950 text-2xl font-bold rounded-full",
-                            "hover:bg-slate-200 hover:scale-105 transition-all duration-200",
-                            "shadow-[0_0_30px_rgba(255,255,255,0.4)] whitespace-nowrap inline-block text-center"
-                        )}
-                    >
-                        GAME START
-                    </Link>
+                    <Button asChild className={cn(
+                        "px-12 py-8 text-2xl font-bold rounded-full bg-white text-slate-950 hover:bg-slate-200 hover:scale-105 transition-all duration-200",
+                        "shadow-[0_0_30px_rgba(255,255,255,0.4)] whitespace-nowrap"
+                    )}>
+                        <Link to="/auth">
+                            GAME START
+                        </Link>
+                    </Button>
                 </div>
             </div>
 

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export default function HomeScreen() {
 
@@ -7,18 +8,16 @@ export default function HomeScreen() {
             <h1 className="text-4xl font-bold mb-4">Home Screen</h1>
             <p className="text-slate-400 mb-8">仮のホーム画面です</p>
             <div className="flex gap-4">
-                <Link
-                    to="/game"
-                    className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-lg font-bold transition-colors shadow-lg shadow-red-500/20 text-center flex items-center justify-center"
-                >
-                    GAME START
-                </Link>
-                <Link
-                    to="/"
-                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold transition-colors text-center flex items-center justify-center"
-                >
-                    開始画面に戻る
-                </Link>
+                <Button asChild className="px-6 py-6 text-lg font-bold bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-500/20">
+                    <Link to="/game">
+                        GAME START
+                    </Link>
+                </Button>
+                <Button asChild className="px-6 py-6 text-lg font-bold bg-indigo-600 text-white hover:bg-indigo-500">
+                    <Link to="/">
+                        開始画面に戻る
+                    </Link>
+                </Button>
             </div>
         </div>
     );
