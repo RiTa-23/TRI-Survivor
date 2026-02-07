@@ -4,7 +4,8 @@
     "nodejs@22",
     "air@latest",
     "atlas@latest",
-    "go-task@latest"
+    "go-task@latest",
+    "postgresql@latest"
   ],
   "shell": {
     "init_hook": [
@@ -18,6 +19,8 @@
       "dev": "npm run dev",
       "db:diff": "atlas schema diff --from \"env://src\" --to \"file://schema.hcl\" --dev-url \"docker://postgres/15/dev\"",
       "db:apply": "atlas schema apply --url \"$DATABASE_URL\" --to \"file://schema.hcl\"",
+      "db:up": "devbox services up postgresql",
+      "db:down": "devbox services stop postgresql",
       "ui:add": "cd frontend && npx shadcn-ui@latest add"
     }
   }

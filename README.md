@@ -39,7 +39,7 @@
 
 ### 1. 前提条件
 - **Devbox** がインストールされていること
-- **Docker** がインストールされていること（DB起動用）
+- (Optional) **Docker** (Atlasでのスキーマ比較`db:diff`を使用する場合のみ必要)
 
 ### 2. セットアップ
 
@@ -48,6 +48,9 @@
 ```bash
 # 依存関係のインストール (Go Modules, Root npm, Frontend npm)
 devbox run setup
+
+# データベース(PostgreSQL)の起動
+devbox run db:up
 ```
 
 ### 3. 開発サーバーの起動
