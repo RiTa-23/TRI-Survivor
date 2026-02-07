@@ -8,7 +8,7 @@
   ],
   "shell": {
     "init_hook": [
-      "echo 'Welcome to TRISurvivor Project Dev Environment!'",
+      "echo 'Welcome to TRI-Survivor Project Dev Environment!'",
       "echo 'Run \"devbox run setup\" to install dependencies.'"
     ],
     "scripts": {
