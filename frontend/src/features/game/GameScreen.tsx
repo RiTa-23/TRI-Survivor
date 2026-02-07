@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Application, Graphics } from "pixi.js";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function GameScreen() {
-    const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
     const appRef = useRef<Application | null>(null);
 
@@ -82,12 +81,12 @@ export default function GameScreen() {
         <div ref={containerRef} className="w-full h-screen overflow-hidden relative">
             {/* UI Overlay */}
             <div className="absolute top-4 left-4 text-white">
-                <button
-                    onClick={() => navigate("/home")}
-                    className="px-4 py-2 bg-slate-800/80 rounded hover:bg-slate-700 transition-colors"
+                <Link
+                    to="/home"
+                    className="px-4 py-2 bg-slate-800/80 rounded hover:bg-slate-700 transition-colors inline-block"
                 >
                     Back to Home
-                </button>
+                </Link>
             </div>
             <div className="absolute bottom-4 left-4 text-white/50 pointer-events-none">
                 Use WASD or Arrow Keys to move

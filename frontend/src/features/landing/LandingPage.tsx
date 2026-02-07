@@ -1,8 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export default function LandingPage() {
-    const navigate = useNavigate();
 
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row items-center justify-center text-white relative overflow-hidden">
@@ -21,16 +20,16 @@ export default function LandingPage() {
                 </div>
 
                 <div className="pt-8 md:pt-0 flex-none">
-                    <button
-                        onClick={() => navigate("/auth")}
+                    <Link
+                        to="/auth"
                         className={cn(
                             "px-12 py-6 bg-white text-slate-950 text-2xl font-bold rounded-full",
                             "hover:bg-slate-200 hover:scale-105 transition-all duration-200",
-                            "shadow-[0_0_30px_rgba(255,255,255,0.4)] whitespace-nowrap"
+                            "shadow-[0_0_30px_rgba(255,255,255,0.4)] whitespace-nowrap inline-block text-center"
                         )}
                     >
                         GAME START
-                    </button>
+                    </Link>
                 </div>
             </div>
 
