@@ -22,7 +22,7 @@ export default function LandingPage() {
 
                 <div className="pt-8 md:pt-0 flex-none">
                     <Button asChild className={cn(
-                        "px-12 py-8 text-2xl font-bold rounded-full bg-white text-slate-950 hover:bg-slate-200 hover:scale-105 transition-all duration-200",
+                        "px-12 py-8 text-2xl font-bold rounded-full bg-white text-indigo-500 hover:bg-slate-200 hover:scale-105 transition-all duration-200",
                         "shadow-[0_0_30px_rgba(255,255,255,0.4)] whitespace-nowrap"
                     )}>
                         <Link to="/auth">
