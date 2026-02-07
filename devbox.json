@@ -8,14 +8,14 @@
   ],
   "shell": {
     "init_hook": [
-      "echo 'Welcome to TRISurvivor Project Dev Environment!'",
+      "echo 'Welcome to TRI-Survivor Project Dev Environment!'",
       "echo 'Run \"devbox run setup\" to install dependencies.'"
     ],
     "scripts": {
-      "setup": "go mod download && cd frontend && npm install",
+      "setup": "go mod download && npm install && cd frontend && npm install",
       "dev:back": "air",
       "dev:front": "cd frontend && npm run dev",
-      "dev": "npx npm-run-all --parallel dev:back dev:front",
+      "dev": "npm run dev",
       "db:diff": "atlas schema diff --from \"env://src\" --to \"file://schema.hcl\" --dev-url \"docker://postgres/15/dev\"",
       "db:apply": "atlas schema apply --url \"$DATABASE_URL\" --to \"file://schema.hcl\"",
       "ui:add": "cd frontend && npx shadcn-ui@latest add"
