@@ -1,8 +1,18 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
 
 export default function LandingPage() {
+    const navigate = useNavigate();
+    const { user, loading } = useAuthStore();
+
+    useEffect(() => {
+        if (!loading && user) {
+            navigate("/home");
+        }
+    }, [user, loading, navigate]);
 
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row items-center justify-center text-white relative overflow-hidden">

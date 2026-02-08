@@ -1,8 +1,25 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
 
 export default function AuthScreen() {
     const navigate = useNavigate();
+    const { signInWithGoogle, user } = useAuthStore();
+
+    useEffect(() => {
+        if (user) {
+            navigate("/home");
+        }
+    }, [user, navigate]);
+
+    const handleGoogleLogin = async () => {
+        try {
+            await signInWithGoogle();
+        } catch (error) {
+            console.error("Login failed:", error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-4">
@@ -11,19 +28,20 @@ export default function AuthScreen() {
                 <p className="text-slate-400 text-center mb-8">Sign in to continue your progress</p>
 
                 <div className="space-y-4">
+                    {/* Discord Login (Placeholder) */}
                     <Button
-                        onClick={() => navigate("/home")}
-                        className="w-full py-6 bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium flex items-center justify-center gap-2"
+                        disabled
+                        className="w-full py-6 bg-[#5865F2]/50 cursor-not-allowed text-white/50 font-medium flex items-center justify-center gap-2"
                     >
                         {/* Mock Discord Icon */}
                         <span className="w-5 h-5 bg-white/20 rounded-full" />
-                        Continue with Discord
+                        Continue with Discord (Coming Soon)
                     </Button>
 
                     <Button
                         variant="outline"
-                        onClick={() => navigate("/home")}
-                        className="w-full py-6 bg-white text-slate-900 hover:bg-slate-100 font-medium flex items-center justify-center gap-2 border-slate-200"
+                        onClick={handleGoogleLogin}
+                        className="w-full py-6 bg-white text-slate-900 hover:bg-slate-100 font-medium flex items-center justify-center gap-2 border-slate-200 cursor-pointer"
                     >
                         {/* Mock Google Icon */}
                         <span className="w-5 h-5 bg-slate-900/20 rounded-full" />
