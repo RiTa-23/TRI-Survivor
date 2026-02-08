@@ -11,12 +11,18 @@ function App() {
 
   useEffect(() => {
     let cleanup: (() => void) | void;
+    let cancelled = false;
 
     initialize().then((c) => {
-      cleanup = c;
+      if (cancelled) {
+        if (typeof c === 'function') c();
+      } else {
+        cleanup = c;
+      }
     });
 
     return () => {
+      cancelled = true;
       if (typeof cleanup === 'function') {
         cleanup();
       }
