@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/RiTa-23/TRI-Survivor/backend/internal/service"
@@ -41,7 +42,8 @@ func (h *UserHandler) SyncUser(c echo.Context) error {
 
 	user, err := h.service.SyncUser(c.Request().Context(), userID, req.Email, req.Name, req.AvatarURL)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		log.Printf("SyncUser Error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal server error"})
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -57,7 +59,10 @@ func (h *UserHandler) GetMe(c echo.Context) error {
 
 	user, err := h.service.GetUser(c.Request().Context(), userID)
 	if err != nil {
-		// ユーザーが見つからない場合は同期APIを叩くよう促すメッセージでも良いが、一旦404
+		log.Printf("GetMe Error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+	}
+	if user == nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "user not found"})
 	}
 

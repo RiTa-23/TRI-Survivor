@@ -54,10 +54,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
                 set({ session, user: session?.user ?? null, loading: false });
 
-                // ログイン時やセッション更新時に同期
-                if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
-                    await syncUserWithBackend(session.user);
-                }
+                // 必要であればここでログ出力などを行う
+                // バックエンド同期は initialize の初期処理で行うため、ここでは行わない
+                // ただし、SPA遷移でのログインなどが将来発生する場合は SIGNED_IN での同期を検討する
             });
 
             set({ initialized: true });

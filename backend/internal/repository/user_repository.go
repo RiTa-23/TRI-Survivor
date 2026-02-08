@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/RiTa-23/TRI-Survivor/backend/internal/entity"
 	"github.com/uptrace/bun"
@@ -24,6 +26,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *entity.User) erro
 		Set("name = EXCLUDED.name").
 		Set("email = EXCLUDED.email").
 		Set("avatar_url = EXCLUDED.avatar_url").
+		Returning("*"). // 永続化されたデータを返す（CreatedAtなど）
 		Exec(ctx)
 	return err
 }
@@ -36,6 +39,9 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*entity.User,
 		Where("id = ?", id).
 		Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // Not Found
+		}
 		return nil, err
 	}
 	return user, nil
