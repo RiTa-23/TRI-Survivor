@@ -6,6 +6,8 @@ import AuthScreen from "./features/auth/AuthScreen";
 import HomeScreen from "./features/home/HomeScreen";
 import GameScreen from "./features/game/GameScreen";
 
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
 function App() {
   const initialize = useAuthStore((state) => state.initialize);
 
@@ -32,10 +34,17 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthScreen />} />
-        <Route path="/home" element={<HomeScreen />} />
-        <Route path="/game" element={<GameScreen />} />
+
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<HomeScreen />} />
+          <Route path="/game" element={<GameScreen />} />
+        </Route>
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
