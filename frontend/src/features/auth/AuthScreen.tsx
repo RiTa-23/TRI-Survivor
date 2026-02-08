@@ -28,16 +28,6 @@ export default function AuthScreen() {
                 <p className="text-slate-400 text-center mb-8">Sign in to continue your progress</p>
 
                 <div className="space-y-4">
-                    {/* Discord Login (Placeholder) */}
-                    <Button
-                        disabled
-                        className="w-full py-6 bg-[#5865F2]/50 cursor-not-allowed text-white/50 font-medium flex items-center justify-center gap-2"
-                    >
-                        {/* Mock Discord Icon */}
-                        <span className="w-5 h-5 bg-white/20 rounded-full" />
-                        Continue with Discord (Coming Soon)
-                    </Button>
-
                     <Button
                         variant="outline"
                         onClick={handleGoogleLogin}
@@ -46,23 +36,6 @@ export default function AuthScreen() {
                         {/* Mock Google Icon */}
                         <span className="w-5 h-5 bg-slate-900/20 rounded-full" />
                         Continue with Google
-                    </Button>
-
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-slate-800" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-slate-900 px-2 text-slate-500">Or continue as guest</span>
-                        </div>
-                    </div>
-
-                    <Button
-                        variant="secondary"
-                        onClick={() => navigate("/home")}
-                        className="w-full py-6 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium"
-                    >
-                        Guest Login
                     </Button>
                 </div>
             </div>
