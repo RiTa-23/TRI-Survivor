@@ -17,8 +17,8 @@
       "dev:back": "air",
       "dev:front": "cd frontend && npm run dev",
       "dev": "npm run dev",
-      "db:diff": "atlas schema diff --from \"env://src\" --to \"file://schema.hcl\" --dev-url \"docker://postgres/15/dev\"",
-      "db:apply": "atlas schema apply --url \"$DATABASE_URL\" --to \"file://schema.hcl\"",
+      "db:diff": "atlas schema diff --from \"env://src\" --to \"file://backend/db/schema.hcl\" --dev-url \"docker://postgres/15/dev\"",
+      "db:apply": "atlas schema apply --url \"$DATABASE_URL\" --to \"file://backend/db/schema.hcl\"",
       "db:up": "devbox services up postgresql",
       "db:down": "devbox services stop postgresql",
       "ui:add": "cd frontend && npx shadcn-ui@latest add"
