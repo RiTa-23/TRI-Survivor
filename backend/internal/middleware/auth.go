@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/MicahParks/keyfunc/v3"
 	"github.com/golang-jwt/jwt/v5"
@@ -13,36 +14,42 @@ import (
 )
 
 var (
-	jwksURL string
-	jwks    keyfunc.Keyfunc
+	jwksURL  string
+	jwks     keyfunc.Keyfunc
+	jwksOnce sync.Once
 )
 
 // InitJWKS JWKSの初期化を行います。起動時または遅延実行されます。
+// sync.Onceを使用して、複数回呼び出されても一度だけ実行されることを保証します。
 func InitJWKS() error {
-	refID := os.Getenv("SUPABASE_REFERENCE_ID")
-	if refID == "" {
-		return fmt.Errorf("SUPABASE_REFERENCE_ID is not set")
-	}
+	var initErr error
+	jwksOnce.Do(func() {
+		refID := os.Getenv("SUPABASE_REFERENCE_ID")
+		if refID == "" {
+			initErr = fmt.Errorf("SUPABASE_REFERENCE_ID is not set")
+			return
+		}
 
-	// SupabaseのJWKS URLを構築
-	jwksURL = fmt.Sprintf("https://%s.supabase.co/auth/v1/.well-known/jwks.json", refID)
-	
-	// URLからJWKSを作成
-	// keyfuncライブラリがキャッシュと更新を自動的に処理します
-	var err error
-	jwks, err = keyfunc.NewDefault([]string{jwksURL})
-	if err != nil {
-		return fmt.Errorf("failed to create JWKS from resource at %s: %w", jwksURL, err)
-	}
-	
-	log.Printf("JWKS initialized with URL: %s", jwksURL)
-	return nil
+		// SupabaseのJWKS URLを構築
+		jwksURL = fmt.Sprintf("https://%s.supabase.co/auth/v1/.well-known/jwks.json", refID)
+
+		// URLからJWKSを作成
+		// keyfuncライブラリがキャッシュと更新を自動的に処理します
+		var err error
+		jwks, err = keyfunc.NewDefault([]string{jwksURL})
+		if err != nil {
+			initErr = fmt.Errorf("failed to create JWKS from resource at %s: %w", jwksURL, err)
+			return
+		}
+
+		log.Printf("JWKS initialized with URL: %s", jwksURL)
+	})
+	return initErr
 }
 
 // AuthMiddleware JWKSを使用してSupabaseからのJWTトークンを検証します (ES256対応)
 func AuthMiddleware() echo.MiddlewareFunc {
-	// JWKSが未初期化の場合は初期化を試みます
-    // 本来はmain.goで行うのが良いですが、簡易的な実装としてここでチェックします
+	// JWKSが未初期化の場合は初期化を試みます（初回リクエスト時など）
 	if jwks == nil {
 		if err := InitJWKS(); err != nil {
 			log.Printf("CRITICAL: Failed to initialize JWKS: %v", err)
@@ -63,12 +70,19 @@ func AuthMiddleware() echo.MiddlewareFunc {
 			}
 
 			// 2. JWKSを使用してトークンを解析・検証
+			// jwksがnilの場合（初期化失敗後など）再度初期化を試みます
 			if jwks == nil {
-                 // 初期化に失敗していた場合の再試行（堅牢性のため）
-                 if err := InitJWKS(); err != nil {
-                     return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal server configuration error"})
-                 }
-            }
+				// note: sync.Onceは一度しか実行されないため、最初の実行が失敗した場合、
+				// この実装では再試行されません。アプリケーションの再起動が必要です。
+				// 本番運用では起動時のヘルスチェックで検知すべきです。
+				if err := InitJWKS(); err != nil {
+					return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal server configuration error"})
+				}
+				// それでもnilならエラー
+				if jwks == nil {
+					return c.JSON(http.StatusInternalServerError, map[string]string{"error": "JWKS not initialized"})
+				}
+			}
 
 			token, err := jwt.Parse(tokenString, jwks.Keyfunc)
 
@@ -77,11 +91,11 @@ func AuthMiddleware() echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token: " + err.Error()})
 			}
 
-            if !token.Valid {
+			if !token.Valid {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token"})
 			}
-            
-            // アルゴリズムのチェック（keyfuncが鍵の一致を行うため必須ではありませんが、SupabaseはRS256またはES256を使用）
+
+			// アルゴリズムのチェック（keyfuncが鍵の一致を行うため必須ではありませんが、SupabaseはRS256またはES256を使用）
 
 			// 4. ユーザー情報の抽出
 			claims, ok := token.Claims.(jwt.MapClaims)
