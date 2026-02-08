@@ -88,7 +88,8 @@ func AuthMiddleware() echo.MiddlewareFunc {
 
 			// 3. 検証結果の確認
 			if err != nil {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token: " + err.Error()})
+				log.Printf("JWT Parse Error: %v", err)
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token"})
 			}
 
 			if !token.Valid {
