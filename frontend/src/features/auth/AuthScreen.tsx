@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
+import { FcGoogle } from "react-icons/fc";
 
 export default function AuthScreen() {
     const navigate = useNavigate();
@@ -33,8 +34,7 @@ export default function AuthScreen() {
                         onClick={handleGoogleLogin}
                         className="w-full py-6 bg-white text-slate-900 hover:bg-slate-100 font-medium flex items-center justify-center gap-2 border-slate-200 cursor-pointer"
                     >
-                        {/* Mock Google Icon */}
-                        <span className="w-5 h-5 bg-slate-900/20 rounded-full" />
+                        <FcGoogle className="w-5 h-5" />
                         Continue with Google
                     </Button>
                 </div>
