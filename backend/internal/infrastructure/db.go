@@ -23,6 +23,7 @@ func NewDB() (*bun.DB, error) {
 
 	// Health check
 	if err := db.Ping(); err != nil {
+		db.Close()
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
