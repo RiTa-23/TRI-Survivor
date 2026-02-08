@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
+import { api } from '@/lib/api';
 import type { Session, User } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -13,6 +14,23 @@ interface AuthState {
     signOut: () => Promise<void>;
 }
 
+// ユーザー同期ロジック (共通化)
+const syncUserWithBackend = async (user: User) => {
+    try {
+        const { email, user_metadata } = user;
+        if (email) {
+            await api.post('/users', {
+                email: email,
+                name: user_metadata.full_name || email,
+                avatarUrl: user_metadata.avatar_url,
+            });
+            console.log('User synced with backend');
+        }
+    } catch (apiError) {
+        console.error('Failed to sync user with backend:', apiError);
+    }
+};
+
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     session: null,
@@ -24,11 +42,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ initializing: true });
 
         try {
+            // 1. 初期セッション取得 & 同期
             const { data: { session } } = await supabase.auth.getSession();
             set({ session, user: session?.user ?? null, loading: false });
 
-            const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                await syncUserWithBackend(session.user);
+            }
+
+            // 2. イベントリスナー設定
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
                 set({ session, user: session?.user ?? null, loading: false });
+
+                // ログイン時やセッション更新時に同期
+                if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
+                    await syncUserWithBackend(session.user);
+                }
             });
 
             set({ initialized: true });
