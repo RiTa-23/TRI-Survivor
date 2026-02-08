@@ -20,6 +20,7 @@ const syncUserWithBackend = async (user: User) => {
         const { email, user_metadata } = user;
         if (email) {
             await api.post('/users', {
+                id: user.id,
                 email: email,
                 name: user_metadata.full_name || email,
                 avatarUrl: user_metadata.avatar_url,
