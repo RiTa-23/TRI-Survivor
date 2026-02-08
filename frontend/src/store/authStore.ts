@@ -6,6 +6,7 @@ interface AuthState {
     user: User | null;
     session: Session | null;
     loading: boolean;
+    initializing: boolean; // Added in-flight guard
     initialized: boolean;
     initialize: () => Promise<(() => void) | void>;
     signInWithGoogle: () => Promise<void>;
@@ -16,9 +17,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     session: null,
     loading: true,
+    initializing: false,
     initialized: false,
     initialize: async () => {
-        if (get().initialized) return;
+        if (get().initialized || get().initializing) return;
+        set({ initializing: true });
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -34,6 +37,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         } catch (error) {
             console.error('Auth initialization error:', error);
             set({ loading: false });
+        } finally {
+            set({ initializing: false });
         }
     },
     signInWithGoogle: async () => {
