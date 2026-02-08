@@ -23,10 +23,14 @@ func (s *UserService) SyncUser(ctx context.Context, id, email, name, avatarURL s
 		Name:      name,
 		AvatarURL: avatarURL,
 	}
+	// Userを保存 (UPSERT)
 	if err := s.repo.CreateUser(ctx, user); err != nil {
 		return nil, err
 	}
-	return user, nil
+
+	// 保存された最新の状態 (CreatedAtなど) を再取得して返す
+	// CreateUserでReturningを使っていても、念のため確実にDBの状態を返す
+	return s.GetUser(ctx, id)
 }
 
 // GetUser ユーザー詳細を取得する
