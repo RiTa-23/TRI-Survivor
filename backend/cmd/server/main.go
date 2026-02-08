@@ -6,8 +6,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/RiTa-23/TRI-Survivor/backend/internal/handler"
 	"github.com/RiTa-23/TRI-Survivor/backend/internal/infrastructure"
+	"github.com/RiTa-23/TRI-Survivor/backend/internal/repository"
 	"github.com/RiTa-23/TRI-Survivor/backend/internal/router"
+	"github.com/RiTa-23/TRI-Survivor/backend/internal/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/joho/godotenv"
@@ -26,6 +29,11 @@ func main() {
 	}
 	defer db.Close()
 	log.Println("Connected to Database")
+
+	// Initialize Dependencies
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
 
 	// Initialize Echo
 	e := echo.New()
@@ -49,7 +57,7 @@ func main() {
 	}))
 
 	// Setup Router
-	router.SetupRouter(e)
+	router.SetupRouter(e, userHandler)
 
 	// Start Server
 	e.Logger.Fatal(e.Start(":8080"))
