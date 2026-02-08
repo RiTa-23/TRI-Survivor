@@ -22,7 +22,10 @@ func SetupRouter(e *echo.Echo) {
 	v1.Use(userMiddleware.AuthMiddleware())
 
 	v1.GET("/me", func(c echo.Context) error {
-		userID := c.Get("userID").(string)
+		userID, ok := c.Get("userID").(string)
+		if !ok {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "user ID not found in context"})
+		}
 		return c.JSON(http.StatusOK, map[string]string{
 			"user_id": userID,
 			"message": "You are authenticated!",
