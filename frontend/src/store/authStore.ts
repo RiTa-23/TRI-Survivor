@@ -51,6 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             set({ session: null, user: null });
         } catch (error) {
             console.error('Sign-Out error:', error);
+            throw error;
         }
     },
 }));

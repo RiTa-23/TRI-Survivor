@@ -7,8 +7,13 @@ export default function HomeScreen() {
     const { user, signOut } = useAuthStore();
 
     const handleLogout = async () => {
-        await signOut();
-        navigate("/");
+        try {
+            await signOut();
+            navigate("/");
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("ログアウトに失敗しました。もう一度お試しください。");
+        }
     };
 
     return (
