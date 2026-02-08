@@ -10,7 +10,17 @@ function App() {
   const initialize = useAuthStore((state) => state.initialize);
 
   useEffect(() => {
-    initialize();
+    let cleanup: (() => void) | void;
+
+    initialize().then((c) => {
+      cleanup = c;
+    });
+
+    return () => {
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
+    };
   }, [initialize]);
 
   return (
@@ -20,9 +30,6 @@ function App() {
         <Route path="/auth" element={<AuthScreen />} />
         <Route path="/home" element={<HomeScreen />} />
         <Route path="/game" element={<GameScreen />} />
-        {/* Screens below will be implemented by other members */}
-        {/* <Route path="/settings" element={<SettingsScreen />} /> */}
-        {/* Fallback to landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
