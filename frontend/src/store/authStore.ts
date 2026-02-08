@@ -6,7 +6,7 @@ interface AuthState {
     user: User | null;
     session: Session | null;
     loading: boolean;
-    initializing: boolean; // Added in-flight guard
+    initializing: boolean; // 初期化処理の重複を防ぐガードフラグ
     initialized: boolean;
     initialize: () => Promise<(() => void) | void>;
     signInWithGoogle: () => Promise<void>;
