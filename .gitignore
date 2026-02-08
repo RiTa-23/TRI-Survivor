@@ -1,3 +1,4 @@
+
 # Devbox
 .devbox/
 
@@ -15,6 +16,8 @@ dist/
 # Go
 /backend/bin/
 /backend/tmp/
+/tmp/
+tmp/
 
 # OS
 .DS_Store
