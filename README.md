@@ -24,8 +24,8 @@
 - **Language**: Go
 - **Framework**: Echo
 - **ORM**: Bun
-- **Database**: PostgreSQL (Development: SQLite/Docker)
-- **Migration**: Atlas
+- **Database**: PostgreSQL (Supabase)
+- **Migration**: golang-migrate
 
 ### Infrastructure & Tools
 - **Environment Management**: Devbox
