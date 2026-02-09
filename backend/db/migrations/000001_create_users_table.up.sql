@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS users (
+  id UUID NOT NULL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

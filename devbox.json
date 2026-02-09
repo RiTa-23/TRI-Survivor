@@ -3,22 +3,25 @@
     "go@1.22",
     "nodejs@22",
     "air@latest",
-    "atlas@latest",
     "go-task@latest",
     "postgresql@latest"
   ],
   "shell": {
     "init_hook": [
       "echo 'Welcome to TRI-Survivor Project Dev Environment!'",
+      "if [ -f .env ]; then set -a; source .env; set +a; fi",
+      "export PATH=$PATH:$(go env GOPATH)/bin",
       "echo 'Run \"devbox run setup\" to install dependencies.'"
     ],
     "scripts": {
-      "setup": "go mod download && npm install && cd frontend && npm install",
+      "setup": "go mod download && npm install && cd frontend && npm install && go install -tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate@latest",
       "dev:back": "air",
       "dev:front": "cd frontend && npm run dev",
       "dev": "npm run dev",
-      "db:diff": "atlas schema diff --from \"env://src\" --to \"file://backend/db/schema.hcl\" --dev-url \"docker://postgres/15/dev\"",
-      "db:apply": "atlas schema apply --url \"$DATABASE_URL\" --to \"file://backend/db/schema.hcl\"",
+      "db:new": "migrate create -ext sql -dir backend/db/migrations -seq",
+      "db:migrate": "migrate -path backend/db/migrations -database \"$DATABASE_URL\" up",
+      "db:rollback": "migrate -path backend/db/migrations -database \"$DATABASE_URL\" down 1",
+      "db:force": "migrate -path backend/db/migrations -database \"$DATABASE_URL\" force",
       "db:up": "devbox services up postgresql",
       "db:down": "devbox services stop postgresql",
       "ui:add": "cd frontend && npx shadcn-ui@latest add"
