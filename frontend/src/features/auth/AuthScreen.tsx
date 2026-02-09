@@ -1,11 +1,13 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
+import { FcGoogle } from "react-icons/fc";
 
 export default function AuthScreen() {
     const navigate = useNavigate();
     const { signInWithGoogle, user } = useAuthStore();
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (user) {
@@ -14,10 +16,12 @@ export default function AuthScreen() {
     }, [user, navigate]);
 
     const handleGoogleLogin = async () => {
+        setError(null);
         try {
             await signInWithGoogle();
-        } catch (error) {
-            console.error("Login failed:", error);
+        } catch (err) {
+            console.error("Login failed:", err);
+            setError("Failed to sign in with Google. Please try again.");
         }
     };
 
@@ -27,42 +31,20 @@ export default function AuthScreen() {
                 <h2 className="text-3xl font-bold text-center mb-2">Welcome Back</h2>
                 <p className="text-slate-400 text-center mb-8">Sign in to continue your progress</p>
 
-                <div className="space-y-4">
-                    {/* Discord Login (Placeholder) */}
-                    <Button
-                        disabled
-                        className="w-full py-6 bg-[#5865F2]/50 cursor-not-allowed text-white/50 font-medium flex items-center justify-center gap-2"
-                    >
-                        {/* Mock Discord Icon */}
-                        <span className="w-5 h-5 bg-white/20 rounded-full" />
-                        Continue with Discord (Coming Soon)
-                    </Button>
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm text-center">
+                        {error}
+                    </div>
+                )}
 
+                <div className="space-y-4">
                     <Button
                         variant="outline"
                         onClick={handleGoogleLogin}
                         className="w-full py-6 bg-white text-slate-900 hover:bg-slate-100 font-medium flex items-center justify-center gap-2 border-slate-200 cursor-pointer"
                     >
-                        {/* Mock Google Icon */}
-                        <span className="w-5 h-5 bg-slate-900/20 rounded-full" />
+                        <FcGoogle className="w-5 h-5" />
                         Continue with Google
-                    </Button>
-
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-slate-800" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-slate-900 px-2 text-slate-500">Or continue as guest</span>
-                        </div>
-                    </div>
-
-                    <Button
-                        variant="secondary"
-                        onClick={() => navigate("/home")}
-                        className="w-full py-6 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium"
-                    >
-                        Guest Login
                     </Button>
                 </div>
             </div>

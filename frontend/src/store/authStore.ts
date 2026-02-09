@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             }
 
             // 2. イベントリスナー設定
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
                 set({ session, user: session?.user ?? null, loading: false });
 
                 // 必要であればここでログ出力などを行う
