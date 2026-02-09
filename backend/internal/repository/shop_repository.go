@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/RiTa-23/TRI-Survivor/backend/internal/entity"
 	"github.com/uptrace/bun"
@@ -37,6 +39,9 @@ func (r *ShopRepository) FindByID(ctx context.Context, id int) (*entity.Shop, er
 		Where("item_id = ?", id).
 		Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // Not Found
+		}
 		return nil, err
 	}
 	return shop, nil
