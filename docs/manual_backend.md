@@ -193,11 +193,11 @@ table "items" {
 編集したら、ターミナルで以下のコマンドを実行してDBに反映させます。
 
 ```bash
-# 反映内容の確認 (Dry Run)
-atlas schema apply --env dev --dry-run
+# 変更内容の確認 (Dry Run相当)
+devbox run db:diff
 
 # 反映実行
-atlas schema apply --env dev
+devbox run db:apply
 ```
 
 ---
@@ -206,4 +206,4 @@ atlas schema apply --env dev
 
 - **importエラーが出る**: Goは使わないimportがあるとエラーになります。保存時に自動で消える設定になっていることが多いですが、消えない場合は手動で削除してください。
 - **サーバーが起動しない**: エラーメッセージをよく読みましょう。「ポート8080が使われている」と言われたら、別のプロセスが動いていないか確認してください。
-- **DBにつながらない**: `devbox run dev` でDBも一緒に立ち上がっているか確認してください。
+- **DBにつながらない**: `.env` の `DATABASE_URL` が正しく設定されているか確認してください。
