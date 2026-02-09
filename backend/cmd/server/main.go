@@ -39,6 +39,10 @@ func main() {
 	settingsService := service.NewSettingsService(settingsRepo)
 	settingsHandler := handler.NewSettingsHandler(settingsService)
 
+	shopRepo := repository.NewShopRepository(db)
+	shopService := service.NewShopService(shopRepo)
+	shopHandler := handler.NewShopHandler(shopService)
+
 	// Initialize Echo
 	e := echo.New()
 
@@ -61,7 +65,7 @@ func main() {
 	}))
 
 	// Setup Router
-	router.SetupRouter(e, userHandler, settingsHandler)
+	router.SetupRouter(e, userHandler, settingsHandler, shopHandler)
 
 	// Start Server
 	e.Logger.Fatal(e.Start(":8080"))
