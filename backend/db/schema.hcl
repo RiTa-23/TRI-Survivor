@@ -33,3 +33,42 @@ table "users" {
     columns = [column.email]
   }
 }
+
+table "settings" {
+  schema = schema.public
+  column "user_id" {
+    null = false
+    type = uuid
+  }
+  column "bgm_volume" {
+    null = false
+    type = integer
+    default = 100
+  }
+  column "se_volume" {
+    null = false
+    type = integer
+    default = 100
+  }
+  column "created_at" {
+    null = false
+    type = timestamptz
+    default = sql("now()")
+  }
+  column "updated_at" {
+    null = false
+    type = timestamptz
+    default = sql("now()")
+  }
+  
+  primary_key {
+    columns = [column.user_id]
+  }
+
+  foreign_key "user_fk" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
+  }
+}
+
