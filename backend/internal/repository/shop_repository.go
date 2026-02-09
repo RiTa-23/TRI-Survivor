@@ -37,6 +37,7 @@ func (r *ShopRepository) FindByID(ctx context.Context, id int) (*entity.Shop, er
 	err := r.db.NewSelect().
 		Model(shop).
 		Where("item_id = ?", id).
+		Where("is_active = ?", true).
 		Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
