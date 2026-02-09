@@ -221,7 +221,7 @@ func SetupRouter(e *echo.Echo, itemHandler *handler.ItemHandler) {
 
 ---
 
-## 4. 応用：データベースの変更 (カラム追加など)
+## 4. カラムを追加する方法
 
 既存のテーブルにカラムを追加したい場合も、基本は同じ手順です。
 
