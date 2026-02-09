@@ -35,6 +35,10 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
+	settingsRepo := repository.NewSettingsRepository(db)
+	settingsService := service.NewSettingsService(settingsRepo)
+	settingsHandler := handler.NewSettingsHandler(settingsService)
+
 	// Initialize Echo
 	e := echo.New()
 
@@ -57,7 +61,7 @@ func main() {
 	}))
 
 	// Setup Router
-	router.SetupRouter(e, userHandler)
+	router.SetupRouter(e, userHandler, settingsHandler)
 
 	// Start Server
 	e.Logger.Fatal(e.Start(":8080"))
