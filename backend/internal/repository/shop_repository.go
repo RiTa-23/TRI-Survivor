@@ -17,7 +17,7 @@ func NewShopRepository(db *bun.DB) *ShopRepository {
 
 // FindAll アクティブな全アイテムを取得します
 func (r *ShopRepository) FindAll(ctx context.Context) ([]entity.Shop, error) {
-	var shops []entity.Shop
+	shops := []entity.Shop{}
 	err := r.db.NewSelect().
 		Model(&shops).
 		Where("is_active = ?", true).
