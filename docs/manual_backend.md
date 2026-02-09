@@ -46,7 +46,7 @@ devbox run db:new <name>
 例 (`backend/db/migrations/xxxxxx_create_items_table.up.sql`):
 ```sql
 CREATE TABLE items (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     price INTEGER NOT NULL
 );
@@ -97,7 +97,7 @@ import "github.com/uptrace/bun"
 type Item struct {
     bun.BaseModel `bun:"table:items"` // DBの items テーブルと紐付け
 
-    ID    int64  `bun:",pk,autoincrement" json:"id"` // ID (自動採番)
+    ID    string `bun:",pk,default:gen_random_uuid()" json:"id"` // ID (UUID: 自動生成)
     Name  string `bun:",notnull" json:"name"`        // 名前
     Price int    `bun:",notnull" json:"price"`       // 価格
 }

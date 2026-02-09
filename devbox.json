@@ -14,7 +14,7 @@
       "echo 'Run \"devbox run setup\" to install dependencies.'"
     ],
     "scripts": {
-      "setup": "go mod download && npm install && cd frontend && npm install && go install -tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate@latest",
+      "setup": "go mod download && npm install && cd frontend && npm install && go install -tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18.2",
       "dev:back": "air",
       "dev:front": "cd frontend && npm run dev",
       "dev": "npm run dev",
