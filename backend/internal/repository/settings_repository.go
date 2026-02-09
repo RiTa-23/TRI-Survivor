@@ -41,7 +41,7 @@ func (r *SettingsRepository) Upsert(ctx context.Context, settings *entity.Settin
 		On("CONFLICT (user_id) DO UPDATE").
 		Set("bgm_volume = EXCLUDED.bgm_volume").
 		Set("se_volume = EXCLUDED.se_volume").
-		Set("updated_at = EXCLUDED.updated_at").
+		Set("updated_at = now()").
 		Returning("*").
 		Exec(ctx)
 	return err

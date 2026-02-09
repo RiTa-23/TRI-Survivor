@@ -44,6 +44,6 @@ func (s *SettingsService) UpdateSettings(ctx context.Context, userID string, bgm
 		return nil, err
 	}
 	
-	// 更新後の状態を返す
-	return settings, nil
+	// 最新の状態（CreatedAtなど）を再取得して返す
+	return s.GetSettings(ctx, userID)
 }

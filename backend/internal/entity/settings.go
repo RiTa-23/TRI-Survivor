@@ -6,7 +6,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// Setting ユーザー設定情報を表すドメインモデル
+// Settings ユーザー設定情報を表すドメインモデル
 type Settings struct {
 	bun.BaseModel `bun:"table:settings"`
 
