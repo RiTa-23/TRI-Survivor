@@ -72,3 +72,52 @@ table "settings" {
   }
 }
 
+table "shop" {
+  schema = schema.public
+  column "item_id" {
+    null = false
+    type = integer
+    identity {
+      generated = ALWAYS
+    }
+  }
+  column "item_name" {
+    null = false
+    type = text
+  }
+  column "description" {
+    null = false
+    type = text
+  }
+  column "price" {
+    null = false
+    type = integer
+  }
+  column "item_type" {
+    null = false
+    type = text
+  }
+  column "icon_url" {
+    null = false
+    type = text
+  }
+  column "is_active" {
+    null    = false
+    type    = boolean
+    default = true
+  }
+  column "created_at" {
+    null    = false
+    type    = timestamptz
+    default = sql("now()")
+  }
+  column "updated_at" {
+    null    = false
+    type    = timestamptz
+    default = sql("now()")
+  }
+  primary_key {
+    columns = [column.item_id]
+  }
+}
+
