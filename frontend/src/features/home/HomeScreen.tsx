@@ -47,7 +47,7 @@ export default function HomeScreen() {
                 </Button>
                 <div className="absolute top-4 right-4">
                     <Button asChild className="p-2 text-white rounded bg-black bg-opacity-50 hover:bg-opacity-75">
-                        <Link to="/settings">
+                        <Link to="/setting">
                             <Settings className="w-8 h-8 opacity-50 hover:opacity-100" />
                         </Link>
                     </Button>
