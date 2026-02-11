@@ -249,19 +249,19 @@ export class HandTrackingManager {
         this.running = false;
         this.log("Stopping...");
 
-        // Only stop the stream WE created
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => {
+        const currentStream = this.stream;
+
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => {
                 track.stop();
             });
-            this.stream = null;
         }
 
-        // Only clear video.srcObject if it matches our stream
-        if (this.video && this.video.srcObject === this.stream) {
+        if (this.video && this.video.srcObject === currentStream) {
             this.video.srcObject = null;
         }
 
+        this.stream = null;
         this.handLandmarker?.close();
     }
 }
