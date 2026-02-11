@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS shop (
   item_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   item_name TEXT NOT NULL,
   description TEXT NOT NULL,
-  price INTEGER NOT NULL,
+  price INTEGER NOT NULL CHECK (price >= 0),
   item_type TEXT NOT NULL,
   icon_url TEXT NOT NULL,
   is_active BOOLEAN NOT NULL DEFAULT true,
