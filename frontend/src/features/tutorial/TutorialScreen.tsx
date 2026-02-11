@@ -1,5 +1,3 @@
-// src/features/tutorial/TutorialScreen.tsx
-
 // 1. 必要な機能をインポートします
 import { useNavigate } from "react-router-dom"; // 画面遷移に使う
 import { cn } from "@/lib/utils"; // クラス名を合体させる便利なやつ
