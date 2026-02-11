@@ -11,6 +11,7 @@ export default function HandTrackingTestScreen() {
 
     const [status, setStatus] = useState<string>("Initializing...");
     const [specialMove, setSpecialMove] = useState<string | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (!containerRef.current || !videoRef.current || !canvasRef.current) return;
@@ -22,11 +23,29 @@ export default function HandTrackingTestScreen() {
             const gameApp = new HandTrackingGameApp(
                 videoRef.current!,
                 canvasRef.current!,
-                (msg) => setStatus(msg),
+                (msg) => {
+                    setStatus(msg);
+                    if (msg.startsWith("Active:")) {
+                        setSpecialMove(null);
+                        if (timerRef.current) {
+                            clearTimeout(timerRef.current);
+                            timerRef.current = null;
+                        }
+                    }
+                },
                 (move) => {
                     setSpecialMove(move);
-                    // Clear message after 2 seconds
-                    setTimeout(() => setSpecialMove(null), 2000);
+
+                    // Clear existing timer if any (debounce)
+                    if (timerRef.current) {
+                        clearTimeout(timerRef.current);
+                    }
+
+                    // Set timeout to clear message after 2 seconds of inactivity
+                    timerRef.current = setTimeout(() => {
+                        setSpecialMove(null);
+                        timerRef.current = null;
+                    }, 2000);
                 }
             );
 

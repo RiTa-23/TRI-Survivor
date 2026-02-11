@@ -49,8 +49,21 @@ export class HandTrackingManager {
         const baseRelation = indexMCP.x < middleMCP.x ? -1 : 1;
         const tipRelation = indexTip.x < middleTip.x ? -1 : 1;
 
-        // Check if relationship is inverted
-        if (baseRelation !== tipRelation) {
+        // Check if relationship is inverted (crossed) or overlapping (very close)
+        const overlapThresholdX = Math.abs(indexMCP.x - middleMCP.x) * 0.5; // X-axis threshold
+        const isCrossed = baseRelation !== tipRelation;
+        const isOverlappingX = Math.abs(indexTip.x - middleTip.x) < overlapThresholdX;
+
+        // Euclidean Distance Check (prevent false positives where fingers are far apart vertically or deep)
+        // Use MCP distance as a scale reference for "Length" unit
+        const mcpDistance = Math.hypot(indexMCP.x - middleMCP.x, indexMCP.y - middleMCP.y);
+        const tipDistance = Math.hypot(indexTip.x - middleTip.x, indexTip.y - middleTip.y);
+
+        // If crossed, tips should be relatively close (converging). 
+        // Let's say max 1.2x MCP distance (usually tips are further than MCPs when splayed, closer when crossed)
+        const isTipsClose = tipDistance < (mcpDistance * 1.2);
+
+        if ((isCrossed || isOverlappingX) && isTipsClose) {
             return "Muryo Kusho";
         }
 
@@ -161,27 +174,24 @@ export class HandTrackingManager {
                 if (specialMove) {
                     this.onSpecialMove?.(specialMove);
                     this.onStatusChange?.(`SPECIAL: ${specialMove}`);
-                }
-
-                // Index finger MCP (base) is index 5, TIP is index 8
-                const base = landmarks[5];
-                const tip = landmarks[8];
-
-                // Invert X for mirror effect (Selfie view)
-                const dx = (tip.x - base.x) * -1;
-                const dy = tip.y - base.y;
-
-                const length = Math.sqrt(dx * dx + dy * dy);
-
-                // Only register if movement is significant enough to be a direction
-                if (length > 0.05) {
-                    this.onDirectionUpdate({ x: dx / length, y: dy / length });
-                    if (!specialMove) {
-                        this.onStatusChange?.(`Active: ${dx.toFixed(2)}, ${dy.toFixed(2)}`);
-                    }
+                    this.onDirectionUpdate(null); // Stop movement
                 } else {
-                    this.onDirectionUpdate(null);
-                    if (!specialMove) {
+                    // Index finger MCP (base) is index 5, TIP is index 8
+                    const base = landmarks[5];
+                    const tip = landmarks[8];
+
+                    // Invert X for mirror effect (Selfie view)
+                    const dx = (tip.x - base.x) * -1;
+                    const dy = tip.y - base.y;
+
+                    const length = Math.sqrt(dx * dx + dy * dy);
+
+                    // Only register if movement is significant enough to be a direction
+                    if (length > 0.05) {
+                        this.onDirectionUpdate({ x: dx / length, y: dy / length });
+                        this.onStatusChange?.(`Active: ${dx.toFixed(2)}, ${dy.toFixed(2)}`);
+                    } else {
+                        this.onDirectionUpdate(null);
                         this.onStatusChange?.("Tracking (Idle - Move finger)");
                     }
                 }
