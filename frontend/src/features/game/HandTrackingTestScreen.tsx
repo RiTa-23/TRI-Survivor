@@ -96,7 +96,7 @@ export default function HandTrackingTestScreen() {
             <div className="absolute bottom-4 right-4 w-64 h-48 bg-black border-2 border-white/50 rounded-lg overflow-hidden flex flex-col items-center justify-center">
                 <video
                     ref={videoRef}
-                    className="absolute w-full h-full object-cover opacity-50 transform scale-x-[-1]"
+                    className="absolute w-full h-full object-cover transform scale-x-[-1]"
                     playsInline
                     muted
                 />
@@ -106,9 +106,6 @@ export default function HandTrackingTestScreen() {
                     width={640}
                     height={480}
                 />
-                <div className="z-10 text-white text-xs bg-black/50 px-2 py-1 rounded">
-                    Camera Preview
-                </div>
             </div>
 
             {/* UI Overlay */}
@@ -118,18 +115,6 @@ export default function HandTrackingTestScreen() {
                         Back to Home
                     </Link>
                 </Button>
-            </div>
-            <div className="absolute top-4 right-4 bg-black/50 text-white p-4 rounded max-w-sm pointer-events-none">
-                <p className="font-bold mb-2">Hand Tracking Test</p>
-                <div className="text-sm space-y-2">
-                    <p>Move your index finger to control the player.</p>
-                    <p>- Point Up/Down/Left/Right</p>
-                    <div className="border-t border-white/30 pt-2 mt-2">
-                        <p className="font-bold text-yellow-400">Special Move Challenge:</p>
-                        <p>Perform the <span className="font-bold">"Muryo Kusho"</span> gesture!</p>
-                        <p className="text-xs text-gray-300">(Cross your middle finger over your index finger)</p>
-                    </div>
-                </div>
             </div>
         </div>
     );
