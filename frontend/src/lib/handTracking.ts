@@ -230,14 +230,7 @@ export class HandTrackingManager {
             if (results.landmarks && results.landmarks.length > 0) {
                 const landmarks = results.landmarks[0];
 
-                // Defensive check for handedness data
-                const handednessEntry = results.handedness?.[0]?.[0];
-                if (!handednessEntry?.categoryName) {
-                    this.onDirectionUpdate(null);
-                    requestAnimationFrame(this.predictLoop);
-                    return;
-                }
-                const handedness = handednessEntry.categoryName;
+                const handedness = results.handedness?.[0]?.[0]?.categoryName ?? "Right";
 
                 // Check if Palm is facing camera (using stable MCP joints)
                 const palmFacing = this.isPalmFacingCamera(landmarks, handedness);
