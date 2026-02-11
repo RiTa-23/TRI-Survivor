@@ -181,5 +181,9 @@ table "items" {
     ref_columns = [table.shop.column.item_id]
     on_delete   = CASCADE
   }
+
+  unique "user_item_unique" {
+    columns = [column.user_id, column.item_id]
+  }
 }
 
