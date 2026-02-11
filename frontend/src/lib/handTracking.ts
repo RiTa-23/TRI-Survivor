@@ -84,6 +84,25 @@ export class HandTrackingManager {
         return null;
     }
 
+    /**
+     * Check if the palm is facing the camera using MCP joints (Knuckles).
+     * MCP joints are more stable than fingertips since they don't move much
+     * when fingers are curled or extended.
+     * 
+     * Right Hand Palm facing camera: IndexMCP (5) is LEFT of PinkyMCP (17)
+     * Left Hand Palm facing camera: IndexMCP (5) is RIGHT of PinkyMCP (17)
+     */
+    private isPalmFacingCamera(landmarks: any[], handedness: string): boolean {
+        const indexMCP = landmarks[5];
+        const pinkyMCP = landmarks[17];
+
+        if (handedness === "Right") {
+            return indexMCP.x < pinkyMCP.x;
+        } else {
+            return indexMCP.x > pinkyMCP.x;
+        }
+    }
+
     private log(msg: string) {
         console.log(`[HandTracking] ${msg}`);
         this.onStatusChange?.(msg);
@@ -182,6 +201,10 @@ export class HandTrackingManager {
 
             if (results.landmarks && results.landmarks.length > 0) {
                 const landmarks = results.landmarks[0];
+                const handedness = results.handedness[0][0].categoryName; // "Left" or "Right"
+
+                // Check if Palm is facing camera (using stable MCP joints)
+                const palmFacing = this.isPalmFacingCamera(landmarks, handedness);
 
                 // Detect Special Move
                 const specialMove = this.detectSpecialMove(landmarks);
@@ -189,6 +212,10 @@ export class HandTrackingManager {
                     this.onSpecialMove?.(specialMove);
                     this.onStatusChange?.(`SPECIAL: ${specialMove}`);
                     this.onDirectionUpdate(null); // Stop movement
+                } else if (!palmFacing) {
+                    // Back of hand detected - don't move but keep tracking
+                    this.onDirectionUpdate(null);
+                    this.onStatusChange?.("Tracking (Back of Hand)");
                 } else {
                     // Index finger MCP (base) is index 5, TIP is index 8
                     const base = landmarks[5];
