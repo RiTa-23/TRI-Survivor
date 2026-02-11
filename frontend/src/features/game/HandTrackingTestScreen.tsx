@@ -42,11 +42,11 @@ export default function HandTrackingTestScreen() {
                         clearTimeout(timerRef.current);
                     }
 
-                    // Set timeout to clear message after 2 seconds of inactivity
+                    // Set timeout to clear message after 1 second of inactivity
                     timerRef.current = setTimeout(() => {
                         setSpecialMove(null);
                         timerRef.current = null;
-                    }, 2000);
+                    }, 1000);
                 }
             );
 
