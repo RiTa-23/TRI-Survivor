@@ -98,6 +98,9 @@ table "shop" {
   column "price" {
     null = false
     type = integer
+    check "price_non_negative" {
+      expr = "price >= 0"
+    }
   }
   column "item_type" {
     null = false
