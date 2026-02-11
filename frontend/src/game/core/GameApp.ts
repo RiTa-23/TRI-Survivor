@@ -36,7 +36,7 @@ export class GameApp {
         });
 
         if (this.isDestroyed) {
-            try { this.app.destroy({ removeView: true }, { children: true, texture: true, context: true }); } catch (e) { }
+            this.destroyApp();
             return;
         }
 
@@ -50,11 +50,18 @@ export class GameApp {
         this.app.stage.addChild(this.player);
 
         // Initialize Hand Tracking
-        await this.handTrackingManager.init(this.videoElement, this.canvasElement);
+        try {
+            await this.handTrackingManager.init(this.videoElement, this.canvasElement);
+        } catch (e) {
+            console.error("Hand tracking init failed:", e);
+            this.handTrackingManager.stop();
+            this.destroyApp();
+            throw e;
+        }
 
         if (this.isDestroyed) {
             this.handTrackingManager.stop();
-            try { this.app.destroy({ removeView: true }, { children: true, texture: true, context: true }); } catch (e) { }
+            this.destroyApp();
             return;
         }
 
@@ -70,16 +77,19 @@ export class GameApp {
         });
     }
 
+    /** Safely destroy the PixiJS application and stop the ticker */
+    private destroyApp() {
+        try {
+            this.app.ticker.stop();
+            this.app.destroy({ removeView: true }, { children: true, texture: true, context: true });
+        } catch (e) {
+            console.error("Error destroying PixiJS app:", e);
+        }
+    }
+
     public destroy() {
         this.isDestroyed = true;
         this.handTrackingManager.stop();
-
-        if (this.app.renderer) {
-            try {
-                this.app.destroy({ removeView: true }, { children: true, texture: true, context: true });
-            } catch (e) {
-                console.error("Error destroying PixiJS app:", e);
-            }
-        }
+        this.destroyApp();
     }
 }

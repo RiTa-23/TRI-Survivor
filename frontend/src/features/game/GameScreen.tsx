@@ -19,7 +19,11 @@ export default function GameScreen() {
 
         // Initialize GameApp
         const initGame = async () => {
-            if (containerRef.current) containerRef.current.innerHTML = '';
+            // Destroy previous instance if it exists (e.g. React Strict Mode double-mount)
+            if (gameAppRef.current) {
+                gameAppRef.current.destroy();
+                gameAppRef.current = null;
+            }
 
             const gameApp = new GameApp(
                 videoRef.current!,
