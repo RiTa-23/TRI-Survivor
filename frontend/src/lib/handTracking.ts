@@ -97,9 +97,9 @@ export class HandTrackingManager {
         const pinkyMCP = landmarks[17];
 
         if (handedness === "Right") {
-            return indexMCP.x < pinkyMCP.x;
-        } else {
             return indexMCP.x > pinkyMCP.x;
+        } else {
+            return indexMCP.x < pinkyMCP.x;
         }
     }
 
@@ -119,7 +119,7 @@ export class HandTrackingManager {
         try {
             this.log("Loading Vision Model...");
             const vision = await FilesetResolver.forVisionTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm"
             );
 
             this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
