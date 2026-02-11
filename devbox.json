@@ -21,7 +21,7 @@
       "db:new": "migrate create -ext sql -dir backend/db/migrations -seq",
       "db:migrate": "migrate -path backend/db/migrations -database \"$DATABASE_URL\" up",
       "db:rollback": "migrate -path backend/db/migrations -database \"$DATABASE_URL\" down 1",
-      "db:force": "migrate -path backend/db/migrations -database \"$DATABASE_URL\" force",
+      "db:force": "migrate -path backend/db/migrations -database \"$DATABASE_URL\" force $@",
       "db:up": "devbox services up postgresql",
       "db:down": "devbox services stop postgresql",
       "ui:add": "cd frontend && npx shadcn-ui@latest add"

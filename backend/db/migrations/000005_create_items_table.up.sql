@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE IF NOT EXISTS items (
+  id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id UUID NOT NULL,
+  item_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT items_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT items_item_fk FOREIGN KEY (item_id) REFERENCES shop (item_id) ON DELETE CASCADE,
+  CONSTRAINT user_item_unique UNIQUE (user_id, item_id)
+);
+
+CREATE TRIGGER set_items_updated_at
+BEFORE UPDATE ON items
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();

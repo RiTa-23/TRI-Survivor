@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE IF NOT EXISTS shop (
+  item_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  item_name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  price INTEGER NOT NULL CHECK (price >= 0),
+  item_type TEXT NOT NULL,
+  icon_url TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER set_shop_updated_at
+BEFORE UPDATE ON shop
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
