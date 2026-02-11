@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS items (
   quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-  CONSTRAINT item_fk FOREIGN KEY (item_id) REFERENCES shop (item_id) ON DELETE CASCADE,
+  CONSTRAINT items_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT items_item_fk FOREIGN KEY (item_id) REFERENCES shop (item_id) ON DELETE CASCADE,
   CONSTRAINT user_item_unique UNIQUE (user_id, item_id)
 );
 

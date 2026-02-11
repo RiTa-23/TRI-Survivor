@@ -170,13 +170,13 @@ table "items" {
     columns = [column.id]
   }
 
-  foreign_key "user_fk" {
+  foreign_key "items_user_fk" {
     columns     = [column.user_id]
     ref_columns = [table.users.column.id]
     on_delete   = CASCADE
   }
 
-  foreign_key "item_fk" {
+  foreign_key "items_item_fk" {
     columns     = [column.item_id]
     ref_columns = [table.shop.column.item_id]
     on_delete   = CASCADE
