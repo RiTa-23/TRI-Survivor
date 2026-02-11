@@ -1,14 +1,31 @@
 import { Application } from "pixi.js";
 import { Player } from "../entities/Player";
+import { HandTrackingManager } from "@/lib/handTracking";
+import type { Vector2D } from "@/lib/handTracking";
 
 export class GameApp {
     private app: Application;
     private player: Player;
-    private keys: { [key: string]: boolean } = {};
+    private handTrackingManager: HandTrackingManager;
+    private currentDirection: Vector2D | null = null;
+    private videoElement: HTMLVideoElement;
+    private canvasElement: HTMLCanvasElement;
+    private isDestroyed = false;
 
-    constructor() {
+    constructor(
+        videoElement: HTMLVideoElement,
+        canvasElement: HTMLCanvasElement,
+        onStatusChange?: (status: string) => void,
+        onSpecialMove?: (moveName: string) => void
+    ) {
         this.app = new Application();
         this.player = new Player();
+        this.videoElement = videoElement;
+        this.canvasElement = canvasElement;
+
+        this.handTrackingManager = new HandTrackingManager((vector) => {
+            this.currentDirection = vector;
+        }, onStatusChange, onSpecialMove);
     }
 
     public async init(container: HTMLDivElement) {
@@ -17,6 +34,11 @@ export class GameApp {
             resizeTo: window,
             backgroundColor: 0x1099bb,
         });
+
+        if (this.isDestroyed) {
+            this.destroyApp();
+            return;
+        }
 
         if (container) {
             container.appendChild(this.app.canvas);
@@ -27,31 +49,54 @@ export class GameApp {
         this.player.y = this.app.screen.height / 2;
         this.app.stage.addChild(this.player);
 
-        // Setup Input
-        this.setupInput();
+        // Initialize Hand Tracking
+        try {
+            await this.handTrackingManager.init(this.videoElement, this.canvasElement);
+        } catch (e) {
+            console.error("Hand tracking init failed:", e);
+            this.handTrackingManager.stop();
+            this.destroyApp();
+            throw e;
+        }
+
+        if (this.isDestroyed) {
+            this.handTrackingManager.stop();
+            this.destroyApp();
+            return;
+        }
 
         // Start Game Loop
+        this.app.start();
+
         this.app.ticker.add(() => {
-            this.player.update(this.keys, this.app.screen.width, this.app.screen.height);
+            if (this.currentDirection) {
+                this.player.move(this.currentDirection.x, this.currentDirection.y);
+                this.player.x = Math.max(0, Math.min(this.app.screen.width, this.player.x));
+                this.player.y = Math.max(0, Math.min(this.app.screen.height, this.player.y));
+            }
         });
     }
 
-    private setupInput() {
-        window.addEventListener("keydown", this.onKeyDown);
-        window.addEventListener("keyup", this.onKeyUp);
+    /** PixiJS v8 destroy options (shared to avoid duplication) */
+    private static readonly RENDERER_DESTROY_OPTIONS = { removeView: true };
+    private static readonly STAGE_DESTROY_OPTIONS = { texture: true, context: true };
+
+    /** Safely destroy the PixiJS application and stop the ticker */
+    private destroyApp() {
+        try {
+            this.app.ticker.stop();
+            this.app.destroy(
+                GameApp.RENDERER_DESTROY_OPTIONS,
+                GameApp.STAGE_DESTROY_OPTIONS
+            );
+        } catch (e) {
+            console.error("Error destroying PixiJS app:", e);
+        }
     }
 
-    private onKeyDown = (e: KeyboardEvent) => {
-        this.keys[e.code] = true;
-    };
-
-    private onKeyUp = (e: KeyboardEvent) => {
-        this.keys[e.code] = false;
-    };
-
     public destroy() {
-        window.removeEventListener("keydown", this.onKeyDown);
-        window.removeEventListener("keyup", this.onKeyUp);
-        this.app.destroy({ removeView: true }, { children: true });
+        this.isDestroyed = true;
+        this.handTrackingManager.stop();
+        this.destroyApp();
     }
 }
