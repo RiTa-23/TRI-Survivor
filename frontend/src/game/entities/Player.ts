@@ -19,14 +19,8 @@ export class Player extends Container {
         this.addChild(this.graphics);
     }
 
-    public update(keys: { [key: string]: boolean }, screenWidth: number, screenHeight: number) {
-        if (keys["KeyW"] || keys["ArrowUp"]) this.y -= this.speed;
-        if (keys["KeyS"] || keys["ArrowDown"]) this.y += this.speed;
-        if (keys["KeyA"] || keys["ArrowLeft"]) this.x -= this.speed;
-        if (keys["KeyD"] || keys["ArrowRight"]) this.x += this.speed;
-
-        // Simple boundary check
-        this.x = Math.max(0, Math.min(screenWidth, this.x));
-        this.y = Math.max(0, Math.min(screenHeight, this.y));
+    public move(dx: number, dy: number) {
+        this.x += dx * this.speed;
+        this.y += dy * this.speed;
     }
 }
