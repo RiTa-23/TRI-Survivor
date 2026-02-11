@@ -5,6 +5,7 @@ import LandingPage from "./features/landing/LandingPage";
 import AuthScreen from "./features/auth/AuthScreen";
 import HomeScreen from "./features/home/HomeScreen";
 import GameScreen from "./features/game/GameScreen";
+import HandTrackingTestScreen from "./features/game/HandTrackingTestScreen";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -43,6 +44,9 @@ function App() {
           <Route path="/home" element={<HomeScreen />} />
           <Route path="/game" element={<GameScreen />} />
         </Route>
+
+        {/* Test Routes */}
+        <Route path="/test/hand-tracking" element={<HandTrackingTestScreen />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
