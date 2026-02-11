@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { HandTrackingGameApp } from "@/game/core/HandTrackingGameApp";
 import { Button } from "@/components/ui/button";
+import { ArrowUp } from "lucide-react";
 
 export default function HandTrackingTestScreen() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -88,8 +89,33 @@ export default function HandTrackingTestScreen() {
             )}
 
             {/* Status Overlay */}
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full pointer-events-none z-50">
-                {status}
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full pointer-events-none z-50 flex items-center gap-2">
+                {status.startsWith("Active:") ? (
+                    <>
+                        <span>Active</span>
+                        <ArrowUp
+                            className="w-5 h-5 text-green-400 transition-transform duration-100"
+                            style={{
+                                transform: (() => {
+                                    const match = status.match(/Active: ([-\d.]+), ([-\d.]+)/);
+                                    if (match) {
+                                        const x = parseFloat(match[1]);
+                                        const y = parseFloat(match[2]);
+                                        // ArrowUp points UP (0, -1) by default
+                                        // atan2(y, x) -> 0 is Right (1, 0)
+                                        // To align UP (-Y) to 0 deg:
+                                        // angle = atan2(y, x) * 180 / PI + 90
+                                        const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+                                        return `rotate(${angle}deg)`;
+                                    }
+                                    return "rotate(0deg)";
+                                })()
+                            }}
+                        />
+                    </>
+                ) : (
+                    status
+                )}
             </div>
 
             {/* Camera Preview overlay (bottom right) */}
