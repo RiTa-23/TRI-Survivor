@@ -18,7 +18,8 @@ export default function HomeScreen() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
+        <div className="relative min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
+
             <h1 className="text-4xl font-bold mb-2">TRI Survivor</h1>
             {user && <p className="text-slate-400 mb-6">ログイン中: {user.email}</p>}
 
