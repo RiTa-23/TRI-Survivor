@@ -23,34 +23,48 @@ export class HandTrackingManager {
         this.onSpecialMove = onSpecialMove;
     }
 
+    private isFingerExtended(landmarks: any[], fingerName: "Index" | "Middle" | "Ring" | "Pinky" | "Thumb"): boolean {
+        const tipIndices = { Thumb: 4, Index: 8, Middle: 12, Ring: 16, Pinky: 20 };
+        const mcpIndices = { Thumb: 2, Index: 5, Middle: 9, Ring: 13, Pinky: 17 };
+
+        const tip = landmarks[tipIndices[fingerName]];
+        const mcp = landmarks[mcpIndices[fingerName]];
+
+        // Simple y-check: Tip higher than MCP (smaller y)
+        // For thumb, x-check might be needed depending on orientation, but y check works for "thumbs up" style
+        return tip.y < mcp.y;
+    }
+
     private detectSpecialMove(landmarks: any[]) {
-        // Muryo Kusho (Unlimited Void): Index and Middle fingers crossed
-
-        // Finger indices
-        // Index: MCP=5, TIP=8
-        // Middle: MCP=9, TIP=12
-
         const indexMCP = landmarks[5];
         const indexTip = landmarks[8];
         const middleMCP = landmarks[9];
         const middleTip = landmarks[12];
 
-        // 1. Are fingers extended? (Tip higher than MCP in screen coords - y is smaller at top)
-        const isIndexExtended = indexTip.y < indexMCP.y;
-        const isMiddleExtended = middleTip.y < middleMCP.y;
+        // 1. Check for "Kon" (Fox)
+        // Index & Pinky Extended
+        // Middle & Ring Folded (Curled)
+        const isIndexExt = this.isFingerExtended(landmarks, "Index");
+        const isPinkyExt = this.isFingerExtended(landmarks, "Pinky");
+        const isMiddleExt = this.isFingerExtended(landmarks, "Middle");
+        const isRingExt = this.isFingerExtended(landmarks, "Ring");
+
+        if (isIndexExt && isPinkyExt && !isMiddleExt && !isRingExt) {
+            return "Kon";
+        }
+
+        // 2. Check for "Muryo Kusho" (Unlimited Void)
+        // Index and Middle extended and crossed/overlapping
+        const isMiddleExtended = isMiddleExt; // Re-use
+        const isIndexExtended = isIndexExt;   // Re-use
 
         if (!isIndexExtended || !isMiddleExtended) return null;
 
-        // 2. Are they crossed?
-        // Normal Right Hand (Palm facing camera): Index is Left (smaller x) of Middle.
-        // Normal Left Hand (Palm facing camera): Index is Right (larger x) of Middle.
-
-        // We can determine 'Normal' relation from MCPs.
+        // Check if relationship is inverted (crossed) or overlapping (very close)
+        const overlapThresholdX = Math.abs(indexMCP.x - middleMCP.x) * 0.5; // X-axis threshold
         const baseRelation = indexMCP.x < middleMCP.x ? -1 : 1;
         const tipRelation = indexTip.x < middleTip.x ? -1 : 1;
 
-        // Check if relationship is inverted (crossed) or overlapping (very close)
-        const overlapThresholdX = Math.abs(indexMCP.x - middleMCP.x) * 0.5; // X-axis threshold
         const isCrossed = baseRelation !== tipRelation;
         const isOverlappingX = Math.abs(indexTip.x - middleTip.x) < overlapThresholdX;
 
