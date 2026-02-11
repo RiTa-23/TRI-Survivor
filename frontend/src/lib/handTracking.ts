@@ -215,7 +215,7 @@ export class HandTrackingManager {
                 } else if (!palmFacing) {
                     // Back of hand detected - don't move but keep tracking
                     this.onDirectionUpdate(null);
-                    this.onStatusChange?.("Tracking (Back of Hand)");
+                    this.onStatusChange?.("Back of Hand");
                 } else {
                     // Index finger MCP (base) is index 5, TIP is index 8
                     const base = landmarks[5];
@@ -233,12 +233,12 @@ export class HandTrackingManager {
                         this.onStatusChange?.(`Active: ${dx.toFixed(2)}, ${dy.toFixed(2)}`);
                     } else {
                         this.onDirectionUpdate(null);
-                        this.onStatusChange?.("Tracking (Idle - Move finger)");
+                        this.onStatusChange?.("Idle - Move finger");
                     }
                 }
             } else {
                 this.onDirectionUpdate(null);
-                this.onStatusChange?.("Tracking (No Hand Detected)");
+                this.onStatusChange?.("No Hand");
             }
         }
 
