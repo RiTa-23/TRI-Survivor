@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func SetupRouter(e *echo.Echo, userHandler *handler.UserHandler, settingsHandler *handler.SettingsHandler, shopHandler *handler.ShopHandler) {
+func SetupRouter(e *echo.Echo, userHandler *handler.UserHandler, settingsHandler *handler.SettingsHandler, shopHandler *handler.ShopHandler, itemHandler *handler.ItemHandler) {
 	api := e.Group("/api")
 
 	// パブリックルート
@@ -32,4 +32,6 @@ func SetupRouter(e *echo.Echo, userHandler *handler.UserHandler, settingsHandler
 	// Shop
 	v1.GET("/shop", shopHandler.GetShopItems)
 	v1.GET("/shop/:id", shopHandler.GetShopItemByID)
+	// Items
+	v1.GET("/items", itemHandler.GetUserItems)
 }
