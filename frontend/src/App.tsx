@@ -5,7 +5,9 @@ import LandingPage from "./features/landing/LandingPage";
 import AuthScreen from "./features/auth/AuthScreen";
 import HomeScreen from "./features/home/HomeScreen";
 import GameScreen from "./features/game/GameScreen";
-
+import ShopScreen from "./features/shop/ShopScreen";
+import SettingScreen from "./features/setting/SettingScreen";
+import TutorialScreen from "./features/tutorial/TutorialScreen";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -43,8 +45,10 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<HomeScreen />} />
           <Route path="/game" element={<GameScreen />} />
+          <Route path="/shop" element={<ShopScreen />} />
+          <Route path="/setting" element={<SettingScreen />} />
+          <Route path="/tutorial" element={<TutorialScreen />} />
         </Route>
-
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -54,4 +58,3 @@ function App() {
 }
 
 export default App;
-
