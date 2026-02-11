@@ -119,26 +119,41 @@ export class HandTrackingManager {
         try {
             this.log("Loading Vision Model...");
             const vision = await FilesetResolver.forVisionTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm"
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
             );
 
-            this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+            const modelOptions = {
                 baseOptions: {
-                    modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-                    delegate: "GPU"
+                    modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+                    delegate: "GPU" as const,
                 },
-                runningMode: "VIDEO",
-                numHands: 1
-            });
-            this.log("Model loaded.");
+                runningMode: "VIDEO" as const,
+                numHands: 1,
+            };
+
+            try {
+                this.handLandmarker = await HandLandmarker.createFromOptions(vision, modelOptions);
+                this.log("Model loaded (GPU).");
+            } catch (gpuError) {
+                console.warn("GPU delegate failed, falling back to CPU:", gpuError);
+                this.log("GPU failed, trying CPU...");
+                this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                    ...modelOptions,
+                    baseOptions: {
+                        ...modelOptions.baseOptions,
+                        delegate: "CPU",
+                    },
+                });
+                this.log("Model loaded (CPU fallback).");
+            }
 
             await this.startCamera();
             this.running = true;
             this.log("Tracking started.");
             this.predictLoop();
         } catch (error) {
-            console.error(error);
-            this.log(`Error: ${error}`);
+            console.error("Hand tracking initialization failed:", error);
+            this.log(`Error: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
