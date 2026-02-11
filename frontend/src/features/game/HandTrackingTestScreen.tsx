@@ -10,6 +10,7 @@ export default function HandTrackingTestScreen() {
     const gameAppRef = useRef<HandTrackingGameApp | null>(null);
 
     const [status, setStatus] = useState<string>("Initializing...");
+    const [specialMove, setSpecialMove] = useState<string | null>(null);
 
     useEffect(() => {
         if (!containerRef.current || !videoRef.current || !canvasRef.current) return;
@@ -21,7 +22,12 @@ export default function HandTrackingTestScreen() {
             const gameApp = new HandTrackingGameApp(
                 videoRef.current!,
                 canvasRef.current!,
-                (msg) => setStatus(msg)
+                (msg) => setStatus(msg),
+                (move) => {
+                    setSpecialMove(move);
+                    // Clear message after 2 seconds
+                    setTimeout(() => setSpecialMove(null), 2000);
+                }
             );
 
             // Set ref immediately to handle unmount during await
@@ -34,13 +40,10 @@ export default function HandTrackingTestScreen() {
             }
         };
 
-        const initPromise = initGame();
+        initGame();
 
         return () => {
             // Cleanup on unmount
-            // If init is still running, gameAppRef.current is already set so we can destroy it.
-            // However, destroy() might be called while init() is running.
-            // Pixi v8 application.destroy() is likely safe to call or will be queued.
             if (gameAppRef.current) {
                 gameAppRef.current.destroy();
                 gameAppRef.current = null;
@@ -52,6 +55,18 @@ export default function HandTrackingTestScreen() {
         <div className="w-full h-screen relative flex">
             {/* Game Container */}
             <div ref={containerRef} className="w-full h-full overflow-hidden relative" />
+
+            {/* Special Move Overlay */}
+            {specialMove && (
+                <div className="absolute top-24 left-1/2 transform -translate-x-1/2 pointer-events-none z-50 text-center w-full">
+                    <div className="text-5xl font-black text-yellow-400 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] animate-bounce tracking-wider">
+                        {specialMove}!!
+                    </div>
+                    <div className="text-2xl text-white font-bold mt-2 drop-shadow-md tracking-widest bg-black/50 inline-block px-4 py-1 rounded">
+                        DOMAIN EXPANSION
+                    </div>
+                </div>
+            )}
 
             {/* Status Overlay */}
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full pointer-events-none z-50">
@@ -87,13 +102,15 @@ export default function HandTrackingTestScreen() {
             </div>
             <div className="absolute top-4 right-4 bg-black/50 text-white p-4 rounded max-w-sm pointer-events-none">
                 <p className="font-bold mb-2">Hand Tracking Test</p>
-                <p className="text-sm">
-                    Move your index finger to control the player.
-                    <br />
-                    - Point Up/Down/Left/Right
-                    <br />
-                    - The vector from index finger base to tip controls direction.
-                </p>
+                <div className="text-sm space-y-2">
+                    <p>Move your index finger to control the player.</p>
+                    <p>- Point Up/Down/Left/Right</p>
+                    <div className="border-t border-white/30 pt-2 mt-2">
+                        <p className="font-bold text-yellow-400">Special Move Challenge:</p>
+                        <p>Perform the <span className="font-bold">"Muryo Kusho"</span> gesture!</p>
+                        <p className="text-xs text-gray-300">(Cross your middle finger over your index finger)</p>
+                    </div>
+                </div>
             </div>
         </div>
     );

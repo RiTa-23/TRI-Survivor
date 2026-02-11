@@ -15,7 +15,8 @@ export class HandTrackingGameApp {
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
-        onStatusChange?: (status: string) => void
+        onStatusChange?: (status: string) => void,
+        onSpecialMove?: (moveName: string) => void
     ) {
         this.app = new Application();
         this.player = new HandTrackingPlayer();
@@ -24,7 +25,7 @@ export class HandTrackingGameApp {
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
-        }, onStatusChange);
+        }, onStatusChange, onSpecialMove);
     }
 
     public async init(container: HTMLDivElement) {

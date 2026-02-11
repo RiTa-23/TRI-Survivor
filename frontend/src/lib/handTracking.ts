@@ -11,13 +11,50 @@ export class HandTrackingManager {
     private stream: MediaStream | null = null;
     private onDirectionUpdate: (vector: Vector2D | null) => void;
     private onStatusChange?: (status: string) => void;
+    private onSpecialMove?: (moveName: string) => void;
 
     constructor(
         onDirectionUpdate: (vector: Vector2D | null) => void,
-        onStatusChange?: (status: string) => void
+        onStatusChange?: (status: string) => void,
+        onSpecialMove?: (moveName: string) => void
     ) {
         this.onDirectionUpdate = onDirectionUpdate;
         this.onStatusChange = onStatusChange;
+        this.onSpecialMove = onSpecialMove;
+    }
+
+    private detectSpecialMove(landmarks: any[]) {
+        // Muryo Kusho (Unlimited Void): Index and Middle fingers crossed
+
+        // Finger indices
+        // Index: MCP=5, TIP=8
+        // Middle: MCP=9, TIP=12
+
+        const indexMCP = landmarks[5];
+        const indexTip = landmarks[8];
+        const middleMCP = landmarks[9];
+        const middleTip = landmarks[12];
+
+        // 1. Are fingers extended? (Tip higher than MCP in screen coords - y is smaller at top)
+        const isIndexExtended = indexTip.y < indexMCP.y;
+        const isMiddleExtended = middleTip.y < middleMCP.y;
+
+        if (!isIndexExtended || !isMiddleExtended) return null;
+
+        // 2. Are they crossed?
+        // Normal Right Hand (Palm facing camera): Index is Left (smaller x) of Middle.
+        // Normal Left Hand (Palm facing camera): Index is Right (larger x) of Middle.
+
+        // We can determine 'Normal' relation from MCPs.
+        const baseRelation = indexMCP.x < middleMCP.x ? -1 : 1;
+        const tipRelation = indexTip.x < middleTip.x ? -1 : 1;
+
+        // Check if relationship is inverted
+        if (baseRelation !== tipRelation) {
+            return "Muryo Kusho";
+        }
+
+        return null;
     }
 
     private log(msg: string) {
@@ -118,6 +155,14 @@ export class HandTrackingManager {
 
             if (results.landmarks && results.landmarks.length > 0) {
                 const landmarks = results.landmarks[0];
+
+                // Detect Special Move
+                const specialMove = this.detectSpecialMove(landmarks);
+                if (specialMove) {
+                    this.onSpecialMove?.(specialMove);
+                    this.onStatusChange?.(`SPECIAL: ${specialMove}`);
+                }
+
                 // Index finger MCP (base) is index 5, TIP is index 8
                 const base = landmarks[5];
                 const tip = landmarks[8];
@@ -131,10 +176,14 @@ export class HandTrackingManager {
                 // Only register if movement is significant enough to be a direction
                 if (length > 0.05) {
                     this.onDirectionUpdate({ x: dx / length, y: dy / length });
-                    this.onStatusChange?.(`Active: ${dx.toFixed(2)}, ${dy.toFixed(2)}`);
+                    if (!specialMove) {
+                        this.onStatusChange?.(`Active: ${dx.toFixed(2)}, ${dy.toFixed(2)}`);
+                    }
                 } else {
                     this.onDirectionUpdate(null);
-                    this.onStatusChange?.("Tracking (Idle - Move finger)");
+                    if (!specialMove) {
+                        this.onStatusChange?.("Tracking (Idle - Move finger)");
+                    }
                 }
             } else {
                 this.onDirectionUpdate(null);
