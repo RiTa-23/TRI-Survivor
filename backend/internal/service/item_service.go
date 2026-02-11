@@ -20,7 +20,7 @@ func (s *ItemService) GetUserItems(ctx context.Context, userID string) ([]entity
 	return s.repo.FindByUserID(ctx, userID)
 }
 
-// AddItemItems 所持アイテムを追加または数量を更新します
+// AddItem 所持アイテムを追加または数量を更新します
 func (s *ItemService) AddItem(ctx context.Context, userID string, itemID int, quantity int) error {
 	item := &entity.Item{
 		UserID:   userID,
