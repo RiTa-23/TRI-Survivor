@@ -1,9 +1,13 @@
+
 # Devbox
 .devbox/
 
 # Node
 node_modules/
 dist/
+
+# Environment Variables
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -12,6 +16,8 @@ dist/
 # Go
 /backend/bin/
 /backend/tmp/
+/tmp/
+tmp/
 
 # OS
 .DS_Store

@@ -24,8 +24,8 @@
 - **Language**: Go
 - **Framework**: Echo
 - **ORM**: Bun
-- **Database**: PostgreSQL (Development: SQLite/Docker)
-- **Migration**: Atlas
+- **Database**: PostgreSQL (Supabase)
+- **Migration**: golang-migrate
 
 ### Infrastructure & Tools
 - **Environment Management**: Devbox
@@ -33,36 +33,53 @@
 - **Code Review**: CodeRabbit
 - **Linting/Formatting**: Biome (Frontend), gofmt (Backend)
 
-## 環境構築手順
+## 環境構築手順 (Windows WSL2 / Mac)
 
-本プロジェクトは `devbox` を使用して開発環境を管理しています。
+### 1. WSL2の準備（Windowsユーザーのみ）
+PowerShellを管理者権限で開き、`wsl --install` を実行して再起動してください。
 
-### 1. 前提条件
-- **Devbox** がインストールされていること
-- **Docker** がインストールされていること（DB起動用）
-
-### 2. セットアップ
-
-リポジトリをクローンし、プロジェクトルートで以下のコマンドを実行します。
-
+### 2. Devboxのインストール
+WSL2内 または Macターミナルで以下を実行します。
 ```bash
-# 依存関係のインストール (Go Modules, Root npm, Frontend npm)
+curl -fsSL https://get.jetpack.io/devbox | bash
+```
+
+### 3. リポジトリのクローンと移動
+```bash
+git clone <リポジトリのURL>
+cd TRI-Survivor
+```
+
+### 4. 開発環境への潜入
+```bash
+devbox shell
+```
+※これ以降は、PC本体のツールではなく「Devbox内のツール」が使われます。開発作業時は必ずこのシェルに入ってください。
+
+### 5. 一括セットアップ
+依存関係（Go modules, npm）をインストールします。
+```bash
 devbox run setup
 ```
 
-### 3. 開発サーバーの起動
+### 6. 環境変数の設定
+プロジェクトルートに **`.env`** ファイルを作成し、データベース設定などを書き込みます。
+（`.env.example` をコピーして使用してください）
 
-以下のコマンドで、Frontend（Vite）と Backend（Air/Go）を同時に起動できます。
+### 7. データベース設定の確認
+`.env` ファイルに `DATABASE_URL` が正しく設定されていることを確認してください。
+本プロジェクトでは Supabase (Hosted DB) を使用するため、DockerなどのローカルDB起動は不要です。
 
+### 8. 開発開始！
+Frontend, Backend (Air) を一括で起動します。
 ```bash
-# プロジェクトルートで実行
 devbox run dev
 ```
-
 - **Frontend**: http://localhost:5173
 - **Backend**: http://localhost:8080 (予定)
 
-### 4. 個別の起動コマンド
+
+### 便利なコマンド (Advanced)
 
 ```bash
 # Frontendのみ起動
