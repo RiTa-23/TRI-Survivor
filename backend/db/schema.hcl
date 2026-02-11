@@ -44,11 +44,17 @@ table "settings" {
     null = false
     type = integer
     default = 100
+    check "bgm_volume_range" {
+      expr = "bgm_volume >= 0 AND bgm_volume <= 100"
+    }
   }
   column "se_volume" {
     null = false
     type = integer
     default = 100
+    check "se_volume_range" {
+      expr = "se_volume >= 0 AND se_volume <= 100"
+    }
   }
   column "created_at" {
     null = false
