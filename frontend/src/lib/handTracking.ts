@@ -154,6 +154,7 @@ export class HandTrackingManager {
         } catch (error) {
             console.error("Hand tracking initialization failed:", error);
             this.log(`Error: ${error instanceof Error ? error.message : String(error)}`);
+            throw error;
         }
     }
 
@@ -168,11 +169,19 @@ export class HandTrackingManager {
             }
         };
 
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        this.stream = stream; // Store reference
+        let stream: MediaStream;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            this.log(`Camera access failed: ${msg}`);
+            throw error;
+        }
+
+        this.stream = stream;
         this.video.srcObject = stream;
 
-        return new Promise<void>((resolve) => {
+        return new Promise<void>((resolve, reject) => {
             if (!this.video) return resolve();
 
             this.video.onloadedmetadata = () => {
@@ -181,7 +190,11 @@ export class HandTrackingManager {
                     resolve();
                 }).catch(e => {
                     this.log(`Video play failed: ${e}`);
-                    resolve(); // Try to continue anyway
+                    // Stop the stream since video won't play
+                    stream.getTracks().forEach(t => t.stop());
+                    this.stream = null;
+                    if (this.video) this.video.srcObject = null;
+                    reject(e);
                 });
             };
         });

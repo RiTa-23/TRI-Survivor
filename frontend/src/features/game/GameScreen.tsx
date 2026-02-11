@@ -13,6 +13,8 @@ export default function GameScreen() {
     const [status, setStatus] = useState<string>("Initializing...");
     const [specialMove, setSpecialMove] = useState<string | null>(null);
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastStatusRef = useRef<string>("");
+    const lastUpdateTsRef = useRef<number>(0);
 
     useEffect(() => {
         if (!containerRef.current || !videoRef.current || !canvasRef.current) return;
@@ -29,13 +31,21 @@ export default function GameScreen() {
                 videoRef.current!,
                 canvasRef.current!,
                 (msg) => {
-                    setStatus(msg);
+                    // Urgent per-frame side effects (always run)
                     if (msg.startsWith("Active:")) {
                         setSpecialMove(null);
                         if (timerRef.current) {
                             clearTimeout(timerRef.current);
                             timerRef.current = null;
                         }
+                    }
+
+                    // Throttle setStatus: only update if value changed or 200ms elapsed
+                    const now = performance.now();
+                    if (msg !== lastStatusRef.current || now - lastUpdateTsRef.current > 200) {
+                        lastStatusRef.current = msg;
+                        lastUpdateTsRef.current = now;
+                        setStatus(msg);
                     }
                 },
                 (move) => {
