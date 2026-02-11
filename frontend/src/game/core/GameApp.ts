@@ -77,11 +77,18 @@ export class GameApp {
         });
     }
 
+    /** PixiJS v8 destroy options (shared to avoid duplication) */
+    private static readonly RENDERER_DESTROY_OPTIONS = { removeView: true };
+    private static readonly STAGE_DESTROY_OPTIONS = { texture: true, context: true };
+
     /** Safely destroy the PixiJS application and stop the ticker */
     private destroyApp() {
         try {
             this.app.ticker.stop();
-            this.app.destroy({ removeView: true }, { children: true, texture: true, context: true });
+            this.app.destroy(
+                GameApp.RENDERER_DESTROY_OPTIONS,
+                GameApp.STAGE_DESTROY_OPTIONS
+            );
         } catch (e) {
             console.error("Error destroying PixiJS app:", e);
         }
