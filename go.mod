@@ -5,6 +5,8 @@ go 1.24.0
 toolchain go1.24.13
 
 require (
+	github.com/MicahParks/keyfunc/v3 v3.7.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/uptrace/bun v1.2.16
@@ -13,6 +15,7 @@ require (
 )
 
 require (
+	github.com/MicahParks/jwkset v0.11.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect

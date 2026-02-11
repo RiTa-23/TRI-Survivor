@@ -24,8 +24,8 @@
 - **Language**: Go
 - **Framework**: Echo
 - **ORM**: Bun
-- **Database**: PostgreSQL (Development: SQLite/Docker)
-- **Migration**: Atlas
+- **Database**: PostgreSQL (Supabase)
+- **Migration**: golang-migrate
 
 ### Infrastructure & Tools
 - **Environment Management**: Devbox
@@ -66,11 +66,9 @@ devbox run setup
 プロジェクトルートに **`.env`** ファイルを作成し、データベース設定などを書き込みます。
 （`.env.example` をコピーして使用してください）
 
-### 7. データベース(PostgreSQL)の起動
-```bash
-devbox run db:up
-```
-※停止する場合: `devbox run db:down`
+### 7. データベース設定の確認
+`.env` ファイルに `DATABASE_URL` が正しく設定されていることを確認してください。
+本プロジェクトでは Supabase (Hosted DB) を使用するため、DockerなどのローカルDB起動は不要です。
 
 ### 8. 開発開始！
 Frontend, Backend (Air) を一括で起動します。
