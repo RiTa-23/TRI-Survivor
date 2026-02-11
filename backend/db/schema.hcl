@@ -130,3 +130,56 @@ table "shop" {
   }
 }
 
+table "items" {
+  schema = schema.public
+  column "id" {
+    null = false
+    type = integer
+    identity {
+      generated = ALWAYS
+    }
+  }
+  column "user_id" {
+    null = false
+    type = uuid
+  }
+  column "item_id" {
+    null = false
+    type = integer
+  }
+  column "quantity" {
+    null    = false
+    type    = integer
+    default = 0
+    check "quantity_non_negative" {
+      expr = "quantity >= 0"
+    }
+  }
+  column "created_at" {
+    null    = false
+    type    = timestamptz
+    default = sql("now()")
+  }
+  column "updated_at" {
+    null    = false
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  foreign_key "user_fk" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
+  }
+
+  foreign_key "item_fk" {
+    columns     = [column.item_id]
+    ref_columns = [table.shop.column.item_id]
+    on_delete   = CASCADE
+  }
+}
+

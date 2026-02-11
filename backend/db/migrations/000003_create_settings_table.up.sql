@@ -1,3 +1,11 @@
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TABLE IF NOT EXISTS settings (
   user_id UUID NOT NULL PRIMARY KEY,
   bgm_volume INTEGER NOT NULL DEFAULT 100 CHECK (bgm_volume >= 0 AND bgm_volume <= 100),
