@@ -64,6 +64,10 @@ export default function GameScreen() {
 
         return () => {
             // Cleanup on unmount
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+                timerRef.current = null;
+            }
             if (gameAppRef.current) {
                 gameAppRef.current.destroy();
                 gameAppRef.current = null;

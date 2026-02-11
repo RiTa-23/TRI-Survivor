@@ -36,7 +36,7 @@ export class GameApp {
         });
 
         if (this.isDestroyed) {
-            try { this.app.destroy({ removeView: true, texture: true, context: true } as any); } catch (e) { }
+            try { this.app.destroy({ removeView: true }, { children: true, texture: true, context: true }); } catch (e) { }
             return;
         }
 
@@ -54,7 +54,7 @@ export class GameApp {
 
         if (this.isDestroyed) {
             this.handTrackingManager.stop();
-            try { this.app.destroy({ removeView: true, texture: true, context: true } as any); } catch (e) { }
+            try { this.app.destroy({ removeView: true }, { children: true, texture: true, context: true }); } catch (e) { }
             return;
         }
 
@@ -76,7 +76,7 @@ export class GameApp {
 
         if (this.app.renderer) {
             try {
-                this.app.destroy({ removeView: true, texture: true, context: true } as any);
+                this.app.destroy({ removeView: true }, { children: true, texture: true, context: true });
             } catch (e) {
                 console.error("Error destroying PixiJS app:", e);
             }
