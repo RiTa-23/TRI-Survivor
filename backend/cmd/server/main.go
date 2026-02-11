@@ -43,6 +43,10 @@ func main() {
 	shopService := service.NewShopService(shopRepo)
 	shopHandler := handler.NewShopHandler(shopService)
 
+	itemRepo := repository.NewItemRepository(db)
+	itemService := service.NewItemService(itemRepo)
+	itemHandler := handler.NewItemHandler(itemService)
+
 	// Initialize Echo
 	e := echo.New()
 
@@ -65,7 +69,7 @@ func main() {
 	}))
 
 	// Setup Router
-	router.SetupRouter(e, userHandler, settingsHandler, shopHandler)
+	router.SetupRouter(e, userHandler, settingsHandler, shopHandler, itemHandler)
 
 	// Start Server
 	e.Logger.Fatal(e.Start(":8080"))
