@@ -9,3 +9,8 @@ CREATE TABLE IF NOT EXISTS shop (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TRIGGER set_shop_updated_at
+BEFORE UPDATE ON shop
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
