@@ -1,13 +1,12 @@
-import { Container, Graphics, ColorMatrixFilter } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
 import { HPBar } from "./HPBar";
 
-const DAMAGE_FLASH_DURATION = 150;
+const DAMAGE_FLASH_DURATION = 100; // ms
 
 export class Player extends Container {
     private graphics: Graphics;
     private hpBar: HPBar;
     private damageFlashTimer: number = 0;
-    private readonly damageFilter: ColorMatrixFilter;
 
     // --- Stats ---
     private _hp: number;
@@ -32,18 +31,18 @@ export class Player extends Container {
 
         // Create Player (Circle)
         this.graphics = new Graphics();
-        this.graphics.circle(0, 0, this.radius);
-        this.graphics.fill({ color: 0xffffff });
+        this.drawCircle(0xffffff);
         this.addChild(this.graphics);
-
-        // Damage flash filter (red tint)
-        this.damageFilter = new ColorMatrixFilter();
-        this.damageFilter.enabled = false;
-        this.graphics.filters = [this.damageFilter];
 
         // HP Bar (above player)
         this.hpBar = new HPBar({ width: 36, height: 4, offsetY: -(this.radius + 12) });
         this.addChild(this.hpBar);
+    }
+
+    private drawCircle(color: number): void {
+        this.graphics.clear();
+        this.graphics.circle(0, 0, this.radius);
+        this.graphics.fill({ color });
     }
 
     public move(dx: number, dy: number, dt: number): void {
@@ -55,7 +54,9 @@ export class Player extends Container {
     public takeDamage(amount: number): void {
         this._hp = Math.max(0, this._hp - amount);
         this.hpBar.update(this._hp / this._maxHp);
-        this.flashDamage();
+        // Flash red
+        this.damageFlashTimer = DAMAGE_FLASH_DURATION;
+        this.drawCircle(0xff4444);
     }
 
     /** HPを回復する */
@@ -64,26 +65,13 @@ export class Player extends Container {
         this.hpBar.update(this._hp / this._maxHp);
     }
 
-    /** ダメージ時の赤フラッシュを開始 */
-    private flashDamage(): void {
-        this.damageFlashTimer = DAMAGE_FLASH_DURATION;
-        this.damageFilter.enabled = true;
-        // Red tint: boost red, suppress green/blue
-        this.damageFilter.matrix = [
-            2, 0, 0, 0, 0.3,
-            0, 0.3, 0, 0, 0,
-            0, 0, 0.3, 0, 0,
-            0, 0, 0, 1, 0,
-        ];
-    }
-
-    /** 毎フレーム呼び出してフラッシュアニメーションを更新 */
+    /** 毎フレーム呼び出してフラッシュを更新 */
     public update(dt: number): void {
         if (this.damageFlashTimer > 0) {
             this.damageFlashTimer -= dt;
             if (this.damageFlashTimer <= 0) {
                 this.damageFlashTimer = 0;
-                this.damageFilter.enabled = false;
+                this.drawCircle(0xffffff);
             }
         }
     }
