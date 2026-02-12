@@ -127,10 +127,11 @@ export class GameApp {
         this.app.ticker.add((ticker) => {
             const dt = ticker.deltaMS;
 
-            // Player movement
+            // Player movement & animation update
             if (this.currentDirection) {
                 this.player.move(this.currentDirection.x, this.currentDirection.y);
             }
+            this.player.update(dt);
 
             // Spawn enemies periodically
             this.spawnTimer += dt;
