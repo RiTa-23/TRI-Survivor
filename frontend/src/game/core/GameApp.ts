@@ -14,7 +14,7 @@ const GRID_BG_COLOR = 0x0e8aaa;
 /** Enemy spawn settings */
 const SPAWN_INTERVAL_MS = 500;
 const SPAWN_DISTANCE = 1500;
-const MAX_ENEMIES = 100;
+const MAX_ENEMIES = 30;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 
 export class GameApp {

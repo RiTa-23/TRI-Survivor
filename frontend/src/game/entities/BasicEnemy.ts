@@ -10,9 +10,9 @@ export class BasicEnemy extends Enemy {
     constructor() {
         super({
             hp: 3,
-            speed: 1.5,
+            speed: 1,
             attackPower: 10,
-            color: 0xe74c3c,
+            color: 0x9b59b6,
             radius: 12,
         });
     }
