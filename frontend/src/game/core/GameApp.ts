@@ -132,7 +132,7 @@ export class GameApp {
             if (this.currentDirection) {
                 this.player.move(this.currentDirection.x, this.currentDirection.y, dt);
             }
-            this.player.update(dtMs);
+            this.player.update(dt);
 
             // Spawn enemies periodically
             this.spawnTimer += dtMs;

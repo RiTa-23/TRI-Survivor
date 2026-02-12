@@ -1,7 +1,7 @@
 import { Container, Graphics } from "pixi.js";
 import { HPBar } from "./HPBar";
 
-const DAMAGE_FLASH_DURATION = 100; // ms
+const DAMAGE_FLASH_DURATION = 0.1; // seconds
 
 export class Player extends Container {
     private graphics: Graphics;
