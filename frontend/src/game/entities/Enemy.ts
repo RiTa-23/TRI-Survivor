@@ -5,7 +5,7 @@ import { HPBar } from "./HPBar";
 export interface EnemyConfig {
     /** ヒットポイント */
     hp: number;
-    /** 移動速度 (px/frame) */
+    /** 移動速度 (px/sec) */
     speed: number;
     /** 接触時の攻撃力 */
     attackPower: number;
@@ -55,7 +55,7 @@ export abstract class Enemy extends Container {
     }
 
     /** プレイヤー座標に向かって移動 */
-    public moveToward(targetX: number, targetY: number): void {
+    public moveToward(targetX: number, targetY: number, dt: number): void {
         if (!this._alive) return;
 
         const dx = targetX - this.x;
@@ -63,8 +63,8 @@ export abstract class Enemy extends Container {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
-            this.x += (dx / distance) * this._speed;
-            this.y += (dy / distance) * this._speed;
+            this.x += (dx / distance) * this._speed * dt;
+            this.y += (dy / distance) * this._speed * dt;
         }
     }
 

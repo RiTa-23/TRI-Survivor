@@ -125,16 +125,17 @@ export class GameApp {
         this.app.start();
 
         this.app.ticker.add((ticker) => {
-            const dt = ticker.deltaMS;
+            const dtMs = ticker.deltaMS;
+            const dt = dtMs / 1000; // seconds
 
             // Player movement & animation update
             if (this.currentDirection) {
-                this.player.move(this.currentDirection.x, this.currentDirection.y);
+                this.player.move(this.currentDirection.x, this.currentDirection.y, dt);
             }
-            this.player.update(dt);
+            this.player.update(dtMs);
 
             // Spawn enemies periodically
-            this.spawnTimer += dt;
+            this.spawnTimer += dtMs;
             if (this.spawnTimer >= SPAWN_INTERVAL_MS && this.enemies.length < MAX_ENEMIES) {
                 this.spawnTimer = 0;
                 this.spawnEnemy();
@@ -144,14 +145,14 @@ export class GameApp {
             this.updateEnemies(dt);
 
             // Auto-attack: shoot at nearest enemy
-            this.attackTimer += dt;
+            this.attackTimer += dtMs;
             if (this.attackTimer >= this.player.attackInterval) {
                 this.attackTimer = 0;
                 this.shootNearestEnemy();
             }
 
             // Update bullets
-            this.updateBullets();
+            this.updateBullets(dt);
 
             // Camera follow: offset world so player is always at screen center
             const cx = this.app.screen.width / 2;
@@ -205,11 +206,11 @@ export class GameApp {
             }
 
             // Move toward player
-            enemy.moveToward(this.player.x, this.player.y);
+            enemy.moveToward(this.player.x, this.player.y, dt);
 
             // Continuous contact damage (per-second rate scaled by dt)
             if (enemy.isCollidingWith(this.player.x, this.player.y, this.player.radius)) {
-                const damageThisFrame = enemy.attackPower * (dt / 1000);
+                const damageThisFrame = enemy.attackPower * dt;
                 this.player.takeDamage(damageThisFrame);
             }
         }
@@ -247,10 +248,10 @@ export class GameApp {
     }
 
     /** Update bullets: move, check collisions, remove dead */
-    private updateBullets(): void {
+    private updateBullets(dt: number): void {
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const bullet = this.bullets[i];
-            bullet.update();
+            bullet.update(dt);
 
             if (!bullet.alive) {
                 this.world.removeChild(bullet);

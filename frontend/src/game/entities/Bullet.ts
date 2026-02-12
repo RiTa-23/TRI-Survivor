@@ -11,8 +11,9 @@ const BULLET_COLOR = 0xf1c40f;
  */
 export class Bullet extends Container {
     private graphics: Graphics;
-    private vx: number;
-    private vy: number;
+    private dirX: number;
+    private dirY: number;
+    private _speed: number;
     private _damage: number;
     private _alive: boolean = true;
     private distanceTraveled: number = 0;
@@ -27,27 +28,28 @@ export class Bullet extends Container {
         targetX: number,
         targetY: number,
         damage: number,
-        speed: number = 8,
+        speed: number = 480,
         maxDistance: number = 600
     ) {
         super();
 
         this._damage = damage;
+        this._speed = speed;
         this.maxDistance = maxDistance;
         this.x = startX;
         this.y = startY;
 
-        // Calculate direction toward target
+        // Calculate direction toward target (unit vector)
         const dx = targetX - startX;
         const dy = targetY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
 
         if (length > 0) {
-            this.vx = (dx / length) * speed;
-            this.vy = (dy / length) * speed;
+            this.dirX = dx / length;
+            this.dirY = dy / length;
         } else {
-            this.vx = 0;
-            this.vy = -speed;
+            this.dirX = 0;
+            this.dirY = -1;
         }
 
         // Draw bullet
@@ -57,13 +59,14 @@ export class Bullet extends Container {
         this.addChild(this.graphics);
     }
 
-    /** 毎フレームの更新 */
-    public update(): void {
+    /** 毎フレームの更新 (dt = seconds) */
+    public update(dt: number): void {
         if (!this._alive) return;
 
-        this.x += this.vx;
-        this.y += this.vy;
-        this.distanceTraveled += Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        const move = this._speed * dt;
+        this.x += this.dirX * move;
+        this.y += this.dirY * move;
+        this.distanceTraveled += move;
 
         // Despawn if traveled too far
         if (this.distanceTraveled >= this.maxDistance) {

@@ -26,7 +26,7 @@ export class Player extends Container {
         // Default stats
         this._maxHp = 100;
         this._hp = this._maxHp;
-        this._speed = 3;
+        this._speed = 180; // px/sec
         this._attackPower = 1;
         this._attackInterval = 500; // 0.5秒ごとに発射
 
@@ -46,9 +46,9 @@ export class Player extends Container {
         this.addChild(this.hpBar);
     }
 
-    public move(dx: number, dy: number): void {
-        this.x += dx * this._speed;
-        this.y += dy * this._speed;
+    public move(dx: number, dy: number, dt: number): void {
+        this.x += dx * this._speed * dt;
+        this.y += dy * this._speed * dt;
     }
 
     /** ダメージを受ける */
