@@ -1,18 +1,18 @@
-import { Application, Container, Graphics } from "pixi.js";
+import { Application, Container, Graphics, TilingSprite } from "pixi.js";
 import { Player } from "../entities/Player";
 import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
 
-/** Grid background settings */
+/** Grid tile size (one cell) */
 const GRID_SIZE = 80;
-const GRID_COLOR = 0x0d7fa3;
-const GRID_LINE_WIDTH = 1;
-const WORLD_SIZE = 4000;
+const GRID_LINE_COLOR = 0x0d7fa3;
+const GRID_BG_COLOR = 0x0e8aaa;
 
 export class GameApp {
     private app: Application;
     private player: Player;
     private world: Container;
+    private tilingBg!: TilingSprite;
     private handTrackingManager: HandTrackingManager;
     private currentDirection: Vector2D | null = null;
     private videoElement: HTMLVideoElement;
@@ -36,47 +36,40 @@ export class GameApp {
         }, onStatusChange, onSpecialMove);
     }
 
-    /** Create a grid-patterned background */
-    private createBackground(): Graphics {
-        const bg = new Graphics();
+    /** Create a single grid cell texture for infinite tiling */
+    private createGridTile(): TilingSprite {
+        const cell = new Graphics();
 
-        // Fill background
-        bg.rect(0, 0, WORLD_SIZE, WORLD_SIZE);
-        bg.fill({ color: 0x0e8aaa });
+        // Fill one grid cell
+        cell.rect(0, 0, GRID_SIZE, GRID_SIZE);
+        cell.fill({ color: GRID_BG_COLOR });
 
-        // Draw grid lines
-        bg.setStrokeStyle({ width: GRID_LINE_WIDTH, color: GRID_COLOR });
+        // Draw right and bottom edges (left and top are shared with neighbor)
+        cell.setStrokeStyle({ width: 1, color: GRID_LINE_COLOR });
+        cell.moveTo(GRID_SIZE, 0);
+        cell.lineTo(GRID_SIZE, GRID_SIZE);
+        cell.moveTo(0, GRID_SIZE);
+        cell.lineTo(GRID_SIZE, GRID_SIZE);
+        cell.stroke();
 
-        for (let x = 0; x <= WORLD_SIZE; x += GRID_SIZE) {
-            bg.moveTo(x, 0);
-            bg.lineTo(x, WORLD_SIZE);
-        }
-        for (let y = 0; y <= WORLD_SIZE; y += GRID_SIZE) {
-            bg.moveTo(0, y);
-            bg.lineTo(WORLD_SIZE, y);
-        }
-        bg.stroke();
+        // Generate a repeatable texture from the cell
+        const texture = this.app.renderer.generateTexture(cell);
+        cell.destroy();
 
-        // Draw center crosshair markers for orientation
-        const cx = WORLD_SIZE / 2;
-        const cy = WORLD_SIZE / 2;
-        bg.setStrokeStyle({ width: 2, color: 0x40c0e0 });
-        bg.circle(cx, cy, 40);
-        bg.stroke();
-        bg.moveTo(cx - 60, cy);
-        bg.lineTo(cx + 60, cy);
-        bg.moveTo(cx, cy - 60);
-        bg.lineTo(cx, cy + 60);
-        bg.stroke();
+        const tiling = new TilingSprite({
+            texture,
+            width: this.app.screen.width,
+            height: this.app.screen.height,
+        });
 
-        return bg;
+        return tiling;
     }
 
     public async init(container: HTMLDivElement) {
         // Initialize PixiJS Application
         await this.app.init({
             resizeTo: window,
-            backgroundColor: 0x0a6e8a,
+            backgroundColor: GRID_BG_COLOR,
         });
 
         if (this.isDestroyed) {
@@ -88,13 +81,13 @@ export class GameApp {
             container.appendChild(this.app.canvas);
         }
 
-        // Setup world container with background
-        const background = this.createBackground();
-        this.world.addChild(background);
+        // Setup infinite tiling background (added to stage directly, not world)
+        this.tilingBg = this.createGridTile();
+        this.app.stage.addChild(this.tilingBg);
 
-        // Setup Player at world center
-        this.player.x = WORLD_SIZE / 2;
-        this.player.y = WORLD_SIZE / 2;
+        // Setup Player at origin (world coordinates)
+        this.player.x = 0;
+        this.player.y = 0;
         this.world.addChild(this.player);
 
         this.app.stage.addChild(this.world);
@@ -124,10 +117,18 @@ export class GameApp {
             }
 
             // Camera follow: offset world so player is always at screen center
-            const screenCenterX = this.app.screen.width / 2;
-            const screenCenterY = this.app.screen.height / 2;
-            this.world.x = screenCenterX - this.player.x;
-            this.world.y = screenCenterY - this.player.y;
+            const cx = this.app.screen.width / 2;
+            const cy = this.app.screen.height / 2;
+            this.world.x = cx - this.player.x;
+            this.world.y = cy - this.player.y;
+
+            // Scroll tiling background to match world offset
+            this.tilingBg.tilePosition.x = this.world.x;
+            this.tilingBg.tilePosition.y = this.world.y;
+
+            // Resize tiling sprite if window size changed
+            this.tilingBg.width = this.app.screen.width;
+            this.tilingBg.height = this.app.screen.height;
         });
     }
 
