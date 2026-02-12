@@ -13,8 +13,9 @@ const GRID_BG_COLOR = 0x0e8aaa;
 
 /** Enemy spawn settings */
 const SPAWN_INTERVAL_MS = 500;
-const SPAWN_DISTANCE = 1000;
+const SPAWN_DISTANCE = 1500;
 const MAX_ENEMIES = 100;
+const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 
 export class GameApp {
     private app: Application;
@@ -186,6 +187,16 @@ export class GameApp {
             const enemy = this.enemies[i];
 
             if (!enemy.alive) {
+                this.world.removeChild(enemy);
+                enemy.destroy();
+                this.enemies.splice(i, 1);
+                continue;
+            }
+
+            // Despawn enemies too far from player
+            const dx = enemy.x - this.player.x;
+            const dy = enemy.y - this.player.y;
+            if (dx * dx + dy * dy > DESPAWN_DISTANCE * DESPAWN_DISTANCE) {
                 this.world.removeChild(enemy);
                 enemy.destroy();
                 this.enemies.splice(i, 1);
