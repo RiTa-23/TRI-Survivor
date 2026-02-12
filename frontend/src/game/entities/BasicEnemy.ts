@@ -1,0 +1,19 @@
+import { Enemy } from "./Enemy";
+
+/**
+ * 基本的な敵
+ * 
+ * 低速でプレイヤーに向かって直進する。
+ * 最もシンプルな敵タイプで、他の敵の参考実装にもなる。
+ */
+export class BasicEnemy extends Enemy {
+    constructor() {
+        super({
+            hp: 3,
+            speed: 60, // px/sec
+            attackPower: 10,
+            color: 0x9b59b6,
+            radius: 12,
+        });
+    }
+}
