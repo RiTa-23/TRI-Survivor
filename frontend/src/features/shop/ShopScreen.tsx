@@ -2,6 +2,7 @@
 
 // 1. 必要な機能をインポートします
 import { useNavigate } from "react-router-dom"; // 画面遷移に使う
+import { LockKeyhole } from 'lucide-react';
 
 // 2. コンポーネント関数を定義します (ファイル名と同じにするのが基本)
 export default function ShopScreen() {
@@ -15,13 +16,19 @@ export default function ShopScreen() {
 
             {/* タイトル */}
             <h1 className="text-4xl font-bold mb-6 text-yellow-400">
-                Welcome to the Shop
+            Shop
             </h1>
-
-            {/* 説明文 */}
-            <p className="text-slate-300 mb-8">
-                ここではアイテムを購入できます。
-            </p>
+            
+            <div className="flex items-center gap-4">
+                {/* 解放ボタン */}
+                <button
+                    // TODO: あとで解放の処理を追加します
+                    onClick={() => alert('解放しました！')}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg transition-colors font-bold flex items-center gap-2"
+                >
+                    <LockKeyhole size={20} />
+                    解放
+                </button>
 
             {/* ホームに戻るボタン */}
             <button
@@ -32,6 +39,7 @@ export default function ShopScreen() {
             >
                 ホームに戻る
             </button>
+            </div>
         </div>
     );
 }
