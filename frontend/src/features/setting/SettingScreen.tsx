@@ -15,14 +15,9 @@ export default function SettingScreen() {
 
             {/* タイトル */}
             <h1 className="text-4xl font-bold mb-6 text-yellow-400">
-                Welcome to the Setting
+            Setting
             </h1>
-
-            {/* 説明文 */}
-            <p className="text-slate-300 mb-8">
-                ここでは設定を変更できます。
-            </p>
-
+            
             {/* スライダー 1 */}
             <div className="flex items-center w-full max-w-xs mx-auto mb-8 gap-4">
                 <span className="text-slate-200 text-sm font-medium whitespace-nowrap">bgm_volume</span>
