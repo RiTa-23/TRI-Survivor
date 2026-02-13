@@ -14,6 +14,11 @@ export class BasicEnemy extends Enemy {
             attackPower: 10,
             color: 0x9b59b6,
             radius: 12,
+            dropTable: {
+                exp: { min: 1, max: 3, chance: 1.0 },
+                coinChance: 0.3,
+                healChance: 0.05,
+            },
         });
     }
 }

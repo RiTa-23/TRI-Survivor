@@ -1,5 +1,19 @@
 import { Container, Graphics } from "pixi.js";
 import { HPBar } from "./HPBar";
+import { Item } from "./Item";
+import { ExperienceOrb } from "./ExperienceOrb";
+import { CoinItem } from "./CoinItem";
+import { HealItem } from "./HealItem";
+
+/** ドロップテーブル設定 */
+export interface DropTable {
+    /** 経験値 (個数の最小・最大) */
+    exp: { min: number; max: number; chance: number };
+    /** コイン (ドロップ率 0~1) */
+    coinChance: number;
+    /** 回復アイテム (ドロップ率 0~1) */
+    healChance: number;
+}
 
 /** 敵の初期化パラメータ */
 export interface EnemyConfig {
@@ -13,6 +27,8 @@ export interface EnemyConfig {
     color: number;
     /** 当たり判定の半径 */
     radius: number;
+    /** ドロップテーブル */
+    dropTable: DropTable;
 }
 
 /**
@@ -29,6 +45,7 @@ export abstract class Enemy extends Container {
     protected _speed: number;
     protected _attackPower: number;
     protected _radius: number;
+    protected _dropTable: DropTable;
     protected _alive: boolean = true;
 
     constructor(config: EnemyConfig) {
@@ -38,6 +55,7 @@ export abstract class Enemy extends Container {
         this._speed = config.speed;
         this._attackPower = config.attackPower;
         this._radius = config.radius;
+        this._dropTable = config.dropTable;
 
         this.graphics = new Graphics();
         this.draw(config.color);
@@ -84,6 +102,44 @@ export abstract class Enemy extends Container {
             this._alive = false;
             this.visible = false;
         }
+    }
+
+    /** 死亡時のドロップアイテムを生成 */
+    public dropItems(): Item[] {
+        const items: Item[] = [];
+        const spread = 20; // 散らばり範囲
+
+        // Helper to randomize position slightly
+        const randomizePos = (item: Item) => {
+            item.x = this.x + (Math.random() - 0.5) * spread * 2;
+            item.y = this.y + (Math.random() - 0.5) * spread * 2;
+        };
+
+        // 経験値
+        if (Math.random() < this._dropTable.exp.chance) {
+            const count = this._dropTable.exp.min + Math.floor(Math.random() * (this._dropTable.exp.max - this._dropTable.exp.min + 1));
+            for (let i = 0; i < count; i++) {
+                const orb = new ExperienceOrb();
+                randomizePos(orb);
+                items.push(orb);
+            }
+        }
+
+        // コイン
+        if (Math.random() < this._dropTable.coinChance) {
+            const coin = new CoinItem();
+            randomizePos(coin);
+            items.push(coin);
+        }
+
+        // 回復
+        if (Math.random() < this._dropTable.healChance) {
+            const heal = new HealItem();
+            randomizePos(heal);
+            items.push(heal);
+        }
+
+        return items;
     }
 
     // --- Getters ---
