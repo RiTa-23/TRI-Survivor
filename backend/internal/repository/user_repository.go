@@ -26,6 +26,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *entity.User) erro
 		Set("name = EXCLUDED.name").
 		Set("email = EXCLUDED.email").
 		Set("avatar_url = EXCLUDED.avatar_url").
+		// coin カラムは、不慮の更新（リセット）を防ぐため DO UPDATE の対象外とする
 		Returning("*"). // 永続化されたデータを返す（CreatedAtなど）
 		Exec(ctx)
 	return err
