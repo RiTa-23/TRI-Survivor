@@ -120,6 +120,7 @@ export class GameApp {
             "/assets/images/experience.png",
             "/assets/images/coin.png",
             "/assets/images/heal.png",
+            "/assets/images/damage.png",
         ]);
 
         // Setup infinite tiling background (added to stage directly, not world)
@@ -249,6 +250,9 @@ export class GameApp {
 
             // Move toward player
             enemy.moveToward(this.player.x, this.player.y, dt);
+
+            // Update enemy effects (damage popup, etc.)
+            enemy.update(dt, this.player.x, this.player.y);
 
             // Continuous contact damage (per-second rate scaled by dt)
             if (enemy.isCollidingWith(this.player.x, this.player.y, this.player.radius)) {
