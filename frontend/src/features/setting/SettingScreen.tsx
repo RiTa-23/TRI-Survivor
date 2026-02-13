@@ -1,5 +1,7 @@
 // 1. 必要な機能をインポートします
 import { useNavigate } from "react-router-dom"; // 画面遷移に使う
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 
 // 2. コンポーネント関数を定義します (ファイル名と同じにするのが基本)
 export default function SettingScreen() {
@@ -20,6 +22,43 @@ export default function SettingScreen() {
             <p className="text-slate-300 mb-8">
                 ここでは設定を変更できます。
             </p>
+
+            {/* スライダー 1 */}
+            <div className="flex items-center w-full max-w-xs mx-auto mb-8 gap-4">
+                <span className="text-slate-200 text-sm font-medium whitespace-nowrap">bgm_volume</span>
+                <Slider
+                    defaultValue={[75]}
+                    max={100}
+                    step={1}
+                    inverted
+                    className="w-full"
+                />
+            </div>
+
+            {/* スライダー 2 */}
+            <div className="flex items-center w-full max-w-xs mx-auto mb-8 gap-4">
+                <span className="text-slate-200 text-sm font-medium whitespace-nowrap">SE_volume</span>
+                <Slider
+                    defaultValue={[50]}
+                    max={100}
+                    step={1}
+                    inverted
+                    className="w-full"
+                />
+            </div>
+
+            {/* ID Input */}
+            <div className="w-full max-w-xs mb-8 text-left">
+                <div className="grid w-full items-center gap-1.5">
+                    <label htmlFor="input-id" className="text-sm font-medium leading-none text-slate-200">
+                        ID
+                    </label>
+                    <Input id="input-id" type="text" placeholder="Enter your ID" />
+                    <p className="text-sm text-slate-400">
+                        Please enter your ID.
+                    </p>
+                </div>
+            </div>
 
             {/* ホームに戻るボタン */}
             <button
