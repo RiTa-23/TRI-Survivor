@@ -131,27 +131,47 @@ export abstract class Enemy extends Container {
     }
 
     /** ダメージを受ける */
-    public takeDamage(amount: number): void {
+    public takeDamage(amount: number, sourceX?: number, sourceY?: number): void {
         this._hp -= amount;
         this.hpBar.update(this._hp / this._maxHp);
 
         // Show damage effect
-        this.showDamageEffect();
+        this.showDamageEffect(sourceX, sourceY);
 
         if (this._hp <= 0) {
             this._alive = false;
         }
     }
 
-    private showDamageEffect(): void {
+    private showDamageEffect(sourceX?: number, sourceY?: number): void {
         const effect = Sprite.from("/assets/images/damage.png") as DamageEffect;
         effect.anchor.set(0.5);
         effect.scale.set(0.08); // Adjust scale if needed
-        effect.x = 0;
-        // 頭上に表示
-        effect.y = -40;
+
+        if (sourceX !== undefined && sourceY !== undefined) {
+            // 攻撃された方向（敵の中心から攻撃元への方向）に表示
+            // ローカル座標系なので、(0,0)が敵の中心
+            // world座標での差分を計算
+            const dx = sourceX - this.x;
+            const dy = sourceY - this.y;
+            const angle = Math.atan2(dy, dx);
+
+            // 半径分だけずらした位置に表示
+            const distance = this._radius;
+            effect.x = Math.cos(angle) * distance;
+            effect.y = Math.sin(angle) * distance;
+
+            // エフェクトを攻撃方向に向ける（画像の向きに合わせて調整が必要かも）
+            // damage.pngが上向きなら + 90度など
+            effect.rotation = angle + Math.PI / 2;
+        } else {
+            // 指定がなければ頭上に表示 (デフォルト)
+            effect.x = 0;
+            effect.y = -(this._radius + 20);
+        }
+
         effect.life = 0.5; // 0.5 seconds duration
-        effect.velocityY = -30; // Move up
+        effect.velocityY = 0; // その場に留まるか、少しノックバック方向に動く? とりあえず固定
 
         this.damageEffects.push(effect);
         this.addChild(effect);

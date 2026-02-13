@@ -310,7 +310,7 @@ export class GameApp {
             for (const enemy of this.enemies) {
                 if (!enemy.alive) continue;
                 if (bullet.isCollidingWith(enemy.x, enemy.y, enemy.radius)) {
-                    enemy.takeDamage(bullet.damage);
+                    enemy.takeDamage(bullet.damage, bullet.x, bullet.y);
                     bullet.kill();
                     this.world.removeChild(bullet);
                     bullet.destroy();
