@@ -1,10 +1,12 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import type { Player } from "./Player";
 
 /** アイテムの初期化パラメータ */
 export interface ItemConfig {
-    /** 描画色 */
+    /** 描画色 (Spriteの場合はTintとして使用可能) */
     color: number;
+    /** テクスチャパス */
+    textureKey: string;
     /** 当たり判定の半径 */
     radius: number;
 }
@@ -17,7 +19,7 @@ export interface ItemConfig {
  * 接触すると回収されて効果を発動する。
  */
 export abstract class Item extends Container {
-    protected graphics: Graphics;
+    protected sprite: Sprite;
     protected _radius: number;
     protected _collected: boolean = false;
 
@@ -28,16 +30,19 @@ export abstract class Item extends Container {
         super();
         this._radius = config.radius;
 
-        this.graphics = new Graphics();
-        this.draw(config.color);
-        this.addChild(this.graphics);
+        this.sprite = Sprite.from(config.textureKey);
+        this.sprite.anchor.set(0.5);
+
+        // アスペクト比を維持してサイズ調整
+        const scale = (this._radius * 2) / Math.max(this.sprite.texture.width, this.sprite.texture.height);
+        this.sprite.scale.set(scale);
+
+        // this.sprite.tint = config.color; // Tint can be applied if needed
+
+        this.addChild(this.sprite);
     }
 
-    /** アイテムの見た目を描画（サブクラスでオーバーライド可能） */
-    protected draw(color: number): void {
-        this.graphics.circle(0, 0, this._radius);
-        this.graphics.fill({ color });
-    }
+
 
     /** 毎フレームの更新 */
     public update(dt: number, player: Player): void {
@@ -46,7 +51,7 @@ export abstract class Item extends Container {
         this.age += dt;
 
         // 浮遊アニメーション（上下に揺れる）
-        this.graphics.y = Math.sin(this.age * 3) * 3;
+        this.sprite.y = Math.sin(this.age * 3) * 3;
 
         // マグネット範囲内ならプレイヤーに吸い寄せる
         const dx = player.x - this.x;

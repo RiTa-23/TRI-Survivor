@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, TilingSprite } from "pixi.js";
+import { Application, Container, Graphics, TilingSprite, Assets } from "pixi.js";
 import { Player } from "../entities/Player";
 import { Enemy } from "../entities/Enemy";
 import { BasicEnemy } from "../entities/BasicEnemy";
@@ -33,7 +33,7 @@ export interface PlayerStats {
 
 export class GameApp {
     private app: Application;
-    private player: Player;
+    private player!: Player; // Initialized in init() after assets load
     private world: Container;
     private tilingBg!: TilingSprite;
     private enemies: Enemy[] = [];
@@ -56,7 +56,7 @@ export class GameApp {
         onStatsUpdate?: (stats: PlayerStats) => void
     ) {
         this.app = new Application();
-        this.player = new Player();
+        // this.player will be initialized in init()
         this.world = new Container();
         this.videoElement = videoElement;
         this.canvasElement = canvasElement;
@@ -113,11 +113,21 @@ export class GameApp {
             container.appendChild(this.app.canvas);
         }
 
+        // Preload Assets
+        await Assets.load([
+            "/assets/images/player.png",
+            "/assets/images/basic_enemy.png",
+            "/assets/images/experience.png",
+            "/assets/images/coin.png",
+            "/assets/images/heal.png",
+        ]);
+
         // Setup infinite tiling background (added to stage directly, not world)
         this.tilingBg = this.createGridTile();
         this.app.stage.addChild(this.tilingBg);
 
-        // Setup Player at origin (world coordinates)
+        // Initialize Player AFTER assets are loaded
+        this.player = new Player();
         this.player.x = 0;
         this.player.y = 0;
         this.world.addChild(this.player);

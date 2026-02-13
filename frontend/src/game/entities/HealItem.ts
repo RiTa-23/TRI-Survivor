@@ -1,3 +1,4 @@
+
 import { Item } from "./Item";
 import type { Player } from "./Player";
 
@@ -19,27 +20,9 @@ export class HealItem extends Item {
         super({
             color: HEAL_COLOR,
             radius: HEAL_RADIUS,
+            textureKey: "/assets/images/heal.png",
         });
         this._healPercent = healPercent;
-    }
-
-    /** 十字マークとして描画 */
-    protected override draw(color: number): void {
-        const r = this._radius;
-
-        // 背景の円
-        this.graphics.circle(0, 0, r);
-        this.graphics.fill({ color, alpha: 0.4 });
-
-        // 十字マーク（白）
-        const thickness = r * 0.4;
-        const length = r * 0.7;
-        // 横棒
-        this.graphics.rect(-length, -thickness / 2, length * 2, thickness);
-        this.graphics.fill({ color: 0xffffff });
-        // 縦棒
-        this.graphics.rect(-thickness / 2, -length, thickness, length * 2);
-        this.graphics.fill({ color: 0xffffff });
     }
 
     protected onCollect(player: Player): void {

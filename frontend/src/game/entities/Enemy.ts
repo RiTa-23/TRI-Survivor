@@ -1,4 +1,4 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import { HPBar } from "./HPBar";
 import { Item } from "./Item";
 import { ExperienceOrb } from "./ExperienceOrb";
@@ -25,6 +25,8 @@ export interface EnemyConfig {
     attackPower: number;
     /** 描画色 */
     color: number;
+    /** テクスチャのパス */
+    textureKey: string;
     /** 当たり判定の半径 */
     radius: number;
     /** ドロップテーブル */
@@ -38,7 +40,7 @@ export interface EnemyConfig {
  * プレイヤーに向かって移動し、接触するとダメージを与える。
  */
 export abstract class Enemy extends Container {
-    protected graphics: Graphics;
+    protected sprite: Sprite;
     protected hpBar: HPBar;
     protected _hp: number;
     protected _maxHp: number;
@@ -57,20 +59,26 @@ export abstract class Enemy extends Container {
         this._radius = config.radius;
         this._dropTable = config.dropTable;
 
-        this.graphics = new Graphics();
-        this.draw(config.color);
-        this.addChild(this.graphics);
+        this.sprite = Sprite.from(config.textureKey);
+        this.sprite.anchor.set(0.5);
+
+        // アスペクト比を維持してサイズ調整
+        // 半径*2 に収まるようにスケールを設定
+        const scale = (this._radius * 2) / Math.max(this.sprite.texture.width, this.sprite.texture.height);
+        this.sprite.scale.set(scale);
+
+        // this.sprite.tint = config.color; // If you want to tint the image
+
+        this.addChild(this.sprite);
 
         // HP Bar (above enemy)
-        this.hpBar = new HPBar({ width: config.radius * 2.5, height: 3, offsetY: -(config.radius + 8) });
+        // HP Bar (above enemy)
+        // サイズを固定値にする (幅40px, 高さ4px)
+        this.hpBar = new HPBar({ width: 40, height: 4, offsetY: -(config.radius + 10) });
         this.addChild(this.hpBar);
     }
 
-    /** 敵の見た目を描画（サブクラスでオーバーライド可能） */
-    protected draw(color: number): void {
-        this.graphics.circle(0, 0, this._radius);
-        this.graphics.fill({ color });
-    }
+
 
     /** プレイヤー座標に向かって移動 */
     public moveToward(targetX: number, targetY: number, dt: number): void {
