@@ -166,52 +166,8 @@ h1 {
 }
 
 @layer utilities {
-  .animate-nebula {
-    background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .animate-nebula::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 30% 30%, rgb(59 130 246 / 5%) 0%, transparent 40%),
-                radial-gradient(circle at 70% 70%, rgb(139 92 246 / 5%) 0%, transparent 40%);
-    animation: nebula-rotate 20s linear infinite;
-  }
-
-  @keyframes nebula-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .aura-effect {
-    position: absolute;
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 200px;
-    height: 40px;
-    background: radial-gradient(ellipse at center, rgb(59 130 246 / 30%) 0%, transparent 70%);
-    filter: blur(10px);
-    animation: aura-pulse 4s ease-in-out infinite;
-  }
-
-  @keyframes aura-pulse {
-    0%, 100% { opacity: 40%; transform: translateX(-50%) scale(1); }
-    50% { opacity: 80%; transform: translateX(-50%) scale(1.2); }
-  }
-
   .glow-red {
     box-shadow: 0 0 15px rgb(220 38 38 / 50%);
-  }
-
-  .glow-blue {
-    box-shadow: 0 0 15px rgb(59 130 246 / 50%);
   }
 
   .glass-morphism {
