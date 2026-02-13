@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { GameApp } from "@/game/core/GameApp";
+import { GameApp, type PlayerStats } from "@/game/core/GameApp";
 import { Button } from "@/components/ui/button";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Coins, Zap, Heart } from "lucide-react";
 
 export default function GameScreen() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -12,9 +12,11 @@ export default function GameScreen() {
 
     const [status, setStatus] = useState<string>("Initializing...");
     const [specialMove, setSpecialMove] = useState<string | null>(null);
+    const [stats, setStats] = useState<PlayerStats>({ coins: 0, exp: 0, hp: 100, maxHp: 100 });
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastStatusRef = useRef<string>("");
     const lastUpdateTsRef = useRef<number>(0);
+    const lastStatsRef = useRef<string>("");
 
     useEffect(() => {
         if (!containerRef.current || !videoRef.current || !canvasRef.current) return;
@@ -61,6 +63,14 @@ export default function GameScreen() {
                         setSpecialMove(null);
                         timerRef.current = null;
                     }, 1000);
+                },
+                (s: PlayerStats) => {
+                    // Throttle stats update
+                    const key = `${s.coins},${s.exp},${Math.round(s.hp)}`;
+                    if (key !== lastStatsRef.current) {
+                        lastStatsRef.current = key;
+                        setStats(s);
+                    }
                 }
             );
 
@@ -148,13 +158,31 @@ export default function GameScreen() {
                 />
             </div>
 
-            {/* UI Overlay */}
-            <div className="absolute top-4 left-4 text-white">
+            {/* UI Overlay (top-left) */}
+            <div className="absolute top-4 left-4 flex flex-col gap-2">
                 <Button asChild variant="secondary" className="bg-slate-800/80 hover:bg-slate-700 text-white border-none">
                     <Link to="/home">
                         Back to Home
                     </Link>
                 </Button>
+
+                {/* Stats HUD */}
+                <div className="bg-black/70 text-white px-4 py-3 rounded-xl flex flex-col gap-1.5 text-sm font-mono pointer-events-none select-none">
+                    <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-red-400" />
+                        <span className="text-red-300">
+                            {Math.ceil(stats.hp)} / {stats.maxHp}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Coins className="w-4 h-4 text-yellow-400" />
+                        <span className="text-yellow-300">{stats.coins}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-green-400" />
+                        <span className="text-green-300">{stats.exp}</span>
+                    </div>
+                </div>
             </div>
         </div>
     );

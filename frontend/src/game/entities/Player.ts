@@ -16,6 +16,15 @@ export class Player extends Container {
     /** 攻撃間隔 (ms) — 値が小さいほど速く撃つ */
     private _attackInterval: number;
 
+    // --- Resources ---
+    private _coins: number = 0;
+    private _exp: number = 0;
+
+    /** マグネット吸い寄せ半径 */
+    private _magnetRadius: number = 100;
+    /** マグネット移動速度 */
+    private _magnetSpeed: number = 300;
+
     /** 当たり判定の半径 */
     public readonly radius: number = 15;
 
@@ -76,11 +85,27 @@ export class Player extends Container {
         }
     }
 
+    // --- Resource methods ---
+
+    /** コインを追加 */
+    public addCoins(amount: number): void {
+        this._coins += amount;
+    }
+
+    /** 経験値を追加 */
+    public addExp(amount: number): void {
+        this._exp += amount;
+    }
+
     // --- Getters ---
     public get hp(): number { return this._hp; }
     public get maxHp(): number { return this._maxHp; }
     public get speed(): number { return this._speed; }
     public get attackPower(): number { return this._attackPower; }
     public get attackInterval(): number { return this._attackInterval; }
+    public get coins(): number { return this._coins; }
+    public get exp(): number { return this._exp; }
+    public get magnetRadius(): number { return this._magnetRadius; }
+    public get magnetSpeed(): number { return this._magnetSpeed; }
     public get alive(): boolean { return this._hp > 0; }
 }
