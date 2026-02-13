@@ -21,9 +21,9 @@ export default function HomeScreen() {
     };
 
     return (
-        <div className="relative min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-            {/* Background Effect (Matching LandingPage) */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-slate-900 to-slate-950 z-0" />
+        <div className="relative min-h-screen w-full bg-[#020617] text-white flex flex-col items-center justify-center p-4 overflow-hidden">
+            {/* Background Effect (Matching LandingPage style but more robust) */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-from),_var(--tw-gradient-to))] from-slate-900 to-[#020617] z-0" />
             
             {/* --- HUD Headerパーツ (左上: プロフィール) --- */}
             <div className="absolute top-6 left-6 flex items-center gap-3 glass-morphism px-4 py-2 rounded-xl z-20">
