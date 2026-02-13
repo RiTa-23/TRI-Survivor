@@ -29,6 +29,33 @@ export default function ShopScreen() {
                     <LockKeyhole size={20} />
                     解放
                 </button>
+                 {/* 解放ボタン */}
+                <button
+                    // TODO: あとで解放の処理を追加します
+                    onClick={() => alert('解放しました！')}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg transition-colors font-bold flex items-center gap-2"
+                >
+                    <LockKeyhole size={20} />
+                    解放
+                </button>
+                 {/* 解放ボタン */}
+                <button
+                    // TODO: あとで解放の処理を追加します
+                    onClick={() => alert('解放しました！')}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg transition-colors font-bold flex items-center gap-2"
+                >
+                    <LockKeyhole size={20} />
+                    解放
+                </button>
+                 {/* 解放ボタン */}
+                <button
+                    // TODO: あとで解放の処理を追加します
+                    onClick={() => alert('解放しました！')}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg transition-colors font-bold flex items-center gap-2"
+                >
+                    <LockKeyhole size={20} />
+                    解放
+                </button>
 
             {/* ホームに戻るボタン */}
             <button
