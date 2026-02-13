@@ -3,6 +3,7 @@ import { Player } from "../entities/Player";
 import { Enemy } from "../entities/Enemy";
 import { BasicEnemy } from "../entities/BasicEnemy";
 import { Bullet } from "../entities/Bullet";
+import { Item } from "../entities/Item";
 import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
 
@@ -17,6 +18,19 @@ const SPAWN_DISTANCE = 1500;
 const MAX_ENEMIES = 30;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 
+/** Item drop settings */
+const ITEM_DESPAWN_DISTANCE = 2000;
+
+/** Player stats callback */
+export interface PlayerStats {
+    coins: number;
+    exp: number;
+    hp: number;
+    maxHp: number;
+    level: number;
+    nextLevelExp: number;
+}
+
 export class GameApp {
     private app: Application;
     private player: Player;
@@ -24,6 +38,7 @@ export class GameApp {
     private tilingBg!: TilingSprite;
     private enemies: Enemy[] = [];
     private bullets: Bullet[] = [];
+    private items: Item[] = [];
     private spawnTimer: number = 0;
     private attackTimer: number = 0;
     private handTrackingManager: HandTrackingManager;
@@ -31,18 +46,22 @@ export class GameApp {
     private videoElement: HTMLVideoElement;
     private canvasElement: HTMLCanvasElement;
     private isDestroyed = false;
+    private onStatsUpdate?: (stats: PlayerStats) => void;
 
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
         onStatusChange?: (status: string) => void,
-        onSpecialMove?: (moveName: string) => void
+        onSpecialMove?: (moveName: string) => void,
+        onStatsUpdate?: (stats: PlayerStats) => void
     ) {
         this.app = new Application();
         this.player = new Player();
         this.world = new Container();
         this.videoElement = videoElement;
         this.canvasElement = canvasElement;
+
+        this.onStatsUpdate = onStatsUpdate;
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
@@ -154,6 +173,12 @@ export class GameApp {
             // Update bullets
             this.updateBullets(dt);
 
+            // Update items (magnet & collect)
+            this.updateItems(dt);
+
+            // Notify UI of player stats
+            this.emitStats();
+
             // Camera follow: offset world so player is always at screen center
             const cx = this.app.screen.width / 2;
             const cy = this.app.screen.height / 2;
@@ -189,6 +214,13 @@ export class GameApp {
             const enemy = this.enemies[i];
 
             if (!enemy.alive) {
+                // Drop items from enemy
+                const droppedItems = enemy.dropItems();
+                droppedItems.forEach(item => {
+                    this.items.push(item);
+                    this.world.addChild(item);
+                });
+
                 this.world.removeChild(enemy);
                 enemy.destroy();
                 this.enemies.splice(i, 1);
@@ -273,6 +305,52 @@ export class GameApp {
                 }
             }
         }
+    }
+
+    // ─── Item System ─────────────────────────────────────────────
+
+    /** アイテム更新ループ: マグネット移動 & 回収判定 */
+    private updateItems(dt: number): void {
+        for (let i = this.items.length - 1; i >= 0; i--) {
+            const item = this.items[i];
+
+            if (item.collected) {
+                this.world.removeChild(item);
+                item.destroy();
+                this.items.splice(i, 1);
+                continue;
+            }
+
+            // Despawn items too far from player
+            const dx = item.x - this.player.x;
+            const dy = item.y - this.player.y;
+            if (dx * dx + dy * dy > ITEM_DESPAWN_DISTANCE * ITEM_DESPAWN_DISTANCE) {
+                this.world.removeChild(item);
+                item.destroy();
+                this.items.splice(i, 1);
+                continue;
+            }
+
+            // Update (magnet movement)
+            item.update(dt, this.player);
+
+            // Collect on contact
+            if (item.isCollidingWith(this.player.x, this.player.y, this.player.radius)) {
+                item.collect(this.player);
+            }
+        }
+    }
+
+    /** プレイヤーステータスをUIに通知 */
+    private emitStats(): void {
+        this.onStatsUpdate?.({
+            coins: this.player.coins,
+            exp: this.player.exp,
+            hp: this.player.hp,
+            maxHp: this.player.maxHp,
+            level: this.player.level,
+            nextLevelExp: this.player.nextLevelExp,
+        });
     }
 
     /** PixiJS v8 destroy options (shared to avoid duplication) */
