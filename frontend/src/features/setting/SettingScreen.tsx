@@ -2,6 +2,11 @@
 import { useNavigate } from "react-router-dom"; // 画面遷移に使う
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from "@/components/ui/avatar";
 
 // 2. コンポーネント関数を定義します (ファイル名と同じにするのが基本)
 export default function SettingScreen() {
@@ -42,16 +47,32 @@ export default function SettingScreen() {
                 />
             </div>
 
-            {/* ID Input */}
-            <div className="w-full max-w-xs mb-8 text-left">
-                <div className="grid w-full items-center gap-1.5">
-                    <label htmlFor="input-id" className="text-sm font-medium leading-none text-slate-200">
-                        ID
-                    </label>
-                    <Input id="input-id" type="text" placeholder="Enter your ID" />
-                    <p className="text-sm text-slate-400">
-                        Please enter your ID.
-                    </p>
+            {/* Avatar & ID Input Area */}
+            <div className="flex items-center gap-8 mb-8">
+                {/* Avatars */}
+                <div className="flex flex-row flex-wrap items-center gap-6 md:gap-12">
+                    <Avatar>
+                        <AvatarImage
+                            src="https://github.com/shadcn.png"
+                            alt="@shadcn"
+                            className="grayscale"
+                        />
+                        <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    
+                </div>
+
+                {/* ID Input */}
+                <div className="w-full max-w-xs text-left">
+                    <div className="grid w-full items-center gap-1.5">
+                        <label htmlFor="input-id" className="text-sm font-medium leading-none text-slate-200">
+                            ID
+                        </label>
+                        <Input id="input-id" type="text" placeholder="Enter your ID" />
+                        <p className="text-sm text-slate-400">
+                            Please enter your ID.
+                        </p>
+                    </div>
                 </div>
             </div>
 
