@@ -25,6 +25,10 @@ export class Player extends Container {
     /** マグネット移動速度 */
     private _magnetSpeed: number = 300;
 
+    // --- Level ---
+    private _level: number = 1;
+    private _nextLevelExp: number;
+
     /** 当たり判定の半径 */
     public readonly radius: number = 15;
 
@@ -37,6 +41,9 @@ export class Player extends Container {
         this._speed = 180; // px/sec
         this._attackPower = 1;
         this._attackInterval = 500; // 0.5秒ごとに発射
+
+        // Initial Level Exp
+        this._nextLevelExp = this.calculateNextLevelExp();
 
         // Create Player (Circle)
         this.graphics = new Graphics();
@@ -95,6 +102,28 @@ export class Player extends Container {
     /** 経験値を追加 */
     public addExp(amount: number): void {
         this._exp += amount;
+
+        // Check for Level Up
+        while (this._exp >= this._nextLevelExp) {
+            this._exp -= this._nextLevelExp;
+            this.levelUp();
+        }
+    }
+
+    private levelUp(): void {
+        this._level++;
+        this._nextLevelExp = this.calculateNextLevelExp();
+
+        // Full heal on level up
+        this._hp = this._maxHp;
+        this.hpBar.update(1);
+
+        console.log(`Level Up! Lv.${this._level} (Next: ${this._nextLevelExp})`);
+    }
+
+    private calculateNextLevelExp(): number {
+        // Linear increase: 5, 10, 15...
+        return Math.floor(5 + (this._level) * 5);
     }
 
     // --- Getters ---
@@ -105,6 +134,8 @@ export class Player extends Container {
     public get attackInterval(): number { return this._attackInterval; }
     public get coins(): number { return this._coins; }
     public get exp(): number { return this._exp; }
+    public get level(): number { return this._level; }
+    public get nextLevelExp(): number { return this._nextLevelExp; }
     public get magnetRadius(): number { return this._magnetRadius; }
     public get magnetSpeed(): number { return this._magnetSpeed; }
     public get alive(): boolean { return this._hp > 0; }

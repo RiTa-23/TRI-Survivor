@@ -27,6 +27,8 @@ export interface PlayerStats {
     exp: number;
     hp: number;
     maxHp: number;
+    level: number;
+    nextLevelExp: number;
 }
 
 export class GameApp {
@@ -346,6 +348,8 @@ export class GameApp {
             exp: this.player.exp,
             hp: this.player.hp,
             maxHp: this.player.maxHp,
+            level: this.player.level,
+            nextLevelExp: this.player.nextLevelExp,
         });
     }
 

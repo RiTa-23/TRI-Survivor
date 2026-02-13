@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { GameApp, type PlayerStats } from "@/game/core/GameApp";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Coins, Zap, Heart } from "lucide-react";
+import { ArrowUp, Coins, Heart } from "lucide-react";
 
 export default function GameScreen() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -12,7 +12,14 @@ export default function GameScreen() {
 
     const [status, setStatus] = useState<string>("Initializing...");
     const [specialMove, setSpecialMove] = useState<string | null>(null);
-    const [stats, setStats] = useState<PlayerStats>({ coins: 0, exp: 0, hp: 100, maxHp: 100 });
+    const [stats, setStats] = useState<PlayerStats>({
+        coins: 0,
+        exp: 0,
+        hp: 100,
+        maxHp: 100,
+        level: 1,
+        nextLevelExp: 5
+    });
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastStatusRef = useRef<string>("");
     const lastUpdateTsRef = useRef<number>(0);
@@ -66,7 +73,7 @@ export default function GameScreen() {
                 },
                 (s: PlayerStats) => {
                     // Throttle stats update
-                    const key = `${s.coins},${s.exp},${Math.round(s.hp)}`;
+                    const key = `${s.coins},${s.exp},${Math.round(s.hp)},${s.level}`;
                     if (key !== lastStatsRef.current) {
                         lastStatsRef.current = key;
                         setStats(s);
@@ -167,7 +174,20 @@ export default function GameScreen() {
                 </Button>
 
                 {/* Stats HUD */}
-                <div className="bg-black/70 text-white px-4 py-3 rounded-xl flex flex-col gap-1.5 text-sm font-mono pointer-events-none select-none">
+                <div className="bg-black/70 text-white px-4 py-3 rounded-xl flex flex-col gap-1.5 text-sm font-mono pointer-events-none select-none min-w-[200px]">
+                    {/* Level & EXP */}
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-yellow-100">Lv.{stats.level}</span>
+                        <span className="text-xs text-gray-300">{stats.exp} / {stats.nextLevelExp} EXP</span>
+                    </div>
+                    {/* EXP Bar */}
+                    <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
+                        <div
+                            className="h-full bg-blue-500 transition-all duration-300"
+                            style={{ width: `${Math.min(100, (stats.exp / stats.nextLevelExp) * 100)}%` }}
+                        />
+                    </div>
+
                     <div className="flex items-center gap-2">
                         <Heart className="w-4 h-4 text-red-400" />
                         <span className="text-red-300">
@@ -177,10 +197,6 @@ export default function GameScreen() {
                     <div className="flex items-center gap-2">
                         <Coins className="w-4 h-4 text-yellow-400" />
                         <span className="text-yellow-300">{stats.coins}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-green-400" />
-                        <span className="text-green-300">{stats.exp}</span>
                     </div>
                 </div>
             </div>
