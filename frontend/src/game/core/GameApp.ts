@@ -483,6 +483,9 @@ export class GameApp {
                         const pushY = (dy / dist) * pushDist;
                         enemy.x += pushX;
                         enemy.y += pushY;
+                    } else {
+                        // 重なった場合のフォールバック (x方向に押し出す)
+                        enemy.x += pushDist;
                     }
                 }
             }

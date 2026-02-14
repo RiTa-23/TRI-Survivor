@@ -33,11 +33,9 @@ export class Obstacle extends Container {
         this.graphics.clear();
 
         // 岩のような表現（単純な円に枠線をつける）
-        this.graphics.lineStyle(2, 0x333333); // 暗いグレーの枠線
-        this.graphics.beginFill(color);
-        this.graphics.drawCircle(0, 0, this._radius);
-        this.graphics.endFill();
-
+        this.graphics.circle(0, 0, this._radius);
+        this.graphics.fill({ color });
+        this.graphics.stroke({ width: 2, color: 0x333333 });
     }
 
     public get radius(): number { return this._radius; }
