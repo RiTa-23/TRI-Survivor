@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, TilingSprite } from "pixi.js";
+import { Application, Container, Graphics, TilingSprite, Assets } from "pixi.js";
 import { Player } from "../entities/Player";
 import { Enemy } from "../entities/Enemy";
 import { BasicEnemy } from "../entities/BasicEnemy";
@@ -14,7 +14,7 @@ const GRID_BG_COLOR = 0x0e8aaa;
 
 /** Enemy spawn settings */
 const SPAWN_INTERVAL_MS = 500;
-const SPAWN_DISTANCE = 1500;
+const SPAWN_DISTANCE = 1000;
 const MAX_ENEMIES = 30;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 
@@ -33,7 +33,7 @@ export interface PlayerStats {
 
 export class GameApp {
     private app: Application;
-    private player: Player;
+    private player!: Player; // Initialized in init() after assets load
     private world: Container;
     private tilingBg!: TilingSprite;
     private enemies: Enemy[] = [];
@@ -56,7 +56,7 @@ export class GameApp {
         onStatsUpdate?: (stats: PlayerStats) => void
     ) {
         this.app = new Application();
-        this.player = new Player();
+        // this.player will be initialized in init()
         this.world = new Container();
         this.videoElement = videoElement;
         this.canvasElement = canvasElement;
@@ -113,16 +113,39 @@ export class GameApp {
             container.appendChild(this.app.canvas);
         }
 
+        // Preload Assets
+        try {
+            await Assets.load([
+                "/assets/images/player.png",
+                "/assets/images/basic_enemy.png",
+                "/assets/images/experience.png",
+                "/assets/images/coin.png",
+                "/assets/images/heal.png",
+                "/assets/images/damage.png",
+            ]);
+        } catch (e) {
+            console.error("Failed to load assets:", e);
+            this.destroyApp();
+            return;
+        }
+
+        if (this.isDestroyed) return;
+
         // Setup infinite tiling background (added to stage directly, not world)
         this.tilingBg = this.createGridTile();
-        this.app.stage.addChild(this.tilingBg);
+        if (!this.isDestroyed) {
+            this.app.stage.addChild(this.tilingBg);
+        }
 
-        // Setup Player at origin (world coordinates)
-        this.player.x = 0;
-        this.player.y = 0;
-        this.world.addChild(this.player);
+        // Initialize Player AFTER assets are loaded
+        if (!this.isDestroyed) {
+            this.player = new Player();
+            this.player.x = 0;
+            this.player.y = 0;
+            this.world.addChild(this.player);
 
-        this.app.stage.addChild(this.world);
+            this.app.stage.addChild(this.world);
+        }
 
         // Initialize Hand Tracking
         try {
@@ -240,6 +263,9 @@ export class GameApp {
             // Move toward player
             enemy.moveToward(this.player.x, this.player.y, dt);
 
+            // Update enemy effects (damage popup, etc.)
+            enemy.update(dt);
+
             // Continuous contact damage (per-second rate scaled by dt)
             if (enemy.isCollidingWith(this.player.x, this.player.y, this.player.radius)) {
                 const damageThisFrame = enemy.attackPower * dt;
@@ -296,7 +322,7 @@ export class GameApp {
             for (const enemy of this.enemies) {
                 if (!enemy.alive) continue;
                 if (bullet.isCollidingWith(enemy.x, enemy.y, enemy.radius)) {
-                    enemy.takeDamage(bullet.damage);
+                    enemy.takeDamage(bullet.damage, bullet.x, bullet.y);
                     bullet.kill();
                     this.world.removeChild(bullet);
                     bullet.destroy();

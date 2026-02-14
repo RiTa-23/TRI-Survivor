@@ -1,13 +1,15 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import type { Player } from "./Player";
 
 /** アイテムの初期化パラメータ */
 export interface ItemConfig {
-    /** 描画色 */
-    color: number;
-    /** 当たり判定の半径 */
-    radius: number;
+    /** テクスチャパス */
+    textureKey: string;
+    /** 当たり判定の半径 (未指定時はDEFAULT_RADIUS) */
+    radius?: number;
 }
+
+const DEFAULT_RADIUS = 10;
 
 /**
  * アイテムの基底クラス
@@ -17,7 +19,7 @@ export interface ItemConfig {
  * 接触すると回収されて効果を発動する。
  */
 export abstract class Item extends Container {
-    protected graphics: Graphics;
+    protected sprite: Sprite;
     protected _radius: number;
     protected _collected: boolean = false;
 
@@ -26,17 +28,21 @@ export abstract class Item extends Container {
 
     constructor(config: ItemConfig) {
         super();
-        this._radius = config.radius;
+        this._radius = config.radius ?? DEFAULT_RADIUS;
 
-        this.graphics = new Graphics();
-        this.draw(config.color);
-        this.addChild(this.graphics);
-    }
+        this.sprite = Sprite.from(config.textureKey);
+        this.sprite.anchor.set(0.5);
 
-    /** アイテムの見た目を描画（サブクラスでオーバーライド可能） */
-    protected draw(color: number): void {
-        this.graphics.circle(0, 0, this._radius);
-        this.graphics.fill({ color });
+        // アスペクト比を維持してサイズ調整
+        // テクスチャロード完了前(1x1)の場合は1として計算し、極端なスケールを防ぐ
+        const texWidth = Math.max(1, this.sprite.texture.width);
+        const texHeight = Math.max(1, this.sprite.texture.height);
+        const scale = (this._radius * 2) / Math.max(texWidth, texHeight);
+        this.sprite.scale.set(scale);
+
+        // this.sprite.tint = config.color; // Tint can be applied if needed
+
+        this.addChild(this.sprite);
     }
 
     /** 毎フレームの更新 */
@@ -46,7 +52,7 @@ export abstract class Item extends Container {
         this.age += dt;
 
         // 浮遊アニメーション（上下に揺れる）
-        this.graphics.y = Math.sin(this.age * 3) * 3;
+        this.sprite.y = Math.sin(this.age * 3) * 3;
 
         // マグネット範囲内ならプレイヤーに吸い寄せる
         const dx = player.x - this.x;

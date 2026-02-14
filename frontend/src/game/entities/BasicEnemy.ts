@@ -10,10 +10,11 @@ export class BasicEnemy extends Enemy {
     constructor() {
         super({
             hp: 3,
-            speed: 60, // px/sec
+            speed: 50, // px/sec
             attackPower: 10,
             color: 0x9b59b6,
-            radius: 12,
+            textureKey: "/assets/images/basic_enemy.png",
+            radius: 40,
             dropTable: {
                 exp: { min: 1, max: 3, chance: 1.0 },
                 coinChance: 0.3,

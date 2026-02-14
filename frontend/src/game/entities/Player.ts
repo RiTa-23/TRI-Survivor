@@ -1,12 +1,11 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import { HPBar } from "./HPBar";
 
 const DAMAGE_FLASH_DURATION = 0.1; // seconds
 
 export class Player extends Container {
-    private graphics: Graphics;
+    private sprite: Sprite;
     private hpBar: HPBar;
-    private damageFlashTimer: number = 0;
 
     // --- Stats ---
     private _hp: number;
@@ -15,6 +14,7 @@ export class Player extends Container {
     private _attackPower: number;
     /** 攻撃間隔 (ms) — 値が小さいほど速く撃つ */
     private _attackInterval: number;
+
 
     // --- Resources ---
     private _coins: number = 0;
@@ -29,8 +29,11 @@ export class Player extends Container {
     private _level: number = 1;
     private _nextLevelExp: number;
 
+    /** ダメージ演出用のタイマー */
+    private damageFlashTimer: number = 0;
+
     /** 当たり判定の半径 */
-    public readonly radius: number = 15;
+    public readonly radius: number = 40;
 
     constructor() {
         super();
@@ -45,20 +48,19 @@ export class Player extends Container {
         // Initial Level Exp
         this._nextLevelExp = this.calculateNextLevelExp();
 
-        // Create Player (Circle)
-        this.graphics = new Graphics();
-        this.drawCircle(0xffffff);
-        this.addChild(this.graphics);
+        // Create Player Sprite
+        this.sprite = Sprite.from("/assets/images/player.png");
+        this.sprite.anchor.set(0.5);
+
+        // アスペクト比を維持してリサイズ
+        const scale = (this.radius * 2) / Math.max(this.sprite.texture.width, this.sprite.texture.height);
+        this.sprite.scale.set(scale);
+
+        this.addChild(this.sprite);
 
         // HP Bar (above player)
-        this.hpBar = new HPBar({ width: 36, height: 4, offsetY: -(this.radius + 12) });
+        this.hpBar = new HPBar({ width: 45, height: 4, offsetY: -(this.radius + 12) });
         this.addChild(this.hpBar);
-    }
-
-    private drawCircle(color: number): void {
-        this.graphics.clear();
-        this.graphics.circle(0, 0, this.radius);
-        this.graphics.fill({ color });
     }
 
     public move(dx: number, dy: number, dt: number): void {
@@ -72,7 +74,7 @@ export class Player extends Container {
         this.hpBar.update(this._hp / this._maxHp);
         // Flash red
         this.damageFlashTimer = DAMAGE_FLASH_DURATION;
-        this.drawCircle(0xff4444);
+        this.sprite.tint = 0xff4444;
     }
 
     /** HPを回復する */
@@ -87,7 +89,7 @@ export class Player extends Container {
             this.damageFlashTimer -= dt;
             if (this.damageFlashTimer <= 0) {
                 this.damageFlashTimer = 0;
-                this.drawCircle(0xffffff);
+                this.sprite.tint = 0xffffff;
             }
         }
     }
@@ -105,25 +107,20 @@ export class Player extends Container {
 
         // Check for Level Up
         while (this._exp >= this._nextLevelExp) {
-            this._exp -= this._nextLevelExp;
             this.levelUp();
         }
     }
 
     private levelUp(): void {
+        this._exp -= this._nextLevelExp;
         this._level++;
         this._nextLevelExp = this.calculateNextLevelExp();
 
-        // Full heal on level up
-        this._hp = this._maxHp;
-        this.hpBar.update(1);
-
-        console.log(`Level Up! Lv.${this._level} (Next: ${this._nextLevelExp})`);
+        console.log(`Level Up! Lv.${this._level}`);
     }
 
     private calculateNextLevelExp(): number {
-        // Linear increase: 5, 10, 15...
-        return Math.floor(5 + (this._level) * 5);
+        return Math.floor(10 * Math.pow(1.5, this._level - 1));
     }
 
     // --- Getters ---

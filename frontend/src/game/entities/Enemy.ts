@@ -1,13 +1,29 @@
-import { Container, Graphics } from "pixi.js";
-import { HPBar } from "./HPBar";
+import { Container, Sprite, Assets } from "pixi.js";
 import { Item } from "./Item";
 import { ExperienceOrb } from "./ExperienceOrb";
+import { HPBar } from "./HPBar";
 import { CoinItem } from "./CoinItem";
 import { HealItem } from "./HealItem";
+
+const DAMAGE_EFFECT_PATH = "/assets/images/damage.png";
+const DAMAGE_EFFECT_SCALE = 0.08;
+const DAMAGE_EFFECT_LIFE = 0.5;
+
+class DamageEffect extends Sprite {
+    public life: number = DAMAGE_EFFECT_LIFE;
+    public velocityY: number = -60; // Move up
+
+    constructor() {
+        super(Assets.get(DAMAGE_EFFECT_PATH));
+        this.anchor.set(0.5);
+        this.scale.set(DAMAGE_EFFECT_SCALE);
+    }
+}
 
 /** ドロップテーブル設定 */
 export interface DropTable {
     /** 経験値 (個数の最小・最大) */
+
     exp: { min: number; max: number; chance: number };
     /** コイン (ドロップ率 0~1) */
     coinChance: number;
@@ -25,6 +41,8 @@ export interface EnemyConfig {
     attackPower: number;
     /** 描画色 */
     color: number;
+    /** テクスチャのパス */
+    textureKey: string;
     /** 当たり判定の半径 */
     radius: number;
     /** ドロップテーブル */
@@ -38,7 +56,7 @@ export interface EnemyConfig {
  * プレイヤーに向かって移動し、接触するとダメージを与える。
  */
 export abstract class Enemy extends Container {
-    protected graphics: Graphics;
+    protected sprite: Sprite;
     protected hpBar: HPBar;
     protected _hp: number;
     protected _maxHp: number;
@@ -47,9 +65,11 @@ export abstract class Enemy extends Container {
     protected _radius: number;
     protected _dropTable: DropTable;
     protected _alive: boolean = true;
+    private damageEffects: DamageEffect[] = [];
 
     constructor(config: EnemyConfig) {
         super();
+        // ... (snip) ...
         this._hp = config.hp;
         this._maxHp = config.hp;
         this._speed = config.speed;
@@ -57,32 +77,65 @@ export abstract class Enemy extends Container {
         this._radius = config.radius;
         this._dropTable = config.dropTable;
 
-        this.graphics = new Graphics();
-        this.draw(config.color);
-        this.addChild(this.graphics);
+        // Note: Sprite.from uses Assets.get internally in v8 if loaded? 
+        // It's safer to use Assets.get if we are sure it is loaded.
+        // But for Enemy sprite itself, let's leave it as Sprite.from for now 
+        // unless requested. The user specifically asked for DamageEffect.
+        this.sprite = Sprite.from(config.textureKey);
+        this.sprite.anchor.set(0.5);
+
+        // トラブル防止のため、テクスチャが有効か確認
+        // (GameAppでプリロード済み前提)
+        const texWidth = Math.max(1, this.sprite.texture.width);
+        const texHeight = Math.max(1, this.sprite.texture.height);
+        const scale = (this._radius * 2) / Math.max(texWidth, texHeight);
+
+        this.sprite.scale.set(scale);
+
+        // this.sprite.tint = config.color; 
+
+        this.addChild(this.sprite);
 
         // HP Bar (above enemy)
-        this.hpBar = new HPBar({ width: config.radius * 2.5, height: 3, offsetY: -(config.radius + 8) });
+        // サイズを固定値にする (幅40px, 高さ4px)
+        this.hpBar = new HPBar({ width: 40, height: 4, offsetY: -(config.radius + 10) });
         this.addChild(this.hpBar);
     }
 
-    /** 敵の見た目を描画（サブクラスでオーバーライド可能） */
-    protected draw(color: number): void {
-        this.graphics.circle(0, 0, this._radius);
-        this.graphics.fill({ color });
+    /**
+     * Update method for enemy logic
+     * @param dt Delta time in seconds
+     */
+    public update(dt: number): void {
+        // Move toward player logic is handled by specific enemy types usually,
+        // but BasicEnemy uses simple tracking. Here we just update effects.
+
+        // Update damage effects
+        for (let i = this.damageEffects.length - 1; i >= 0; i--) {
+            const effect = this.damageEffects[i];
+            effect.life -= dt;
+            effect.y += effect.velocityY * dt;
+            effect.alpha = Math.max(0, effect.life * 2); // Fade out
+
+            if (effect.life <= 0) {
+                this.removeChild(effect);
+                effect.destroy();
+                this.damageEffects.splice(i, 1);
+            }
+        }
     }
 
     /** プレイヤー座標に向かって移動 */
     public moveToward(targetX: number, targetY: number, dt: number): void {
-        if (!this._alive) return;
-
         const dx = targetX - this.x;
         const dy = targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
-            this.x += (dx / distance) * this._speed * dt;
-            this.y += (dy / distance) * this._speed * dt;
+            const moveX = (dx / distance) * this._speed * dt;
+            const moveY = (dy / distance) * this._speed * dt;
+            this.x += moveX;
+            this.y += moveY;
         }
     }
 
@@ -90,18 +143,49 @@ export abstract class Enemy extends Container {
     public isCollidingWith(targetX: number, targetY: number, targetRadius: number): boolean {
         const dx = this.x - targetX;
         const dy = this.y - targetY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < this._radius + targetRadius;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        return dist < (this._radius + targetRadius);
     }
 
     /** ダメージを受ける */
-    public takeDamage(amount: number): void {
+    public takeDamage(amount: number, sourceX?: number, sourceY?: number): void {
         this._hp = Math.max(0, this._hp - amount);
         this.hpBar.update(this._hp / this._maxHp);
+
+        // Show damage effect
+        this.showDamageEffect(sourceX, sourceY);
+
         if (this._hp <= 0) {
             this._alive = false;
-            this.visible = false;
         }
+    }
+
+    private showDamageEffect(sourceX?: number, sourceY?: number): void {
+        const effect = new DamageEffect();
+
+        if (sourceX !== undefined && sourceY !== undefined) {
+            // 攻撃された方向（敵の中心から攻撃元への方向）に表示
+            // ローカル座標系なので、(0,0)が敵の中心
+            // world座標での差分を計算
+            const dx = sourceX - this.x;
+            const dy = sourceY - this.y;
+            const angle = Math.atan2(dy, dx);
+
+            // 半径分だけずらした位置に表示
+            const distance = this._radius;
+            effect.x = Math.cos(angle) * distance;
+            effect.y = Math.sin(angle) * distance;
+
+            // エフェクトを攻撃方向に向ける
+            effect.rotation = angle + Math.PI / 2;
+        } else {
+            // 指定がなければ頭上に表示 (デフォルト)
+            effect.x = 0;
+            effect.y = -(this._radius + 20);
+        }
+
+        this.damageEffects.push(effect);
+        this.addChild(effect);
     }
 
     /** 死亡時のドロップアイテムを生成 */
