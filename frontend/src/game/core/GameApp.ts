@@ -4,6 +4,7 @@ import { Enemy } from "../entities/Enemy";
 import { BasicEnemy } from "../entities/BasicEnemy";
 import { Bullet } from "../entities/Bullet";
 import { Item } from "../entities/Item";
+import { Obstacle } from "../entities/Obstacle";
 import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
 
@@ -17,6 +18,14 @@ const SPAWN_INTERVAL_MS = 500;
 const SPAWN_DISTANCE = 1000;
 const MAX_ENEMIES = 30;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
+
+/** Obstacle settings */
+const MAX_OBSTACLES = 15;
+const OBSTACLE_SPAWN_DISTANCE = 1000; // 画面外
+const OBSTACLE_DESPAWN_DISTANCE = 1500;
+const OBSTACLE_MIN_RADIUS = 30;
+const OBSTACLE_MAX_RADIUS = 50;
+const OBSTACLE_SPAWN_INTERVAL = 0.5; // 秒
 
 /** Item drop settings */
 const ITEM_DESPAWN_DISTANCE = 2000;
@@ -39,6 +48,8 @@ export class GameApp {
     private enemies: Enemy[] = [];
     private bullets: Bullet[] = [];
     private items: Item[] = [];
+    private obstacles: Obstacle[] = [];
+    private obstacleSpawnTimer: number = 0;
     private spawnTimer: number = 0;
     private attackTimer: number = 0;
     private handTrackingManager: HandTrackingManager;
@@ -176,6 +187,9 @@ export class GameApp {
             }
             this.player.update(dt);
 
+            // Check player vs obstacles
+            this.checkPlayerObstacleCollisions();
+
             // Spawn enemies periodically
             this.spawnTimer += dtMs;
             if (this.spawnTimer >= SPAWN_INTERVAL_MS && this.enemies.length < MAX_ENEMIES) {
@@ -186,6 +200,15 @@ export class GameApp {
             // Update enemies (movement + contact damage)
             this.updateEnemies(dt);
 
+            // Check enemies vs obstacles (after movement)
+            this.checkEnemyObstacleCollisions();
+
+            // Check enemies vs enemies (prevent overlap)
+            this.checkEnemyCollisions();
+
+            // Check player vs enemies (prevent overlap)
+            this.checkPlayerEnemyCollisions();
+
             // Auto-attack: shoot at nearest enemy
             this.attackTimer += dtMs;
             if (this.attackTimer >= this.player.attackInterval) {
@@ -195,6 +218,9 @@ export class GameApp {
 
             // Update bullets
             this.updateBullets(dt);
+
+            // Manage obstacles (spawn/despawn)
+            this.updateObstacles(dt);
 
             // Update items (magnet & collect)
             this.updateItems(dt);
@@ -379,6 +405,176 @@ export class GameApp {
         });
     }
 
+    /** 障害物を生成して配置 */
+    private spawnObstacle(): void {
+        const radius = OBSTACLE_MIN_RADIUS + Math.random() * (OBSTACLE_MAX_RADIUS - OBSTACLE_MIN_RADIUS);
+        const obstacle = new Obstacle({ radius });
+
+        // プレイヤーの周囲のランダムな位置（画面外）に配置
+        const angle = Math.random() * Math.PI * 2;
+        const distance = OBSTACLE_SPAWN_DISTANCE + Math.random() * 200;
+
+        obstacle.x = this.player.x + Math.cos(angle) * distance;
+        obstacle.y = this.player.y + Math.sin(angle) * distance;
+
+        this.obstacles.push(obstacle);
+        this.world.addChild(obstacle);
+    }
+
+    /** 障害物の更新（削除と生成） */
+    private updateObstacles(dt: number): void {
+        const despawnDistSqr = OBSTACLE_DESPAWN_DISTANCE * OBSTACLE_DESPAWN_DISTANCE;
+
+        // Despawn far obstacles
+        for (let i = this.obstacles.length - 1; i >= 0; i--) {
+            const obs = this.obstacles[i];
+            const dx = obs.x - this.player.x;
+            const dy = obs.y - this.player.y;
+            const distSqr = dx * dx + dy * dy;
+
+            if (distSqr > despawnDistSqr) {
+                this.world.removeChild(obs);
+                obs.destroy();
+                this.obstacles.splice(i, 1);
+            }
+        }
+
+        // Spawn new obstacles if needed
+        if (this.obstacles.length < MAX_OBSTACLES) {
+            this.obstacleSpawnTimer += dt;
+            if (this.obstacleSpawnTimer >= OBSTACLE_SPAWN_INTERVAL) {
+                this.obstacleSpawnTimer = 0;
+                this.spawnObstacle();
+            }
+        }
+    }
+
+    /**
+     * 円同士の衝突判定と押し戻しベクトル計算
+     * @param x1 対象1のX
+     * @param y1 対象1のY
+     * @param r1 対象1の半径
+     * @param x2 対象2のX
+     * @param y2 対象2のY
+     * @param r2 対象2の半径
+     * @param pushRatio1 対象1への押し戻し割合 (0.0 - 1.0)
+     * @returns 対象1に適用する移動ベクトル {x, y} または衝突していない場合 null
+     */
+    private resolveCircleOverlap(
+        x1: number, y1: number, r1: number,
+        x2: number, y2: number, r2: number,
+        pushRatio1: number
+    ): { x: number, y: number } | null {
+        const dx = x1 - x2;
+        const dy = y1 - y2;
+        const distSqr = dx * dx + dy * dy;
+        const radiusSum = r1 + r2;
+
+        if (distSqr >= radiusSum * radiusSum) return null;
+
+        const dist = Math.sqrt(distSqr);
+        const overlap = radiusSum - dist;
+
+        let pushX: number, pushY: number;
+
+        if (dist > 0) {
+            pushX = (dx / dist) * overlap * pushRatio1;
+            pushY = (dy / dist) * overlap * pushRatio1;
+        } else {
+            // 完全重複時のフォールバック: ランダムな方向に押し出す
+            const angle = Math.random() * Math.PI * 2;
+            pushX = Math.cos(angle) * overlap * pushRatio1;
+            pushY = Math.sin(angle) * overlap * pushRatio1;
+        }
+
+        return { x: pushX, y: pushY };
+    }
+
+    /** プレイヤーと障害物の衝突判定（押し戻し） */
+    private checkPlayerObstacleCollisions(): void {
+        for (const obs of this.obstacles) {
+            const push = this.resolveCircleOverlap(
+                this.player.x, this.player.y, this.player.radius,
+                obs.x, obs.y, obs.radius,
+                1.0 // プレイヤーのみ動く
+            );
+
+            if (push) {
+                this.player.x += push.x;
+                this.player.y += push.y;
+            }
+        }
+    }
+
+    /** 敵と障害物の衝突判定（押し戻し） */
+    private checkEnemyObstacleCollisions(): void {
+        for (const enemy of this.enemies) {
+            if (!enemy.alive) continue;
+            for (const obs of this.obstacles) {
+                const push = this.resolveCircleOverlap(
+                    enemy.x, enemy.y, enemy.radius,
+                    obs.x, obs.y, obs.radius,
+                    1.0 // 敵のみ動く
+                );
+
+                if (push) {
+                    enemy.x += push.x;
+                    enemy.y += push.y;
+                }
+            }
+        }
+    }
+
+    /** 敵同士の衝突判定（押し戻し） */
+    private checkEnemyCollisions(): void {
+        const count = this.enemies.length;
+        for (let i = 0; i < count; i++) {
+            const e1 = this.enemies[i];
+            if (!e1.alive) continue;
+
+            for (let j = i + 1; j < count; j++) {
+                const e2 = this.enemies[j];
+                if (!e2.alive) continue;
+
+                // お互いに0.5ずつ動く
+                const push = this.resolveCircleOverlap(
+                    e1.x, e1.y, e1.radius,
+                    e2.x, e2.y, e2.radius,
+                    0.5
+                );
+
+                if (push) {
+                    e1.x += push.x;
+                    e1.y += push.y;
+                    // e2は逆方向に同じだけ動く
+                    e2.x -= push.x;
+                    e2.y -= push.y;
+                }
+            }
+        }
+    }
+
+    /** プレイヤーと敵の衝突判定（押し戻し） */
+    private checkPlayerEnemyCollisions(): void {
+        for (const enemy of this.enemies) {
+            if (!enemy.alive) continue;
+
+            // お互いに0.5ずつ動く
+            const push = this.resolveCircleOverlap(
+                this.player.x, this.player.y, this.player.radius,
+                enemy.x, enemy.y, enemy.radius,
+                0.5
+            );
+
+            if (push) {
+                this.player.x += push.x;
+                this.player.y += push.y;
+                enemy.x -= push.x;
+                enemy.y -= push.y;
+            }
+        }
+    }
+
     /** PixiJS v8 destroy options (shared to avoid duplication) */
     private static readonly RENDERER_DESTROY_OPTIONS = { removeView: true };
     private static readonly STAGE_DESTROY_OPTIONS = { texture: true, context: true };
@@ -399,6 +595,13 @@ export class GameApp {
     public destroy() {
         this.isDestroyed = true;
         this.handTrackingManager.stop();
+
+        for (const obs of this.obstacles) {
+            this.world.removeChild(obs);
+            obs.destroy();
+        }
+        this.obstacles.length = 0;
+
         this.destroyApp();
     }
 }
