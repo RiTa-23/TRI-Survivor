@@ -481,9 +481,10 @@ export class GameApp {
             pushX = (dx / dist) * overlap * pushRatio1;
             pushY = (dy / dist) * overlap * pushRatio1;
         } else {
-            // 完全重複時のフォールバック
-            pushX = overlap * pushRatio1; // x軸方向にずらす
-            pushY = 0;
+            // 完全重複時のフォールバック: ランダムな方向に押し出す
+            const angle = Math.random() * Math.PI * 2;
+            pushX = Math.cos(angle) * overlap * pushRatio1;
+            pushY = Math.sin(angle) * overlap * pushRatio1;
         }
 
         return { x: pushX, y: pushY };
