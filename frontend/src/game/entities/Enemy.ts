@@ -143,7 +143,7 @@ export abstract class Enemy extends Container {
 
     /** ダメージを受ける */
     public takeDamage(amount: number, sourceX?: number, sourceY?: number): void {
-        this._hp -= amount;
+        this._hp = Math.max(0, this._hp - amount);
         this.hpBar.update(this._hp / this._maxHp);
 
         // Show damage effect
