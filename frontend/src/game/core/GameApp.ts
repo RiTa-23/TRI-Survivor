@@ -25,6 +25,7 @@ const OBSTACLE_SPAWN_DISTANCE = 1000; // 画面外
 const OBSTACLE_DESPAWN_DISTANCE = 1500;
 const OBSTACLE_MIN_RADIUS = 30;
 const OBSTACLE_MAX_RADIUS = 50;
+const OBSTACLE_SPAWN_INTERVAL = 0.5; // 秒
 
 /** Item drop settings */
 const ITEM_DESPAWN_DISTANCE = 2000;
@@ -48,6 +49,7 @@ export class GameApp {
     private bullets: Bullet[] = [];
     private items: Item[] = [];
     private obstacles: Obstacle[] = [];
+    private obstacleSpawnTimer: number = 0;
     private spawnTimer: number = 0;
     private attackTimer: number = 0;
     private handTrackingManager: HandTrackingManager;
@@ -420,15 +422,17 @@ export class GameApp {
     }
 
     /** 障害物の更新（削除と生成） */
-    private updateObstacles(_dt: number): void {
+    private updateObstacles(dt: number): void {
+        const despawnDistSqr = OBSTACLE_DESPAWN_DISTANCE * OBSTACLE_DESPAWN_DISTANCE;
+
         // Despawn far obstacles
         for (let i = this.obstacles.length - 1; i >= 0; i--) {
             const obs = this.obstacles[i];
             const dx = obs.x - this.player.x;
             const dy = obs.y - this.player.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const distSqr = dx * dx + dy * dy;
 
-            if (dist > OBSTACLE_DESPAWN_DISTANCE) {
+            if (distSqr > despawnDistSqr) {
                 this.world.removeChild(obs);
                 obs.destroy();
                 this.obstacles.splice(i, 1);
@@ -437,8 +441,9 @@ export class GameApp {
 
         // Spawn new obstacles if needed
         if (this.obstacles.length < MAX_OBSTACLES) {
-            // 少しランダム性を入れて、毎フレーム生成されないようにする
-            if (Math.random() < 0.05) {
+            this.obstacleSpawnTimer += dt;
+            if (this.obstacleSpawnTimer >= OBSTACLE_SPAWN_INTERVAL) {
+                this.obstacleSpawnTimer = 0;
                 this.spawnObstacle();
             }
         }
