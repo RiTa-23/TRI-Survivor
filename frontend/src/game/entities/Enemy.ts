@@ -1,4 +1,4 @@
-import { Container, Sprite, Texture } from "pixi.js";
+import { Container, Sprite, Assets } from "pixi.js";
 import { Item } from "./Item";
 import { ExperienceOrb } from "./ExperienceOrb";
 import { HPBar } from "./HPBar";
@@ -11,10 +11,10 @@ const DAMAGE_EFFECT_LIFE = 0.5;
 
 class DamageEffect extends Sprite {
     public life: number = DAMAGE_EFFECT_LIFE;
-    public velocityY: number = 0;
+    public velocityY: number = -60; // Move up
 
     constructor() {
-        super(Texture.from(DAMAGE_EFFECT_PATH));
+        super(Assets.get(DAMAGE_EFFECT_PATH));
         this.anchor.set(0.5);
         this.scale.set(DAMAGE_EFFECT_SCALE);
     }
@@ -69,6 +69,7 @@ export abstract class Enemy extends Container {
 
     constructor(config: EnemyConfig) {
         super();
+        // ... (snip) ...
         this._hp = config.hp;
         this._maxHp = config.hp;
         this._speed = config.speed;
@@ -76,15 +77,22 @@ export abstract class Enemy extends Container {
         this._radius = config.radius;
         this._dropTable = config.dropTable;
 
+        // Note: Sprite.from uses Assets.get internally in v8 if loaded? 
+        // It's safer to use Assets.get if we are sure it is loaded.
+        // But for Enemy sprite itself, let's leave it as Sprite.from for now 
+        // unless requested. The user specifically asked for DamageEffect.
         this.sprite = Sprite.from(config.textureKey);
         this.sprite.anchor.set(0.5);
 
-        // アスペクト比を維持してサイズ調整
-        // 半径*2 に収まるようにスケールを設定
-        const scale = (this._radius * 2) / Math.max(this.sprite.texture.width, this.sprite.texture.height);
+        // トラブル防止のため、テクスチャが有効か確認
+        // (GameAppでプリロード済み前提)
+        const texWidth = Math.max(1, this.sprite.texture.width);
+        const texHeight = Math.max(1, this.sprite.texture.height);
+        const scale = (this._radius * 2) / Math.max(texWidth, texHeight);
+
         this.sprite.scale.set(scale);
 
-        // this.sprite.tint = config.color; // If you want to tint the image
+        // this.sprite.tint = config.color; 
 
         this.addChild(this.sprite);
 
@@ -97,8 +105,6 @@ export abstract class Enemy extends Container {
     /**
      * Update method for enemy logic
      * @param dt Delta time in seconds
-     * @param playerX Player X position
-     * @param playerY Player Y position
      */
     public update(dt: number): void {
         // Move toward player logic is handled by specific enemy types usually,
