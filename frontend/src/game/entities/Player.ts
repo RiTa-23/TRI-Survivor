@@ -106,7 +106,7 @@ export class Player extends Container {
         this._exp += amount;
 
         // Check for Level Up
-        if (this._exp >= this._nextLevelExp) {
+        while (this._exp >= this._nextLevelExp) {
             this.levelUp();
         }
     }
