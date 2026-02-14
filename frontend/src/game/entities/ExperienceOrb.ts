@@ -2,7 +2,6 @@
 import { Item } from "./Item";
 import type { Player } from "./Player";
 
-const EXP_COLOR = 0x2ecc71;
 const EXP_VALUE = 1;
 
 /**
@@ -16,7 +15,6 @@ export class ExperienceOrb extends Item {
 
     constructor(value: number = EXP_VALUE) {
         super({
-            color: EXP_COLOR,
             textureKey: "/assets/images/experience.png",
         });
         this._value = value;

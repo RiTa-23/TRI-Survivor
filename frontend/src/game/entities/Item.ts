@@ -3,8 +3,6 @@ import type { Player } from "./Player";
 
 /** アイテムの初期化パラメータ */
 export interface ItemConfig {
-    /** 描画色 (Spriteの場合はTintとして使用可能) */
-    color: number;
     /** テクスチャパス */
     textureKey: string;
     /** 当たり判定の半径 (未指定時はDEFAULT_RADIUS) */
@@ -36,15 +34,16 @@ export abstract class Item extends Container {
         this.sprite.anchor.set(0.5);
 
         // アスペクト比を維持してサイズ調整
-        const scale = (this._radius * 2) / Math.max(this.sprite.texture.width, this.sprite.texture.height);
+        // テクスチャロード完了前(1x1)の場合は1として計算し、極端なスケールを防ぐ
+        const texWidth = Math.max(1, this.sprite.texture.width);
+        const texHeight = Math.max(1, this.sprite.texture.height);
+        const scale = (this._radius * 2) / Math.max(texWidth, texHeight);
         this.sprite.scale.set(scale);
 
         // this.sprite.tint = config.color; // Tint can be applied if needed
 
         this.addChild(this.sprite);
     }
-
-
 
     /** 毎フレームの更新 */
     public update(dt: number, player: Player): void {

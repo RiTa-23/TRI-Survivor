@@ -2,7 +2,6 @@
 import { Item } from "./Item";
 import type { Player } from "./Player";
 
-const COIN_COLOR = 0xf1c40f;
 const COIN_VALUE = 1;
 
 /**
@@ -16,7 +15,6 @@ export class CoinItem extends Item {
 
     constructor(value: number = COIN_VALUE) {
         super({
-            color: COIN_COLOR,
             textureKey: "/assets/images/coin.png",
         });
         this._value = value;

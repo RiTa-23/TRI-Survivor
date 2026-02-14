@@ -2,7 +2,6 @@
 import { Item } from "./Item";
 import type { Player } from "./Player";
 
-const HEAL_COLOR = 0xe74c3c;
 /** HP最大値の何%回復するか */
 const HEAL_PERCENT = 0.20;
 
@@ -17,7 +16,6 @@ export class HealItem extends Item {
 
     constructor(healPercent: number = HEAL_PERCENT) {
         super({
-            color: HEAL_COLOR,
             textureKey: "/assets/images/heal.png",
         });
         this._healPercent = healPercent;

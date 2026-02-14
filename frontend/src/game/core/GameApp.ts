@@ -252,7 +252,7 @@ export class GameApp {
             enemy.moveToward(this.player.x, this.player.y, dt);
 
             // Update enemy effects (damage popup, etc.)
-            enemy.update(dt, this.player.x, this.player.y);
+            enemy.update(dt);
 
             // Continuous contact damage (per-second rate scaled by dt)
             if (enemy.isCollidingWith(this.player.x, this.player.y, this.player.radius)) {

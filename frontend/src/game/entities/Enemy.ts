@@ -1,18 +1,29 @@
-import { Container, Sprite } from "pixi.js";
+import { Container, Sprite, Texture } from "pixi.js";
 import { Item } from "./Item";
 import { ExperienceOrb } from "./ExperienceOrb";
 import { HPBar } from "./HPBar";
 import { CoinItem } from "./CoinItem";
 import { HealItem } from "./HealItem";
 
-interface DamageEffect extends Sprite {
-    life: number;
-    velocityY: number;
+const DAMAGE_EFFECT_PATH = "/assets/images/damage.png";
+const DAMAGE_EFFECT_SCALE = 0.08;
+const DAMAGE_EFFECT_LIFE = 0.5;
+
+class DamageEffect extends Sprite {
+    public life: number = DAMAGE_EFFECT_LIFE;
+    public velocityY: number = 0;
+
+    constructor() {
+        super(Texture.from(DAMAGE_EFFECT_PATH));
+        this.anchor.set(0.5);
+        this.scale.set(DAMAGE_EFFECT_SCALE);
+    }
 }
 
 /** ドロップテーブル設定 */
 export interface DropTable {
     /** 経験値 (個数の最小・最大) */
+
     exp: { min: number; max: number; chance: number };
     /** コイン (ドロップ率 0~1) */
     coinChance: number;
@@ -89,7 +100,7 @@ export abstract class Enemy extends Container {
      * @param playerX Player X position
      * @param playerY Player Y position
      */
-    public update(dt: number, _playerX: number, _playerY: number): void {
+    public update(dt: number): void {
         // Move toward player logic is handled by specific enemy types usually,
         // but BasicEnemy uses simple tracking. Here we just update effects.
 
@@ -144,9 +155,7 @@ export abstract class Enemy extends Container {
     }
 
     private showDamageEffect(sourceX?: number, sourceY?: number): void {
-        const effect = Sprite.from("/assets/images/damage.png") as DamageEffect;
-        effect.anchor.set(0.5);
-        effect.scale.set(0.08); // Adjust scale if needed
+        const effect = new DamageEffect();
 
         if (sourceX !== undefined && sourceY !== undefined) {
             // 攻撃された方向（敵の中心から攻撃元への方向）に表示
@@ -161,17 +170,13 @@ export abstract class Enemy extends Container {
             effect.x = Math.cos(angle) * distance;
             effect.y = Math.sin(angle) * distance;
 
-            // エフェクトを攻撃方向に向ける（画像の向きに合わせて調整が必要かも）
-            // damage.pngが上向きなら + 90度など
+            // エフェクトを攻撃方向に向ける
             effect.rotation = angle + Math.PI / 2;
         } else {
             // 指定がなければ頭上に表示 (デフォルト)
             effect.x = 0;
             effect.y = -(this._radius + 20);
         }
-
-        effect.life = 0.5; // 0.5 seconds duration
-        effect.velocityY = 0; // その場に留まるか、少しノックバック方向に動く? とりあえず固定
 
         this.damageEffects.push(effect);
         this.addChild(effect);
