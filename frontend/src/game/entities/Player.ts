@@ -116,11 +116,6 @@ export class Player extends Container {
         this._level++;
         this._nextLevelExp = this.calculateNextLevelExp();
 
-        // Level up bonus (example)
-        this._maxHp += 10;
-        this._hp = this._maxHp;
-        this.hpBar.update(1); // Full heal on level up?
-
         console.log(`Level Up! Lv.${this._level}`);
     }
 
