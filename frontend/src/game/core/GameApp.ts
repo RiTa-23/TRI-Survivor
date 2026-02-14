@@ -204,6 +204,9 @@ export class GameApp {
             // Check enemies vs enemies (prevent overlap)
             this.checkEnemyCollisions();
 
+            // Check player vs enemies (prevent overlap)
+            this.checkPlayerEnemyCollisions();
+
             // Auto-attack: shoot at nearest enemy
             this.attackTimer += dtMs;
             if (this.attackTimer >= this.player.attackInterval) {
@@ -514,6 +517,33 @@ export class GameApp {
                     e2.x -= pushX;
                     e2.y -= pushY;
                 }
+            }
+        }
+    }
+
+    /** プレイヤーと敵の衝突判定（押し戻し） */
+    private checkPlayerEnemyCollisions(): void {
+        for (const enemy of this.enemies) {
+            if (!enemy.alive) continue;
+
+            const dx = this.player.x - enemy.x;
+            const dy = this.player.y - enemy.y;
+            const distSqr = dx * dx + dy * dy;
+            const radiusSum = this.player.radius + enemy.radius;
+
+            if (distSqr < radiusSum * radiusSum && distSqr > 0) {
+                const dist = Math.sqrt(distSqr);
+                const overlap = radiusSum - dist;
+
+                // お互いに押し戻す (0.5ずつ)
+                // プレイヤーが動けなくならないよう、敵の方を少し多めに動かす等の調整も可だが、まずは均等に
+                const pushX = (dx / dist) * overlap * 0.5;
+                const pushY = (dy / dist) * overlap * 0.5;
+
+                this.player.x += pushX;
+                this.player.y += pushY;
+                enemy.x -= pushX;
+                enemy.y -= pushY;
             }
         }
     }
