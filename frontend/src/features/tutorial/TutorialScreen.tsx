@@ -70,7 +70,10 @@ export default function TutorialScreen() {
                     variant="ghost"
                     size="lg"
                     className="flex items-center gap-2 px-6 py-4 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl glass-morphism border-slate-700/30 transition-all font-bold"
-                    onClick={() => navigate("/home")}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/home");
+                    }}
                 >
                     <Home className="w-5 h-5" />
                     <span>ホームへ</span>
