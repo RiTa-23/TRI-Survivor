@@ -114,26 +114,38 @@ export class GameApp {
         }
 
         // Preload Assets
-        await Assets.load([
-            "/assets/images/player.png",
-            "/assets/images/basic_enemy.png",
-            "/assets/images/experience.png",
-            "/assets/images/coin.png",
-            "/assets/images/heal.png",
-            "/assets/images/damage.png",
-        ]);
+        try {
+            await Assets.load([
+                "/assets/images/player.png",
+                "/assets/images/basic_enemy.png",
+                "/assets/images/experience.png",
+                "/assets/images/coin.png",
+                "/assets/images/heal.png",
+                "/assets/images/damage.png",
+            ]);
+        } catch (e) {
+            console.error("Failed to load assets:", e);
+            this.destroyApp();
+            return;
+        }
+
+        if (this.isDestroyed) return;
 
         // Setup infinite tiling background (added to stage directly, not world)
         this.tilingBg = this.createGridTile();
-        this.app.stage.addChild(this.tilingBg);
+        if (!this.isDestroyed) {
+            this.app.stage.addChild(this.tilingBg);
+        }
 
         // Initialize Player AFTER assets are loaded
-        this.player = new Player();
-        this.player.x = 0;
-        this.player.y = 0;
-        this.world.addChild(this.player);
+        if (!this.isDestroyed) {
+            this.player = new Player();
+            this.player.x = 0;
+            this.player.y = 0;
+            this.world.addChild(this.player);
 
-        this.app.stage.addChild(this.world);
+            this.app.stage.addChild(this.world);
+        }
 
         // Initialize Hand Tracking
         try {
