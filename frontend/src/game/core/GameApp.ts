@@ -4,6 +4,7 @@ import { Enemy } from "../entities/Enemy";
 import { BasicEnemy } from "../entities/BasicEnemy";
 import { Bullet } from "../entities/Bullet";
 import { Item } from "../entities/Item";
+import { Obstacle } from "../entities/Obstacle";
 import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
 
@@ -17,6 +18,13 @@ const SPAWN_INTERVAL_MS = 500;
 const SPAWN_DISTANCE = 1000;
 const MAX_ENEMIES = 30;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
+
+/** Obstacle settings */
+const MAX_OBSTACLES = 15;
+const OBSTACLE_SPAWN_DISTANCE = 1000; // 画面外
+const OBSTACLE_DESPAWN_DISTANCE = 1500;
+const OBSTACLE_MIN_RADIUS = 30;
+const OBSTACLE_MAX_RADIUS = 50;
 
 /** Item drop settings */
 const ITEM_DESPAWN_DISTANCE = 2000;
@@ -39,6 +47,7 @@ export class GameApp {
     private enemies: Enemy[] = [];
     private bullets: Bullet[] = [];
     private items: Item[] = [];
+    private obstacles: Obstacle[] = [];
     private spawnTimer: number = 0;
     private attackTimer: number = 0;
     private handTrackingManager: HandTrackingManager;
@@ -176,6 +185,9 @@ export class GameApp {
             }
             this.player.update(dt);
 
+            // Check player vs obstacles
+            this.checkPlayerObstacleCollisions();
+
             // Spawn enemies periodically
             this.spawnTimer += dtMs;
             if (this.spawnTimer >= SPAWN_INTERVAL_MS && this.enemies.length < MAX_ENEMIES) {
@@ -186,6 +198,9 @@ export class GameApp {
             // Update enemies (movement + contact damage)
             this.updateEnemies(dt);
 
+            // Check enemies vs obstacles (after movement)
+            this.checkEnemyObstacleCollisions();
+
             // Auto-attack: shoot at nearest enemy
             this.attackTimer += dtMs;
             if (this.attackTimer >= this.player.attackInterval) {
@@ -195,6 +210,9 @@ export class GameApp {
 
             // Update bullets
             this.updateBullets(dt);
+
+            // Manage obstacles (spawn/despawn)
+            this.updateObstacles(dt);
 
             // Update items (magnet & collect)
             this.updateItems(dt);
@@ -377,6 +395,92 @@ export class GameApp {
             level: this.player.level,
             nextLevelExp: this.player.nextLevelExp,
         });
+    }
+
+    /** 障害物を生成して配置 */
+    private spawnObstacle(): void {
+        const radius = OBSTACLE_MIN_RADIUS + Math.random() * (OBSTACLE_MAX_RADIUS - OBSTACLE_MIN_RADIUS);
+        const obstacle = new Obstacle({ radius });
+
+        // プレイヤーの周囲のランダムな位置（画面外）に配置
+        const angle = Math.random() * Math.PI * 2;
+        const distance = OBSTACLE_SPAWN_DISTANCE + Math.random() * 200;
+
+        obstacle.x = this.player.x + Math.cos(angle) * distance;
+        obstacle.y = this.player.y + Math.sin(angle) * distance;
+
+        this.obstacles.push(obstacle);
+        this.world.addChild(obstacle);
+    }
+
+    /** 障害物の更新（削除と生成） */
+    private updateObstacles(_dt: number): void {
+        // Despawn far obstacles
+        for (let i = this.obstacles.length - 1; i >= 0; i--) {
+            const obs = this.obstacles[i];
+            const dx = obs.x - this.player.x;
+            const dy = obs.y - this.player.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > OBSTACLE_DESPAWN_DISTANCE) {
+                this.world.removeChild(obs);
+                obs.destroy();
+                this.obstacles.splice(i, 1);
+            }
+        }
+
+        // Spawn new obstacles if needed
+        if (this.obstacles.length < MAX_OBSTACLES) {
+            // 少しランダム性を入れて、毎フレーム生成されないようにする
+            if (Math.random() < 0.05) {
+                this.spawnObstacle();
+            }
+        }
+    }
+
+    /** プレイヤーと障害物の衝突判定（押し戻し） */
+    private checkPlayerObstacleCollisions(): void {
+        for (const obs of this.obstacles) {
+            const dx = this.player.x - obs.x;
+            const dy = this.player.y - obs.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const minDist = this.player.radius + obs.radius;
+
+            if (dist < minDist) {
+                const pushDist = minDist - dist;
+                if (dist > 0) {
+                    const pushX = (dx / dist) * pushDist;
+                    const pushY = (dy / dist) * pushDist;
+                    this.player.x += pushX;
+                    this.player.y += pushY;
+                } else {
+                    this.player.x += pushDist;
+                }
+            }
+        }
+    }
+
+    /** 敵と障害物の衝突判定（押し戻し） */
+    private checkEnemyObstacleCollisions(): void {
+        for (const enemy of this.enemies) {
+            if (!enemy.alive) continue;
+            for (const obs of this.obstacles) {
+                const dx = enemy.x - obs.x;
+                const dy = enemy.y - obs.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const minDist = enemy.radius + obs.radius;
+
+                if (dist < minDist) {
+                    const pushDist = minDist - dist;
+                    if (dist > 0) {
+                        const pushX = (dx / dist) * pushDist;
+                        const pushY = (dy / dist) * pushDist;
+                        enemy.x += pushX;
+                        enemy.y += pushY;
+                    }
+                }
+            }
+        }
     }
 
     /** PixiJS v8 destroy options (shared to avoid duplication) */
