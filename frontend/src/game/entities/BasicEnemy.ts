@@ -14,7 +14,7 @@ export class BasicEnemy extends Enemy {
             attackPower: 10,
             color: 0x9b59b6,
             textureKey: "/assets/images/basic_enemy.png",
-            radius: 30,
+            radius: 40,
             dropTable: {
                 exp: { min: 1, max: 3, chance: 1.0 },
                 coinChance: 0.3,

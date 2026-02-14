@@ -7,9 +7,11 @@ export interface ItemConfig {
     color: number;
     /** テクスチャパス */
     textureKey: string;
-    /** 当たり判定の半径 */
-    radius: number;
+    /** 当たり判定の半径 (未指定時はDEFAULT_RADIUS) */
+    radius?: number;
 }
+
+const DEFAULT_RADIUS = 10;
 
 /**
  * アイテムの基底クラス
@@ -28,7 +30,7 @@ export abstract class Item extends Container {
 
     constructor(config: ItemConfig) {
         super();
-        this._radius = config.radius;
+        this._radius = config.radius ?? DEFAULT_RADIUS;
 
         this.sprite = Sprite.from(config.textureKey);
         this.sprite.anchor.set(0.5);
