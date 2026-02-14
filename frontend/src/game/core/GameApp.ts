@@ -595,6 +595,13 @@ export class GameApp {
     public destroy() {
         this.isDestroyed = true;
         this.handTrackingManager.stop();
+
+        for (const obs of this.obstacles) {
+            this.world.removeChild(obs);
+            obs.destroy();
+        }
+        this.obstacles.length = 0;
+
         this.destroyApp();
     }
 }
