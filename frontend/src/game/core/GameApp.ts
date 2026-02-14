@@ -444,24 +444,58 @@ export class GameApp {
         }
     }
 
+    /**
+     * 円同士の衝突判定と押し戻しベクトル計算
+     * @param x1 対象1のX
+     * @param y1 対象1のY
+     * @param r1 対象1の半径
+     * @param x2 対象2のX
+     * @param y2 対象2のY
+     * @param r2 対象2の半径
+     * @param pushRatio1 対象1への押し戻し割合 (0.0 - 1.0)
+     * @returns 対象1に適用する移動ベクトル {x, y} または衝突していない場合 null
+     */
+    private resolveCircleOverlap(
+        x1: number, y1: number, r1: number,
+        x2: number, y2: number, r2: number,
+        pushRatio1: number
+    ): { x: number, y: number } | null {
+        const dx = x1 - x2;
+        const dy = y1 - y2;
+        const distSqr = dx * dx + dy * dy;
+        const radiusSum = r1 + r2;
+
+        if (distSqr >= radiusSum * radiusSum) return null;
+
+        const dist = Math.sqrt(distSqr);
+        const overlap = radiusSum - dist;
+
+        let pushX: number, pushY: number;
+
+        if (dist > 0) {
+            pushX = (dx / dist) * overlap * pushRatio1;
+            pushY = (dy / dist) * overlap * pushRatio1;
+        } else {
+            // 完全重複時のフォールバック
+            pushX = overlap * pushRatio1; // x軸方向にずらす
+            pushY = 0;
+        }
+
+        return { x: pushX, y: pushY };
+    }
+
     /** プレイヤーと障害物の衝突判定（押し戻し） */
     private checkPlayerObstacleCollisions(): void {
         for (const obs of this.obstacles) {
-            const dx = this.player.x - obs.x;
-            const dy = this.player.y - obs.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const minDist = this.player.radius + obs.radius;
+            const push = this.resolveCircleOverlap(
+                this.player.x, this.player.y, this.player.radius,
+                obs.x, obs.y, obs.radius,
+                1.0 // プレイヤーのみ動く
+            );
 
-            if (dist < minDist) {
-                const pushDist = minDist - dist;
-                if (dist > 0) {
-                    const pushX = (dx / dist) * pushDist;
-                    const pushY = (dy / dist) * pushDist;
-                    this.player.x += pushX;
-                    this.player.y += pushY;
-                } else {
-                    this.player.x += pushDist;
-                }
+            if (push) {
+                this.player.x += push.x;
+                this.player.y += push.y;
             }
         }
     }
@@ -471,22 +505,15 @@ export class GameApp {
         for (const enemy of this.enemies) {
             if (!enemy.alive) continue;
             for (const obs of this.obstacles) {
-                const dx = enemy.x - obs.x;
-                const dy = enemy.y - obs.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const minDist = enemy.radius + obs.radius;
+                const push = this.resolveCircleOverlap(
+                    enemy.x, enemy.y, enemy.radius,
+                    obs.x, obs.y, obs.radius,
+                    1.0 // 敵のみ動く
+                );
 
-                if (dist < minDist) {
-                    const pushDist = minDist - dist;
-                    if (dist > 0) {
-                        const pushX = (dx / dist) * pushDist;
-                        const pushY = (dy / dist) * pushDist;
-                        enemy.x += pushX;
-                        enemy.y += pushY;
-                    } else {
-                        // 重なった場合のフォールバック (x方向に押し出す)
-                        enemy.x += pushDist;
-                    }
+                if (push) {
+                    enemy.x += push.x;
+                    enemy.y += push.y;
                 }
             }
         }
@@ -503,22 +530,19 @@ export class GameApp {
                 const e2 = this.enemies[j];
                 if (!e2.alive) continue;
 
-                const dx = e1.x - e2.x;
-                const dy = e1.y - e2.y;
-                const distSqr = dx * dx + dy * dy;
-                const radiusSum = e1.radius + e2.radius;
+                // お互いに0.5ずつ動く
+                const push = this.resolveCircleOverlap(
+                    e1.x, e1.y, e1.radius,
+                    e2.x, e2.y, e2.radius,
+                    0.5
+                );
 
-                if (distSqr < radiusSum * radiusSum && distSqr > 0) {
-                    const dist = Math.sqrt(distSqr);
-                    const overlap = radiusSum - dist;
-                    // お互いに半分ずつ押し戻す
-                    const pushX = (dx / dist) * overlap * 0.5;
-                    const pushY = (dy / dist) * overlap * 0.5;
-
-                    e1.x += pushX;
-                    e1.y += pushY;
-                    e2.x -= pushX;
-                    e2.y -= pushY;
+                if (push) {
+                    e1.x += push.x;
+                    e1.y += push.y;
+                    // e2は逆方向に同じだけ動く
+                    e2.x -= push.x;
+                    e2.y -= push.y;
                 }
             }
         }
@@ -529,24 +553,18 @@ export class GameApp {
         for (const enemy of this.enemies) {
             if (!enemy.alive) continue;
 
-            const dx = this.player.x - enemy.x;
-            const dy = this.player.y - enemy.y;
-            const distSqr = dx * dx + dy * dy;
-            const radiusSum = this.player.radius + enemy.radius;
+            // お互いに0.5ずつ動く
+            const push = this.resolveCircleOverlap(
+                this.player.x, this.player.y, this.player.radius,
+                enemy.x, enemy.y, enemy.radius,
+                0.5
+            );
 
-            if (distSqr < radiusSum * radiusSum && distSqr > 0) {
-                const dist = Math.sqrt(distSqr);
-                const overlap = radiusSum - dist;
-
-                // お互いに押し戻す (0.5ずつ)
-                // プレイヤーが動けなくならないよう、敵の方を少し多めに動かす等の調整も可だが、まずは均等に
-                const pushX = (dx / dist) * overlap * 0.5;
-                const pushY = (dy / dist) * overlap * 0.5;
-
-                this.player.x += pushX;
-                this.player.y += pushY;
-                enemy.x -= pushX;
-                enemy.y -= pushY;
+            if (push) {
+                this.player.x += push.x;
+                this.player.y += push.y;
+                enemy.x -= push.x;
+                enemy.y -= push.y;
             }
         }
     }
