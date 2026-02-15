@@ -19,12 +19,6 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import {
-  HoverCard,
-  HoverCardTrigger,
-  HoverCardContent,
-} from "@/components/ui/hover-card"
-
-import {
   LockKeyhole,
   LockKeyholeOpen,
   ArrowLeft,
@@ -42,139 +36,110 @@ export function ShopItemCard({
   price,
   image,
   description,
+  onHover,
 }: {
   name: string;
   price: number;
   image: string;
   description: string;
+  onHover: (item: any) => void;
 }) {
   const [purchased, setPurchased] = useState(false)
-  const [open, setOpen] = useState(false)
-
-  const closeHover = () => setOpen(false)
 
   const handlePurchase = () => {
     setPurchased(true)
-    closeHover()
   }
 
   return (
-    <HoverCard open={open} onOpenChange={setOpen} openDelay={50} closeDelay={100}>
-      <HoverCardTrigger
-        asChild
-        tabIndex={-1}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onClick={closeHover}
-      >
-        <Card
-          className={`
-            w-[180px] h-[250px]
-            flex flex-col justify-between
-            rounded-xl cursor-pointer
-            border border-yellow-500/70
-            shadow-[0_0_20px_rgba(255,215,0,0.4)]
-            hover:shadow-[0_0_28px_rgba(255,215,0,0.8)]
-            transition-all
+    <Card
+      onMouseEnter={() => onHover({ name, description })}
+      onMouseLeave={() => onHover(null)}
+      className={`
+        w-[180px] h-[250px]
+        flex flex-col justify-between
+        rounded-xl cursor-pointer
+        border border-yellow-500/70
 
-            ${purchased ? "bg-black/40" : "bg-slate-900/90"}
-          `}
-        >
-          <CardHeader className="text-center py-1">
-            <CardTitle className="text-sm font-bold text-yellow-400 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
-              {name}
-            </CardTitle>
-          </CardHeader>
+        shadow-none
+        hover:shadow-[0_0_28px_rgba(255,215,0,0.8)]
+        transition-all
 
-          <CardContent className="flex justify-center items-center h-[70px] pt-1">
-            <img
-              src={image}
-              alt={name}
-              className="w-14 h-14 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-            />
-          </CardContent>
-
-          <CardFooter className="flex flex-col gap-1 pb-2 px-2">
-            <div className="text-center text-sm font-bold flex items-center justify-center gap-1 text-yellow-300 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
-              <span className="text-yellow-200 text-lg drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">🪙</span>
-              {price}
-            </div>
-
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  className="
-                    w-full text-xs py-2 flex items-center justify-center gap-2 font-bold
-                    bg-black/70 text-yellow-300
-                    border border-yellow-500/60
-                    hover:bg-black
-                    drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]
-                    transition-all
-                  "
-                  disabled={purchased}
-                  onClick={closeHover}
-                >
-                  {purchased ? (
-                    <>
-                      <LockKeyholeOpen size={14} />
-                      購入済み
-                    </>
-                  ) : (
-                    <>
-                      <LockKeyhole size={14} />
-                      購入する
-                    </>
-                  )}
-                </Button>
-              </AlertDialogTrigger>
-
-              <AlertDialogContent className="bg-slate-900 text-white border border-yellow-500 shadow-[0_0_25px_rgba(255,215,0,0.7)]">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-yellow-300 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
-                    購入しますか？
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {name} を {price} コインで購入します。
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogAction
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
-                    onClick={handlePurchase}
-                  >
-                    はい
-                  </AlertDialogAction>
-                  <AlertDialogCancel
-                    className="bg-slate-700 hover:bg-slate-600 text-white"
-                    onClick={closeHover}
-                  >
-                    いいえ
-                  </AlertDialogCancel>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </CardFooter>
-        </Card>
-      </HoverCardTrigger>
-
-      <HoverCardContent
-        side="top"
-        sideOffset={10}
-        className="
-          w-64 text-sm
-          bg-slate-900/95 text-white
-          border border-yellow-500
-          shadow-[0_0_20px_rgba(255,215,0,0.7)]
-          rounded-lg p-4
-        "
-      >
-        <div className="font-bold mb-1 text-yellow-300 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
+        ${purchased ? "bg-gray-200" : "bg-white"}
+      `}
+    >
+      <CardHeader className="text-center py-1">
+        {/* ★ 商品名を黒に変更 */}
+        <CardTitle className="text-sm font-bold text-black drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
           {name}
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="flex justify-center items-center h-[70px] pt-1">
+        <img
+          src={image}
+          alt={name}
+          className="w-14 h-14 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+        />
+      </CardContent>
+
+      <CardFooter className="flex flex-col gap-1 pb-2 px-2">
+        <div className="text-center text-sm font-bold flex items-center justify-center gap-1 text-yellow-300 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
+          <span className="text-yellow-200 text-lg drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">🪙</span>
+          {price}
         </div>
-        <div>{description}</div>
-      </HoverCardContent>
-    </HoverCard>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              className="
+                w-full text-xs py-2 flex items-center justify-center gap-2 font-bold
+                bg-black/70 text-yellow-300
+                border border-yellow-500/60
+                hover:bg-black
+                drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]
+                transition-all
+              "
+              disabled={purchased}
+            >
+              {purchased ? (
+                <>
+                  <LockKeyholeOpen size={14} />
+                  購入済み
+                </>
+              ) : (
+                <>
+                  <LockKeyhole size={14} />
+                  購入する
+                </>
+              )}
+            </Button>
+          </AlertDialogTrigger>
+
+          <AlertDialogContent className="bg-slate-900 text-white border border-yellow-500 shadow-[0_0_25px_rgba(255,215,0,0.7)]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-yellow-300 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
+                購入しますか？
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {name} を {price} コインで購入します。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter>
+              <AlertDialogAction
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                onClick={handlePurchase}
+              >
+                はい
+              </AlertDialogAction>
+              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white">
+                いいえ
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -183,6 +148,8 @@ export function ShopItemCard({
 // -----------------------------
 export default function ShopScreen() {
   const navigate = useNavigate();
+
+  const [hoverItem, setHoverItem] = useState<any>(null)
 
   const weaponItems = [
     { name: "レジェンドソード", price: 500, image: "/images/item-legend.png", description: "古代の英雄が使ったとされる伝説の剣。攻撃力 +50。" },
@@ -208,6 +175,27 @@ export default function ShopScreen() {
 
   return (
     <div className="relative min-h-screen bg-white text-black flex flex-col items-center p-6">
+
+      {/* ← 左上固定の説明パネル */}
+      <div className="absolute top-45 left-12 w-64 bg-white text-black border border-yellow-500 rounded-lg p-4 shadow-[0_0_20px_rgba(255,215,0,0.7)]">
+        {hoverItem ? (
+          <>
+            <div className="font-bold text-yellow-600 mb-2">{hoverItem.name}</div>
+            <div className="text-sm">{hoverItem.description}</div>
+          </>
+        ) : (
+          <div className="text-sm text-gray-500">なに買うの～？</div>
+        )}
+      </div>
+
+      {/* ← 左下固定のキャラ画像 */}
+      <img
+        src="/images/character.png"
+        alt="character"
+        className="absolute bottom-40 left-35 w-48 drop-shadow-[0_0_12px_rgba(0,0,0,0.4)]"
+      />
+
+      {/* ← ホームに戻るボタン */}
       <button
         onClick={() => navigate("/home")}
         className="absolute top-4 left-4 p-2 rounded-lg border border-black/40 bg-black/10 hover:bg-black/20 transition-colors"
@@ -219,53 +207,60 @@ export default function ShopScreen() {
         Shop
       </h1>
 
-      <Tabs defaultValue="weapon" className="w-full max-w-4xl">
-        <TabsList className="flex justify-center mb-4 bg-black/10 rounded-full p-1">
-          <TabsTrigger
-            value="weapon"
-            className="
-              px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
-              data-[state=active]:bg-green-300/30
-              data-[state=active]:text-green-700
-              data-[state=active]:shadow-[0_0_10px_rgba(74,222,128,0.7)]
-            "
-          >
-            <Axe size={18} /> 武器
-          </TabsTrigger>
+      {/* ★ タブ全体を右に移動 */}
+      <div className="w-full flex justify-end">
+        <Tabs defaultValue="weapon" className="max-w-4xl w-full">
 
-          <TabsTrigger
-            value="status"
-            className="
-              px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
-              data-[state=active]:bg-green-300/30
-              data-[state=active]:text-green-700
-              data-[state=active]:shadow-[0_0_10px_rgba(74,222,128,0.7)]
-            "
-          >
-            <BicepsFlexed size={18} /> ステータス
-          </TabsTrigger>
-        </TabsList>
+          {/* タブボタン */}
+          <TabsList className="flex justify-end w-full pr-6 mb-4 bg-black/10 rounded-full p-1">
+            <TabsTrigger
+              value="weapon"
+              className="
+                px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
+                data-[state=active]:bg-green-300/30
+                data-[state=active]:text-green-700
+                data-[state=active]:shadow-[0_0_10px_rgba(74,222,128,0.7)]
+              "
+            >
+              <Axe size={18} /> 武器
+            </TabsTrigger>
 
-        <TabsContent value="weapon">
-          <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
-            <div className="flex flex-row flex-wrap justify-center gap-5">
-              {weaponItems.map((item) => (
-                <ShopItemCard key={item.name} {...item} />
-              ))}
-            </div>
-          </ScrollArea>
-        </TabsContent>
+            <TabsTrigger
+              value="status"
+              className="
+                px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
+                data-[state=active]:bg-green-300/30
+                data-[state=active]:text-green-700
+                data-[state=active]:shadow-[0_0_10px_rgba(74,222,128,0.7)]
+              "
+            >
+              <BicepsFlexed size={18} /> ステータス
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="status">
-          <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
-            <div className="flex flex-row flex-wrap justify-center gap-5">
-              {statusItems.map((item) => (
-                <ShopItemCard key={item.name} {...item} />
-              ))}
-            </div>
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
+          {/* タブの中身（カード一覧） */}
+          <TabsContent value="weapon">
+            <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
+              <div className="flex flex-row flex-wrap justify-center gap-5">
+                {weaponItems.map((item) => (
+                  <ShopItemCard key={item.name} {...item} onHover={setHoverItem} />
+                ))}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="status">
+            <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
+              <div className="flex flex-row flex-wrap justify-center gap-5">
+                {statusItems.map((item) => (
+                  <ShopItemCard key={item.name} {...item} onHover={setHoverItem} />
+                ))}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+        </Tabs>
+      </div>
     </div>
   );
 }
