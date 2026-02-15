@@ -1,6 +1,6 @@
 import { Weapon } from "./Weapon";
 import { SkillType } from "../types";
-import { BasicEnemy } from "../entities/BasicEnemy";
+import { Enemy } from "../entities/Enemy";
 import { Graphics } from "pixi.js";
 
 export class SwordWeapon extends Weapon {
@@ -22,21 +22,23 @@ export class SwordWeapon extends Weapon {
         // Initialize Graphics for the sword (simple stick)
         this._swordGraphics = new Graphics();
 
-        // Draw the sword shape
+        // Draw the sword shape using PixiJS v8 API
         const bladeWidth = 10;
         const bladeLength = 100;
 
-        this._swordGraphics.beginFill(0xDDDDDD); // Silver blade
-        this._swordGraphics.lineStyle(2, 0x888888); // Darker outline
-        // Pivot is at (0,0), drawing upwards (negative Y)
-        this._swordGraphics.drawRect(-bladeWidth / 2, -bladeLength, bladeWidth, bladeLength);
-        this._swordGraphics.endFill();
+        // Blade
+        this._swordGraphics.rect(-bladeWidth / 2, -bladeLength, bladeWidth, bladeLength);
+        this._swordGraphics.fill({ color: 0xDDDDDD }); // Silver blade
+        this._swordGraphics.stroke({ width: 2, color: 0x888888 }); // Darker outline
 
-        // Handle
-        this._swordGraphics.beginFill(0x8B4513); // Brown handle
-        this._swordGraphics.drawRect(-5, 0, 10, 20); // Handle
-        this._swordGraphics.drawRect(-12, -5, 24, 5); // Guard
-        this._swordGraphics.endFill();
+        // Handle (Guard/Hilt)
+        // Guard
+        this._swordGraphics.rect(-12, -20, 24, 5);
+        this._swordGraphics.fill({ color: 0x8B4513 });
+
+        // Grip
+        this._swordGraphics.rect(-5, -15, 10, 20);
+        this._swordGraphics.fill({ color: 0x8B4513 });
 
         this._swordGraphics.visible = false;
 
@@ -46,7 +48,7 @@ export class SwordWeapon extends Weapon {
         this.addChild(this._swordGraphics);
     }
 
-    public update(dt: number, enemies: BasicEnemy[], playerX: number, playerY: number, damageMultiplier: number): void {
+    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number): void {
         // Handle slash animation
         if (this._swinging) {
             this._slashTimer -= dt;
@@ -95,7 +97,6 @@ export class SwordWeapon extends Weapon {
         if (!foundTarget) return;
 
         // Start Slash
-        console.log("Sword Slash Triggered!");
         this._targetAngle = targetAngle;
         this._swinging = true;
         this._slashTimer = this._slashDuration;
@@ -106,7 +107,7 @@ export class SwordWeapon extends Weapon {
         this.dealAreaDamage(targetAngle, enemies, playerX, playerY, damageMultiplier);
     }
 
-    private dealAreaDamage(angle: number, enemies: BasicEnemy[], px: number, py: number, multiplier: number): void {
+    private dealAreaDamage(angle: number, enemies: Enemy[], px: number, py: number, multiplier: number): void {
         const damage = this._damage * multiplier;
         const rangeSq = this._range * this._range;
         const halfArc = this._arc / 2;
@@ -135,22 +136,25 @@ export class SwordWeapon extends Weapon {
         this._baseCooldown *= 0.9;
         this._range += 20;
 
-        // Redraw longer sword
+        // Redraw longer sword with v8 API
         this._swordGraphics.clear();
 
         const bladeWidth = 10;
         const bladeLength = 100 + (this._level - 1) * 20;
 
-        this._swordGraphics.beginFill(0xDDDDDD);
-        this._swordGraphics.lineStyle(2, 0x888888);
-        this._swordGraphics.drawRect(-bladeWidth / 2, -bladeLength, bladeWidth, bladeLength);
-        this._swordGraphics.endFill();
+        // Blade
+        this._swordGraphics.rect(-bladeWidth / 2, -bladeLength, bladeWidth, bladeLength);
+        this._swordGraphics.fill({ color: 0xDDDDDD });
+        this._swordGraphics.stroke({ width: 2, color: 0x888888 });
 
         // Handle
-        this._swordGraphics.beginFill(0x8B4513);
-        this._swordGraphics.drawRect(-5, 0, 10, 20);
-        this._swordGraphics.drawRect(-12, -5, 24, 5);
-        this._swordGraphics.endFill();
+        // Guard
+        this._swordGraphics.rect(-12, -20, 24, 5);
+        this._swordGraphics.fill({ color: 0x8B4513 });
+
+        // Grip
+        this._swordGraphics.rect(-5, -15, 10, 20);
+        this._swordGraphics.fill({ color: 0x8B4513 });
 
         console.log(`Sword upgraded to Lv.${this._level}: Dmg=${this._damage}`);
     }

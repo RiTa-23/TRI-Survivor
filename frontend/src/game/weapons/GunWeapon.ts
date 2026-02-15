@@ -1,6 +1,6 @@
 import { Weapon } from "./Weapon";
 import { SkillType } from "../types";
-import { BasicEnemy } from "../entities/BasicEnemy";
+import { Enemy } from "../entities/Enemy";
 import { Bullet } from "../entities/Bullet";
 
 export class GunWeapon extends Weapon {
@@ -17,7 +17,7 @@ export class GunWeapon extends Weapon {
         this._level = 1;
     }
 
-    public update(dt: number, enemies: BasicEnemy[], playerX: number, playerY: number, damageMultiplier: number): void {
+    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number): void {
         if (this._cooldown > 0) {
             this._cooldown -= dt;
             return;

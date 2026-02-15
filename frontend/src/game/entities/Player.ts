@@ -5,6 +5,7 @@ import { Weapon } from "../weapons/Weapon";
 import { BasicEnemy } from "./BasicEnemy";
 
 const DAMAGE_FLASH_DURATION = 0.1; // seconds
+const BASE_ATTACK_POWER = 10;
 
 export class Player extends Container {
     private sprite: Sprite;
@@ -248,14 +249,16 @@ export class Player extends Container {
         // Note: spawnBullet is passed down if needed, but separate Weapon logic might handle it differently.
         // GunWeapon handles bullets via its own callback.
 
-        for (const w of this.weapons) {
-            w.update(dt, enemies, this.x, this.y, this._attackPower / 10); // Normalize attack power? 
-            // Or just pass attackPower. Current attackPower is ~10. 
-            // We can use it as a multiplier or keep it as base.
-            // Let's use it as a multiplier relative to 10? Or just add it?
-            // Existing logic used `this.player.attackPower` as direct damage.
-            // GunWeapon uses `_damage * multiplier`.
-            // Let's pass `this._attackPower / 10` as multiplier so base 10 = 1.0.
+        // Calculate functionality-based multiplier
+        // If we want AttackPower to directly be the damage, we pass 1.0 here and use attackPower in weapon.
+        // But previously it seemed to be a multiplier based on player stats.
+        // Let's standardize: The weapon has base damage.
+        // The player has an _attackPower stat (default 10).
+        // We can treat (this._attackPower / BASE_ATTACK_POWER) as the multiplier.
+        const damageMultiplier = this._attackPower / BASE_ATTACK_POWER;
+
+        for (const weapon of this.weapons) {
+            weapon.update(dt, enemies, this.x, this.y, damageMultiplier);
         }
     }
 

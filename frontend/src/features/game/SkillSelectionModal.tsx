@@ -35,9 +35,11 @@ export const SkillSelectionModal: React.FC<Props> = ({ options, onSelect }) => {
                                 <h3 className="text-xl font-bold text-yellow-100 group-hover:text-yellow-400">
                                     {option.name}
                                 </h3>
-                                <span className="rounded bg-yellow-500/20 px-2 py-0.5 text-xs font-bold text-yellow-300">
-                                    Lv. {option.level}
-                                </span>
+                                {option.type !== SkillType.HEAL && option.type !== SkillType.GET_COIN && (
+                                    <span className="rounded bg-yellow-500/20 px-2 py-0.5 text-xs font-bold text-yellow-300">
+                                        Lv. {option.level}
+                                    </span>
+                                )}
                                 <p className="mt-2 text-sm text-slate-300 group-hover:text-white">
                                     {option.description}
                                 </p>

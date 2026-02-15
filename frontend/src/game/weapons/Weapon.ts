@@ -1,6 +1,6 @@
 import { Container } from "pixi.js";
 import { SkillType } from "../types";
-import { BasicEnemy } from "../entities/BasicEnemy";
+import { Enemy } from "../entities/Enemy";
 
 export abstract class Weapon extends Container {
     protected _type: SkillType;
@@ -37,7 +37,7 @@ export abstract class Weapon extends Container {
      */
     public abstract update(
         dt: number,
-        enemies: BasicEnemy[],
+        enemies: Enemy[],
         playerX: number,
         playerY: number,
         damageMultiplier: number
