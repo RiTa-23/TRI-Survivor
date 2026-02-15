@@ -132,6 +132,8 @@ export class GameApp {
                 "/assets/images/coin.png",
                 "/assets/images/heal.png",
                 "/assets/images/damage.png",
+                "/assets/images/skills/gun.png",
+                "/assets/images/skills/sword.png",
             ]);
         } catch (e) {
             console.error("Failed to load assets:", e);

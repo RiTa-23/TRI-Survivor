@@ -70,7 +70,7 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
     [SkillType.MULTI_SHOT]: {
         name: "Multi Shot",
         description: "Fires an additional projectile.",
-        maxLevel: 3, // Lower max level for powerful skill
+        maxLevel: 1, // Lower max level for powerful skill
         icon: "/assets/images/skills/multi_shot.png",
     },
     [SkillType.MAGNET_UP]: {
