@@ -161,7 +161,9 @@ export class GameApp {
             this.world.addChild(this.player);
 
             // Initial Weapon
-            this.player.addWeapon(new GunWeapon((bullet) => this.spawnBullet(bullet)));
+            //this.player.addWeapon(new GunWeapon((bullet) => this.spawnBullet(bullet)));
+            this.player.addWeapon(new SwordWeapon());
+
 
             this.app.stage.addChild(this.world);
         }
