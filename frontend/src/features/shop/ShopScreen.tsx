@@ -165,7 +165,7 @@ export default function ShopScreen() {
   const navigate = useNavigate();
 
   const [hoverItem, setHoverItem] = useState<Pick<ShopItem, "name" | "description"> | null>(null)
-  const [coins] = useState(1000)
+  const [coins] = useState(200)
 
   const weaponItems = [
     { name: "レジェンドソード", price: 500, image: "/images/item-legend.png", description: "古代の英雄が使ったとされる伝説の剣。攻撃力 +50。" },
