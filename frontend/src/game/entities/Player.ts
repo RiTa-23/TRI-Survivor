@@ -1,6 +1,8 @@
 import { Container, Sprite } from "pixi.js";
 import { HPBar } from "./HPBar";
 import { SkillType } from "../types";
+import { Weapon } from "../weapons/Weapon";
+import { BasicEnemy } from "./BasicEnemy";
 
 const DAMAGE_FLASH_DURATION = 0.1; // seconds
 
@@ -215,12 +217,54 @@ export class Player extends Container {
         return Math.floor(10 * Math.pow(1.3, this._level - 1));
     }
 
+    // --- Weapons ---
+    private weapons: Weapon[] = [];
+
+    /** 武器を追加・強化する */
+    public addWeapon(weapon: Weapon): void {
+        const existing = this.weapons.find(w => w.type === weapon.type);
+        if (existing) {
+            existing.upgrade();
+        } else {
+            this.weapons.push(weapon);
+            this.addChild(weapon); // Add visual container (for Sword etc)
+            console.log(`Weapon added: ${weapon.type}`);
+        }
+    }
+
+    public hasWeapon(type: SkillType): boolean {
+        return this.weapons.some(w => w.type === type);
+    }
+
+    public getWeapon(type: SkillType): Weapon | undefined {
+        return this.weapons.find(w => w.type === type);
+    }
+
+    public get activeWeapons(): Weapon[] {
+        return this.weapons;
+    }
+
+    public updateWeapons(dt: number, enemies: BasicEnemy[]): void {
+        // Note: spawnBullet is passed down if needed, but separate Weapon logic might handle it differently.
+        // GunWeapon handles bullets via its own callback.
+
+        for (const w of this.weapons) {
+            w.update(dt, enemies, this.x, this.y, this._attackPower / 10); // Normalize attack power? 
+            // Or just pass attackPower. Current attackPower is ~10. 
+            // We can use it as a multiplier or keep it as base.
+            // Let's use it as a multiplier relative to 10? Or just add it?
+            // Existing logic used `this.player.attackPower` as direct damage.
+            // GunWeapon uses `_damage * multiplier`.
+            // Let's pass `this._attackPower / 10` as multiplier so base 10 = 1.0.
+        }
+    }
+
     // --- Getters ---
     public get hp(): number { return this._hp; }
     public get maxHp(): number { return this._maxHp; }
     public get speed(): number { return this._speed; }
     public get attackPower(): number { return this._attackPower; }
-    public get attackInterval(): number { return this._attackInterval; }
+    // public get attackInterval(): number { return this._attackInterval; } // Deprecated for global, per weapon now
     public get coins(): number { return this._coins; }
     public get exp(): number { return this._exp; }
     public get level(): number { return this._level; }

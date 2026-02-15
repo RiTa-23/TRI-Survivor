@@ -17,6 +17,9 @@ export const SkillType = {
     EXP_UP: "EXP_UP",
     HEAL: "HEAL",
     GET_COIN: "GET_COIN",
+    // Weapons
+    GUN: "GUN",
+    SWORD: "SWORD",
 } as const;
 
 export type SkillType = typeof SkillType[keyof typeof SkillType];
@@ -91,5 +94,18 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
         description: "Get 50 Coins immediately.",
         maxLevel: 999,
         icon: "/assets/images/coin.png",
+    },
+    // Weapons
+    [SkillType.GUN]: {
+        name: "Pistol",
+        description: "Fires bullets at the nearest enemy.",
+        maxLevel: 5,
+        icon: "/assets/images/skills/gun.png", // Placeholder path
+    },
+    [SkillType.SWORD]: {
+        name: "Katana",
+        description: "Slashes enemies in front of you.",
+        maxLevel: 5,
+        icon: "/assets/images/skills/sword.png", // Placeholder path
     },
 };

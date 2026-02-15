@@ -9,6 +9,8 @@ import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
 import { SkillType, SKILL_DEFINITIONS } from "../types";
 import type { SkillOption, PlayerStats } from "../types";
+import { GunWeapon } from "../weapons/GunWeapon";
+import { SwordWeapon } from "../weapons/SwordWeapon";
 
 /** Grid tile size (one cell) */
 const GRID_SIZE = 80;
@@ -43,7 +45,6 @@ export class GameApp {
     private obstacles: Obstacle[] = [];
     private obstacleSpawnTimer: number = 0;
     private spawnTimer: number = 0;
-    private attackTimer: number = 0;
     private handTrackingManager: HandTrackingManager;
     private currentDirection: Vector2D | null = null;
     private videoElement: HTMLVideoElement;
@@ -159,6 +160,9 @@ export class GameApp {
 
             this.world.addChild(this.player);
 
+            // Initial Weapon
+            this.player.addWeapon(new GunWeapon((bullet) => this.spawnBullet(bullet)));
+
             this.app.stage.addChild(this.world);
         }
 
@@ -215,12 +219,8 @@ export class GameApp {
             // Check player vs enemies (prevent overlap)
             this.checkPlayerEnemyCollisions();
 
-            // Auto-attack: shoot at multiple enemies
-            this.attackTimer += dtMs;
-            if (this.attackTimer >= this.player.attackInterval) {
-                this.attackTimer = 0;
-                this.shootMultipleEnemies();
-            }
+            // Auto-attack: Update weapons
+            this.player.updateWeapons(dt, this.enemies);
 
             // Update bullets
             this.updateBullets(dt);
@@ -306,39 +306,9 @@ export class GameApp {
         }
     }
 
-    /** Find and shoot the nearest enemies based on projectile count */
-    private shootMultipleEnemies(): void {
-        if (this.enemies.length === 0) return;
-
-        // Calculate distances
-        const targets = this.enemies
-            .filter(e => e.alive)
-            .map(e => {
-                const dx = e.x - this.player.x;
-                const dy = e.y - this.player.y;
-                return {
-                    enemy: e,
-                    distSqr: dx * dx + dy * dy
-                };
-            })
-            .filter(t => t.distSqr <= 600 * 600) // Max range check
-            .sort((a, b) => a.distSqr - b.distSqr);
-
-        // Shoot at N nearest enemies
-        const count = Math.min(targets.length, this.player.projectileCount);
-
-        for (let i = 0; i < count; i++) {
-            const target = targets[i].enemy;
-            const bullet = new Bullet(
-                this.player.x,
-                this.player.y,
-                target.x,
-                target.y,
-                this.player.attackPower
-            );
-            this.bullets.push(bullet);
-            this.world.addChild(bullet);
-        }
+    public spawnBullet(bullet: Bullet) {
+        this.bullets.push(bullet);
+        this.world.addChild(bullet);
     }
 
     /** Update bullets: move, check collisions, remove dead */
@@ -616,7 +586,14 @@ export class GameApp {
     }
 
     public applySkill(skillType: SkillType) {
-        this.player.addSkill(skillType);
+        if (skillType === SkillType.GUN) {
+            this.player.addWeapon(new GunWeapon((b) => this.spawnBullet(b)));
+        } else if (skillType === SkillType.SWORD) {
+            this.player.addWeapon(new SwordWeapon());
+        } else {
+            this.player.addSkill(skillType);
+        }
+
         this.resumeGame();
         this.emitStats(); // Immediately update UI
     }
@@ -632,46 +609,65 @@ export class GameApp {
     private generateSkillOptions(): SkillOption[] {
         const options: SkillOption[] = [];
 
-        const acquiredSkills = this.player.getSkills();
-        // Count unique passive skills (exclude HEAL and GET_COIN as they are instant)
-        let uniquePassives = 0;
-        const currentPassiveTypes: SkillType[] = [];
+        // Identify current state
+        const acquiredSkills = this.player.getSkills(); // Map<SkillType, level> - Passives are here
+        const activeWeapons = this.player.activeWeapons; // Weapon[]
 
-        for (const [type, _level] of acquiredSkills.entries()) {
-            if (type !== SkillType.HEAL && type !== SkillType.GET_COIN) {
-                uniquePassives++;
-                currentPassiveTypes.push(type);
+        const currentPassiveTypes = Array.from(acquiredSkills.keys())
+            .filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN);
+
+        const currentWeaponTypes = activeWeapons.map(w => w.type);
+
+        const canAddPassive = currentPassiveTypes.length < 3;
+        const canAddWeapon = activeWeapons.length < 3;
+
+        // Candidate Types
+        const allTypes = Object.values(SkillType).filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN);
+
+        let candidates: SkillType[] = [];
+
+        for (const type of allTypes) {
+            const isWeapon = type === SkillType.GUN || type === SkillType.SWORD;
+
+            if (isWeapon) {
+                const hasIt = currentWeaponTypes.includes(type);
+                // Can pick if we have it (for upgrade) OR if we have space for new
+                if (hasIt || canAddWeapon) {
+                    candidates.push(type);
+                }
+            } else {
+                // Passive
+                const hasIt = currentPassiveTypes.includes(type);
+                if (hasIt || canAddPassive) {
+                    candidates.push(type);
+                }
             }
         }
 
-        let availableTypes: SkillType[] = [];
-
-        if (uniquePassives >= 3) {
-            // Can only pick from currently owned passives
-            availableTypes = [...currentPassiveTypes];
-        } else {
-            // Can pick any passive skill (exclude instant ones)
-            const allTypes = Object.values(SkillType);
-            availableTypes = allTypes.filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN);
-        }
-
         // Shuffle
-        const shuffled = availableTypes.sort(() => 0.5 - Math.random());
+        candidates.sort(() => 0.5 - Math.random());
 
         // Pick top 3 valid options
-        for (const type of shuffled) {
+        for (const type of candidates) {
             if (options.length >= 3) break;
 
             const def = SKILL_DEFINITIONS[type];
-            const currentLevel = this.player.getSkillLevel(type);
+            let level = 0;
 
-            if (currentLevel < def.maxLevel) {
+            if (type === SkillType.GUN || type === SkillType.SWORD) {
+                const w = this.player.getWeapon(type);
+                level = w ? w.level : 0;
+            } else {
+                level = this.player.getSkillLevel(type);
+            }
+
+            if (level < def.maxLevel) {
                 options.push({
                     type: type,
                     name: def.name,
                     description: def.description,
                     icon: def.icon,
-                    level: currentLevel + 1
+                    level: level + 1
                 });
             }
         }
