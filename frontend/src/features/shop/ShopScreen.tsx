@@ -205,7 +205,7 @@ export default function ShopScreen() {
       <img
         src="/images/character.png"
         alt="character"
-        className="absolute bottom-40 left-35 w-48"
+        className="absolute bottom-40 left-[8.75rem] w-48"
       />
 
       {/* ← ホームに戻るボタン */}
