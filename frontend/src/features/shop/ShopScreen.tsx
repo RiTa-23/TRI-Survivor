@@ -117,7 +117,7 @@ export function ShopItemCard({
                 // ← 追加: 残高不足時の表示
                 <>
                   <LockKeyhole size={14} />
-                  残高不足
+                  コイン不足
                 </>
               ) : (
                 <>
