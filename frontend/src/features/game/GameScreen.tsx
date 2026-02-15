@@ -119,12 +119,14 @@ export default function GameScreen() {
         if (gameAppRef.current) {
             gameAppRef.current.applySkill(type);
 
-            // Update local acquired skills state for HUD
-            setAcquiredSkills(prev => {
-                const newMap = new Map(prev);
-                newMap.set(type, (newMap.get(type) || 0) + 1);
-                return newMap;
-            });
+            // Update local acquired skills state for HUD (exclude instant skills)
+            if (type !== SkillType.HEAL && type !== SkillType.GET_COIN) {
+                setAcquiredSkills(prev => {
+                    const newMap = new Map(prev);
+                    newMap.set(type, (newMap.get(type) || 0) + 1);
+                    return newMap;
+                });
+            }
 
             setIsLevelUpModalOpen(false);
         }

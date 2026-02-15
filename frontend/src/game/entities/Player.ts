@@ -153,6 +153,18 @@ export class Player extends Container {
 
     /** スキルを追加・強化する */
     public addSkill(type: SkillType): void {
+        // Instant effects (do not store in skills map)
+        if (type === SkillType.HEAL) {
+            this.heal(30);
+            console.log(`Resource acquired: ${type} (Instant)`);
+            return;
+        }
+        if (type === SkillType.GET_COIN) {
+            this.addCoins(50);
+            console.log(`Resource acquired: ${type} (Instant)`);
+            return;
+        }
+
         const currentLevel = this.skills.get(type) || 0;
         this.skills.set(type, currentLevel + 1);
 
@@ -188,12 +200,6 @@ export class Player extends Container {
                 // +10% EXP
                 this._expMultiplier += 0.1;
                 break;
-            case SkillType.HEAL:
-                this.heal(30);
-                break;
-            case SkillType.GET_COIN:
-                this.addCoins(50);
-                break;
         }
     }
 
@@ -206,7 +212,7 @@ export class Player extends Container {
     }
 
     private calculateNextLevelExp(): number {
-        return Math.floor(10 * Math.pow(1.5, this._level - 1));
+        return Math.floor(10 * Math.pow(1.3, this._level - 1));
     }
 
     // --- Getters ---
