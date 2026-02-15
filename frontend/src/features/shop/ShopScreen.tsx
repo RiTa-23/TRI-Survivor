@@ -31,6 +31,13 @@ import { useState } from "react"
 // -----------------------------
 // 商品カードコンポーネント（変更なし）
 // -----------------------------
+type ShopItem = {
+name: string;
+price: number;
+image: string;
+description: string;
+};
+
 export function ShopItemCard({
   name,
   price,
@@ -42,7 +49,7 @@ export function ShopItemCard({
   price: number;
   image: string;
   description: string;
-  onHover: (item: any) => void;
+  onHover: (item: Pick<ShopItem, "name" | "description"> | null) => void;
 }) {
   const [purchased, setPurchased] = useState(false)
 
