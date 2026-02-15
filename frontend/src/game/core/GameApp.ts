@@ -7,6 +7,8 @@ import { Item } from "../entities/Item";
 import { Obstacle } from "../entities/Obstacle";
 import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
+import { SkillType, SKILL_DEFINITIONS } from "../types";
+import type { SkillOption, PlayerStats } from "../types";
 
 /** Grid tile size (one cell) */
 const GRID_SIZE = 80;
@@ -30,16 +32,6 @@ const OBSTACLE_SPAWN_INTERVAL = 0.5; // 秒
 /** Item drop settings */
 const ITEM_DESPAWN_DISTANCE = 2000;
 
-/** Player stats callback */
-export interface PlayerStats {
-    coins: number;
-    exp: number;
-    hp: number;
-    maxHp: number;
-    level: number;
-    nextLevelExp: number;
-}
-
 export class GameApp {
     private app: Application;
     private player!: Player; // Initialized in init() after assets load
@@ -57,14 +49,19 @@ export class GameApp {
     private videoElement: HTMLVideoElement;
     private canvasElement: HTMLCanvasElement;
     private isDestroyed = false;
+
+    // --- State ---
+    private isPaused = false;
     private onStatsUpdate?: (stats: PlayerStats) => void;
+    private onLevelUpCallback?: (options: SkillOption[]) => void;
 
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
         onStatusChange?: (status: string) => void,
         onSpecialMove?: (moveName: string) => void,
-        onStatsUpdate?: (stats: PlayerStats) => void
+        onStatsUpdate?: (stats: PlayerStats) => void,
+        onLevelUp?: (options: SkillOption[]) => void
     ) {
         this.app = new Application();
         // this.player will be initialized in init()
@@ -73,6 +70,7 @@ export class GameApp {
         this.canvasElement = canvasElement;
 
         this.onStatsUpdate = onStatsUpdate;
+        this.onLevelUpCallback = onLevelUp;
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
@@ -153,6 +151,12 @@ export class GameApp {
             this.player = new Player();
             this.player.x = 0;
             this.player.y = 0;
+
+            // Handle Level Up
+            this.player.onLevelUp = (level) => {
+                this.handleLevelUp(level);
+            };
+
             this.world.addChild(this.player);
 
             this.app.stage.addChild(this.world);
@@ -180,6 +184,8 @@ export class GameApp {
         this.app.ticker.add((ticker) => {
             const dtMs = ticker.deltaMS;
             const dt = dtMs / 1000; // seconds
+
+            if (this.isPaused) return;
 
             // Player movement & animation update
             if (this.currentDirection) {
@@ -209,11 +215,11 @@ export class GameApp {
             // Check player vs enemies (prevent overlap)
             this.checkPlayerEnemyCollisions();
 
-            // Auto-attack: shoot at nearest enemy
+            // Auto-attack: shoot at multiple enemies
             this.attackTimer += dtMs;
             if (this.attackTimer >= this.player.attackInterval) {
                 this.attackTimer = 0;
-                this.shootNearestEnemy();
+                this.shootMultipleEnemies();
             }
 
             // Update bullets
@@ -300,35 +306,39 @@ export class GameApp {
         }
     }
 
-    /** Find and shoot the nearest enemy */
-    private shootNearestEnemy(): void {
+    /** Find and shoot the nearest enemies based on projectile count */
+    private shootMultipleEnemies(): void {
         if (this.enemies.length === 0) return;
 
-        let nearest: Enemy | null = null;
-        let nearestDist = Infinity;
+        // Calculate distances
+        const targets = this.enemies
+            .filter(e => e.alive)
+            .map(e => {
+                const dx = e.x - this.player.x;
+                const dy = e.y - this.player.y;
+                return {
+                    enemy: e,
+                    distSqr: dx * dx + dy * dy
+                };
+            })
+            .filter(t => t.distSqr <= 600 * 600) // Max range check
+            .sort((a, b) => a.distSqr - b.distSqr);
 
-        for (const enemy of this.enemies) {
-            if (!enemy.alive) continue;
-            const dx = enemy.x - this.player.x;
-            const dy = enemy.y - this.player.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < nearestDist) {
-                nearestDist = dist;
-                nearest = enemy;
-            }
+        // Shoot at N nearest enemies
+        const count = Math.min(targets.length, this.player.projectileCount);
+
+        for (let i = 0; i < count; i++) {
+            const target = targets[i].enemy;
+            const bullet = new Bullet(
+                this.player.x,
+                this.player.y,
+                target.x,
+                target.y,
+                this.player.attackPower
+            );
+            this.bullets.push(bullet);
+            this.world.addChild(bullet);
         }
-
-        if (!nearest || nearestDist > 600) return; // Max attack range
-
-        const bullet = new Bullet(
-            this.player.x,
-            this.player.y,
-            nearest.x,
-            nearest.y,
-            this.player.attackPower
-        );
-        this.bullets.push(bullet);
-        this.world.addChild(bullet);
     }
 
     /** Update bullets: move, check collisions, remove dead */
@@ -451,14 +461,6 @@ export class GameApp {
 
     /**
      * 円同士の衝突判定と押し戻しベクトル計算
-     * @param x1 対象1のX
-     * @param y1 対象1のY
-     * @param r1 対象1の半径
-     * @param x2 対象2のX
-     * @param y2 対象2のY
-     * @param r2 対象2の半径
-     * @param pushRatio1 対象1への押し戻し割合 (0.0 - 1.0)
-     * @returns 対象1に適用する移動ベクトル {x, y} または衝突していない場合 null
      */
     private resolveCircleOverlap(
         x1: number, y1: number, r1: number,
@@ -603,5 +605,91 @@ export class GameApp {
         this.obstacles.length = 0;
 
         this.destroyApp();
+    }
+
+    public pauseGame() {
+        this.isPaused = true;
+    }
+
+    public resumeGame() {
+        this.isPaused = false;
+    }
+
+    public applySkill(skillType: SkillType) {
+        this.player.addSkill(skillType);
+        this.resumeGame();
+        this.emitStats(); // Immediately update UI
+    }
+
+    private handleLevelUp(_level: number) {
+        this.pauseGame();
+
+        // Generate 3 random skill options
+        const options = this.generateSkillOptions();
+        this.onLevelUpCallback?.(options);
+    }
+
+    private generateSkillOptions(): SkillOption[] {
+        const options: SkillOption[] = [];
+
+        const acquiredSkills = this.player.getSkills();
+        // Count unique passive skills (exclude HEAL as it's instant)
+        let uniquePassives = 0;
+        const currentPassiveTypes: SkillType[] = [];
+
+        for (const [type, _level] of acquiredSkills.entries()) {
+            if (type !== SkillType.HEAL) {
+                uniquePassives++;
+                currentPassiveTypes.push(type);
+            }
+        }
+
+        let availableTypes: SkillType[] = [];
+
+        if (uniquePassives >= 3) {
+            // Can only pick from currently owned passives
+            availableTypes = [...currentPassiveTypes];
+        } else {
+            // Can pick any passive skill
+            const allTypes = Object.values(SkillType);
+            availableTypes = allTypes.filter(t => t !== SkillType.HEAL);
+        }
+
+        // Shuffle
+        const shuffled = availableTypes.sort(() => 0.5 - Math.random());
+
+        // Pick top 3 valid options
+        for (const type of shuffled) {
+            if (options.length >= 3) break;
+
+            const def = SKILL_DEFINITIONS[type];
+            const currentLevel = this.player.getSkillLevel(type);
+
+            if (currentLevel < def.maxLevel) {
+                options.push({
+                    type: type,
+                    name: def.name,
+                    description: def.description,
+                    icon: def.icon,
+                    level: currentLevel + 1
+                });
+            }
+        }
+
+        // Fallback: If no options available, offer HEAL
+        // Also if we have fewer than 3 options and HEAL is not already there?
+        // Let's just ensure if options is empty, we give HEAL. 
+        if (options.length === 0) {
+            const def = SKILL_DEFINITIONS[SkillType.HEAL];
+            options.push({
+                type: SkillType.HEAL,
+                name: def.name,
+                description: def.description,
+                icon: def.icon,
+                level: 0
+            });
+        }
+
+        return options;
     }
 }

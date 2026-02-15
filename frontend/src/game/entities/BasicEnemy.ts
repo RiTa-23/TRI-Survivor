@@ -9,7 +9,7 @@ import { Enemy } from "./Enemy";
 export class BasicEnemy extends Enemy {
     constructor() {
         super({
-            hp: 3,
+            hp: 30,
             speed: 50, // px/sec
             attackPower: 10,
             color: 0x9b59b6,
