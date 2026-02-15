@@ -5,6 +5,8 @@ export interface PlayerStats {
     maxHp: number;
     level: number;
     nextLevelExp: number;
+    weapons: { type: SkillType; level: number }[];
+    passives: { type: SkillType; level: number }[];
 }
 
 export const SkillType = {

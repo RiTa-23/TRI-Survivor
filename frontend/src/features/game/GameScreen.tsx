@@ -20,13 +20,15 @@ export default function GameScreen() {
         hp: 100,
         maxHp: 100,
         level: 1,
-        nextLevelExp: 5
+        nextLevelExp: 5,
+        weapons: [],
+        passives: []
     });
 
     // Skill System State
     const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
     const [skillOptions, setSkillOptions] = useState<SkillOption[]>([]);
-    const [acquiredSkills, setAcquiredSkills] = useState<Map<SkillType, number>>(new Map());
+
 
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastStatusRef = useRef<string>("");
@@ -39,7 +41,6 @@ export default function GameScreen() {
         // Initialize GameApp
         const initGame = async () => {
             // Reset state
-            setAcquiredSkills(new Map());
             setIsLevelUpModalOpen(false);
 
             // Destroy previous instance if it exists
@@ -118,16 +119,6 @@ export default function GameScreen() {
     const handleSkillSelect = (type: SkillType) => {
         if (gameAppRef.current) {
             gameAppRef.current.applySkill(type);
-
-            // Update local acquired skills state for HUD (exclude instant skills)
-            if (type !== SkillType.HEAL && type !== SkillType.GET_COIN) {
-                setAcquiredSkills(prev => {
-                    const newMap = new Map(prev);
-                    newMap.set(type, (newMap.get(type) || 0) + 1);
-                    return newMap;
-                });
-            }
-
             setIsLevelUpModalOpen(false);
         }
     };
@@ -234,21 +225,44 @@ export default function GameScreen() {
                     </div>
                 </div>
 
-                {/* Acquired Skills HUD */}
-                {acquiredSkills.size > 0 && (
+                {/* Weapons HUD */}
+                {stats.weapons.length > 0 && (
                     <div className="bg-black/70 text-white px-4 py-3 rounded-xl pointer-events-none select-none max-w-[250px]">
-                        <div className="flex items-center gap-2 mb-2 text-yellow-400 border-b border-gray-600 pb-1">
+                        <div className="flex items-center gap-2 mb-2 text-red-400 border-b border-gray-600 pb-1">
                             <Zap className="w-4 h-4" />
-                            <span className="font-bold text-xs">SKILLS</span>
+                            <span className="font-bold text-xs">WEAPONS</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            {Array.from(acquiredSkills.entries()).map(([type, level]) => {
-                                const def = SKILL_DEFINITIONS[type];
+                            {stats.weapons.map((w) => {
+                                const def = SKILL_DEFINITIONS[w.type];
                                 return (
-                                    <div key={type} className="relative group w-10 h-10 bg-slate-800 rounded border border-slate-600 flex items-center justify-center shadow-sm" title={`${def.name} Lv.${level}`}>
+                                    <div key={w.type} className="relative group w-10 h-10 bg-slate-800 rounded border border-slate-600 flex items-center justify-center shadow-sm" title={`${def.name} Lv.${w.level}`}>
+                                        <img src={def.icon} alt={def.name} className="w-7 h-7 object-contain" />
+                                        <div className="absolute -bottom-1 -right-1 bg-red-600 text-[10px] font-bold text-white px-1.5 rounded-full leading-tight border border-black">
+                                            {w.level}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Passives HUD */}
+                {stats.passives.length > 0 && (
+                    <div className="bg-black/70 text-white px-4 py-3 rounded-xl pointer-events-none select-none max-w-[250px]">
+                        <div className="flex items-center gap-2 mb-2 text-blue-400 border-b border-gray-600 pb-1">
+                            <ArrowUp className="w-4 h-4" />
+                            <span className="font-bold text-xs">PASSIVES</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {stats.passives.map((p) => {
+                                const def = SKILL_DEFINITIONS[p.type];
+                                return (
+                                    <div key={p.type} className="relative group w-10 h-10 bg-slate-800 rounded border border-slate-600 flex items-center justify-center shadow-sm" title={`${def.name} Lv.${p.level}`}>
                                         <img src={def.icon} alt={def.name} className="w-7 h-7 object-contain" />
                                         <div className="absolute -bottom-1 -right-1 bg-blue-600 text-[10px] font-bold text-white px-1.5 rounded-full leading-tight border border-black">
-                                            {level}
+                                            {p.level}
                                         </div>
                                     </div>
                                 );

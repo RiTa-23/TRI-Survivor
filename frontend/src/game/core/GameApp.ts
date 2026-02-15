@@ -382,6 +382,10 @@ export class GameApp {
             maxHp: this.player.maxHp,
             level: this.player.level,
             nextLevelExp: this.player.nextLevelExp,
+            weapons: this.player.activeWeapons.map(w => ({ type: w.type, level: w.level })),
+            passives: Array.from(this.player.getSkills().entries())
+                .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
+                .map(([type, level]) => ({ type, level })),
         });
     }
 
