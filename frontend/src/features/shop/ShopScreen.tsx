@@ -29,7 +29,7 @@ import {
 import { useState } from "react"
 
 // -----------------------------
-// 商品カードコンポーネント
+// 商品カードコンポーネント（変更なし）
 // -----------------------------
 export function ShopItemCard({
   name,
@@ -59,17 +59,14 @@ export function ShopItemCard({
         flex flex-col justify-between
         rounded-xl cursor-pointer
         border border-yellow-500/70
-
         shadow-none
         hover:shadow-[0_0_28px_rgba(255,215,0,0.8)]
         transition-all
-
         ${purchased ? "bg-gray-200" : "bg-white"}
       `}
     >
       <CardHeader className="text-center py-1">
-        {/* ★ 商品名を黒に変更 */}
-        <CardTitle className="text-sm font-bold text-black drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
+        <CardTitle className="text-sm font-bold text-black">
           {name}
         </CardTitle>
       </CardHeader>
@@ -78,13 +75,13 @@ export function ShopItemCard({
         <img
           src={image}
           alt={name}
-          className="w-14 h-14 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+          className="w-14 h-14 object-contain"
         />
       </CardContent>
 
       <CardFooter className="flex flex-col gap-1 pb-2 px-2">
-        <div className="text-center text-sm font-bold flex items-center justify-center gap-1 text-yellow-300 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
-          <span className="text-yellow-200 text-lg drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">🪙</span>
+        <div className="text-center text-sm font-bold flex items-center justify-center gap-1 text-yellow-300">
+          <span className="text-yellow-200 text-lg">🪙</span>
           {price}
         </div>
 
@@ -93,10 +90,9 @@ export function ShopItemCard({
             <Button
               className="
                 w-full text-xs py-2 flex items-center justify-center gap-2 font-bold
-                bg-black/70 text-yellow-300
+                bg-black/70 text-white
                 border border-yellow-500/60
                 hover:bg-black
-                drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]
                 transition-all
               "
               disabled={purchased}
@@ -115,26 +111,28 @@ export function ShopItemCard({
             </Button>
           </AlertDialogTrigger>
 
-          <AlertDialogContent className="bg-slate-900 text-white border border-yellow-500 shadow-[0_0_25px_rgba(255,215,0,0.7)]">
+          <AlertDialogContent className="bg-white text-black border border-yellow-500">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-yellow-300 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
+              <AlertDialogTitle className="text-yellow-600 font-bold">
                 購入しますか？
               </AlertDialogTitle>
+
               <AlertDialogDescription>
                 {name} を {price} コインで購入します。
               </AlertDialogDescription>
             </AlertDialogHeader>
 
             <AlertDialogFooter>
+              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white">
+                いいえ
+              </AlertDialogCancel>
+
               <AlertDialogAction
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                className="bg-white border border-yellow-500 text-yellow-600 font-bold hover:bg-yellow-50"
                 onClick={handlePurchase}
               >
                 はい
               </AlertDialogAction>
-              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white">
-                いいえ
-              </AlertDialogCancel>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -150,6 +148,7 @@ export default function ShopScreen() {
   const navigate = useNavigate();
 
   const [hoverItem, setHoverItem] = useState<any>(null)
+  const [coins] = useState(1000)
 
   const weaponItems = [
     { name: "レジェンドソード", price: 500, image: "/images/item-legend.png", description: "古代の英雄が使ったとされる伝説の剣。攻撃力 +50。" },
@@ -176,15 +175,21 @@ export default function ShopScreen() {
   return (
     <div className="relative min-h-screen bg-white text-black flex flex-col items-center p-6">
 
-      {/* ← 左上固定の説明パネル */}
-      <div className="absolute top-45 left-12 w-64 bg-white text-black border border-yellow-500 rounded-lg p-4 shadow-[0_0_20px_rgba(255,215,0,0.7)]">
+      {/* ★ 右上の所持コイン枠 */}
+      <div className="absolute top-7 right-7 bg-white border border-yellow-500 rounded-lg px-4 py-2 flex items-center gap-2">
+        <span className="text-yellow-500 text-xl">🪙</span>
+        <span className="font-bold text-black text-lg">{coins}</span>
+      </div>
+
+      {/* ★ 詳細パネルの枠を黒に変更 */}
+      <div className="absolute top-45 left-12 w-64 bg-white text-black border border-black rounded-lg p-4">
         {hoverItem ? (
           <>
             <div className="font-bold text-yellow-600 mb-2">{hoverItem.name}</div>
             <div className="text-sm">{hoverItem.description}</div>
           </>
         ) : (
-          <div className="text-sm text-gray-500">なに買うの～？</div>
+          <div className="text-sm text-gray-500 text-center">なに買うの～？</div>
         )}
       </div>
 
@@ -192,7 +197,7 @@ export default function ShopScreen() {
       <img
         src="/images/character.png"
         alt="character"
-        className="absolute bottom-40 left-35 w-48 drop-shadow-[0_0_12px_rgba(0,0,0,0.4)]"
+        className="absolute bottom-40 left-35 w-48"
       />
 
       {/* ← ホームに戻るボタン */}
@@ -203,7 +208,7 @@ export default function ShopScreen() {
         <ArrowLeft size={24} />
       </button>
 
-      <h1 className="text-3xl font-bold mb-6 text-yellow-600 drop-shadow-[0_0_6px_rgba(255,255,200,0.9)]">
+      <h1 className="text-3xl font-bold mb-6 text-yellow-600">
         Shop
       </h1>
 
@@ -219,7 +224,6 @@ export default function ShopScreen() {
                 px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
                 data-[state=active]:bg-green-300/30
                 data-[state=active]:text-green-700
-                data-[state=active]:shadow-[0_0_10px_rgba(74,222,128,0.7)]
               "
             >
               <Axe size={18} /> 武器
@@ -231,17 +235,16 @@ export default function ShopScreen() {
                 px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
                 data-[state=active]:bg-green-300/30
                 data-[state=active]:text-green-700
-                data-[state=active]:shadow-[0_0_10px_rgba(74,222,128,0.7)]
               "
             >
               <BicepsFlexed size={18} /> ステータス
             </TabsTrigger>
           </TabsList>
 
-          {/* タブの中身（カード一覧） */}
+          {/* ★ カードを下に下げる（mt-6） */}
           <TabsContent value="weapon">
             <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
-              <div className="flex flex-row flex-wrap justify-center gap-5">
+              <div className="flex flex-row flex-wrap justify-center gap-5 mt-6">
                 {weaponItems.map((item) => (
                   <ShopItemCard key={item.name} {...item} onHover={setHoverItem} />
                 ))}
@@ -251,7 +254,7 @@ export default function ShopScreen() {
 
           <TabsContent value="status">
             <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
-              <div className="flex flex-row flex-wrap justify-center gap-5">
+              <div className="flex flex-row flex-wrap justify-center gap-5 mt-6">
                 {statusItems.map((item) => (
                   <ShopItemCard key={item.name} {...item} onHover={setHoverItem} />
                 ))}
