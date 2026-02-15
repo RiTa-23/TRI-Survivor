@@ -48,7 +48,7 @@ export class SwordWeapon extends Weapon {
         this.addChild(this._swordGraphics);
     }
 
-    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number): void {
+    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number, cooldownMultiplier: number): void {
         // Handle slash animation
         if (this._swinging) {
             this._slashTimer -= dt;
@@ -81,13 +81,14 @@ export class SwordWeapon extends Weapon {
         let nearestDistSqr = Infinity;
         let targetAngle = 0;
         let foundTarget = false;
+        const rangeSq = this._range * this._range;
 
         for (const e of enemies) {
             if (!e.alive) continue;
             const dx = e.x - playerX;
             const dy = e.y - playerY;
             const d2 = dx * dx + dy * dy;
-            if (d2 < nearestDistSqr && d2 < 400 * 400) {
+            if (d2 < nearestDistSqr && d2 <= rangeSq) {
                 nearestDistSqr = d2;
                 targetAngle = Math.atan2(dy, dx);
                 foundTarget = true;
@@ -101,7 +102,7 @@ export class SwordWeapon extends Weapon {
         this._swinging = true;
         this._slashTimer = this._slashDuration;
         this._swordGraphics.visible = true;
-        this._cooldown = this._baseCooldown;
+        this._cooldown = this._baseCooldown * cooldownMultiplier;
 
         // Damage Logic (Instant for now, matching the area)
         this.dealAreaDamage(targetAngle, enemies, playerX, playerY, damageMultiplier);

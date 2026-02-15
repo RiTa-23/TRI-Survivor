@@ -2,7 +2,7 @@ import { Container, Sprite } from "pixi.js";
 import { HPBar } from "./HPBar";
 import { SkillType } from "../types";
 import { Weapon } from "../weapons/Weapon";
-import { BasicEnemy } from "./BasicEnemy";
+import { Enemy } from "./Enemy";
 
 const DAMAGE_FLASH_DURATION = 0.1; // seconds
 const BASE_ATTACK_POWER = 10;
@@ -221,11 +221,16 @@ export class Player extends Container {
     // --- Weapons ---
     private weapons: Weapon[] = [];
 
+    // --- Cooldowns ---
+    private _cooldownMultiplier: number = 1.0;
+
     /** 武器を追加・強化する */
     public addWeapon(weapon: Weapon): void {
         const existing = this.weapons.find(w => w.type === weapon.type);
         if (existing) {
             existing.upgrade();
+            // Destroy the new instance since we updated the existing one
+            weapon.destroy();
         } else {
             this.weapons.push(weapon);
             this.addChild(weapon); // Add visual container (for Sword etc)
@@ -245,7 +250,7 @@ export class Player extends Container {
         return this.weapons;
     }
 
-    public updateWeapons(dt: number, enemies: BasicEnemy[]): void {
+    public updateWeapons(dt: number, enemies: Enemy[]): void {
         // Note: spawnBullet is passed down if needed, but separate Weapon logic might handle it differently.
         // GunWeapon handles bullets via its own callback.
 
@@ -258,7 +263,7 @@ export class Player extends Container {
         const damageMultiplier = this._attackPower / BASE_ATTACK_POWER;
 
         for (const weapon of this.weapons) {
-            weapon.update(dt, enemies, this.x, this.y, damageMultiplier);
+            weapon.update(dt, enemies, this.x, this.y, damageMultiplier, this._cooldownMultiplier);
         }
     }
 

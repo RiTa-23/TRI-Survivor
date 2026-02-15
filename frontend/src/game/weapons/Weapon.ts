@@ -40,7 +40,8 @@ export abstract class Weapon extends Container {
         enemies: Enemy[],
         playerX: number,
         playerY: number,
-        damageMultiplier: number
+        damageMultiplier: number,
+        cooldownMultiplier: number
     ): void;
 
     protected abstract onUpgrade(): void;

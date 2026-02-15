@@ -17,7 +17,7 @@ export class GunWeapon extends Weapon {
         this._level = 1;
     }
 
-    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number): void {
+    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number, cooldownMultiplier: number): void {
         if (this._cooldown > 0) {
             this._cooldown -= dt;
             return;
@@ -56,7 +56,7 @@ export class GunWeapon extends Weapon {
             this.onShoot(bullet);
         }
 
-        this._cooldown = this._baseCooldown;
+        this._cooldown = this._baseCooldown * cooldownMultiplier;
     }
 
     protected onUpgrade(): void {

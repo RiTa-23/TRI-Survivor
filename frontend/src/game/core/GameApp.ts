@@ -611,7 +611,14 @@ export class GameApp {
 
         // Generate 3 random skill options
         const options = this.generateSkillOptions();
-        this.onLevelUpCallback?.(options);
+
+        if (this.onLevelUpCallback) {
+            this.onLevelUpCallback(options);
+        } else {
+            // If no callback is registered, we must resume immediately or the game freezes
+            console.warn("No onLevelUpCallback registered, resuming game immediately.");
+            this.resumeGame();
+        }
     }
 
     private generateSkillOptions(): SkillOption[] {
