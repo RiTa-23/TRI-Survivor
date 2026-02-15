@@ -7,7 +7,7 @@ import { Item } from "../entities/Item";
 import { Obstacle } from "../entities/Obstacle";
 import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
-import { SkillType, SKILL_DEFINITIONS } from "../types";
+import { SkillType, SKILL_DEFINITIONS, WEAPON_TYPES } from "../types";
 import type { SkillOption, PlayerStats } from "../types";
 import { GunWeapon } from "../weapons/GunWeapon";
 import { SwordWeapon } from "../weapons/SwordWeapon";
@@ -309,7 +309,7 @@ export class GameApp {
         }
     }
 
-    public spawnBullet(bullet: Bullet) {
+    private spawnBullet(bullet: Bullet) {
         this.bullets.push(bullet);
         this.world.addChild(bullet);
     }
@@ -378,6 +378,8 @@ export class GameApp {
 
     /** プレイヤーステータスをUIに通知 */
     private emitStats(): void {
+        if (!this.player.dirty) return;
+
         this.onStatsUpdate?.({
             coins: this.player.coins,
             exp: this.player.exp,
@@ -594,6 +596,7 @@ export class GameApp {
 
     public applySkill(skillType: SkillType) {
         if (skillType === SkillType.GUN) {
+            // Pass private spawnBullet via arrow function
             this.player.addWeapon(new GunWeapon((b) => this.spawnBullet(b)));
         } else if (skillType === SkillType.SWORD) {
             this.player.addWeapon(new SwordWeapon());
@@ -645,7 +648,7 @@ export class GameApp {
             const def = SKILL_DEFINITIONS[type];
             let level = 0;
 
-            if (type === SkillType.GUN || type === SkillType.SWORD) {
+            if (WEAPON_TYPES.has(type)) {
                 const w = this.player.getWeapon(type);
                 level = w ? w.level : 0;
             } else {
@@ -654,9 +657,7 @@ export class GameApp {
 
             if (level >= def.maxLevel) continue;
 
-            const isWeapon = type === SkillType.GUN || type === SkillType.SWORD;
-
-            if (isWeapon) {
+            if (WEAPON_TYPES.has(type)) {
                 const hasIt = currentWeaponTypes.includes(type);
                 // Can pick if we have it (for upgrade) OR if we have space for new
                 if (hasIt || canAddWeapon) {
@@ -684,7 +685,7 @@ export class GameApp {
             const def = SKILL_DEFINITIONS[type];
             let level = 0;
 
-            if (type === SkillType.GUN || type === SkillType.SWORD) {
+            if (WEAPON_TYPES.has(type)) {
                 const w = this.player.getWeapon(type);
                 level = w ? w.level : 0;
             } else {

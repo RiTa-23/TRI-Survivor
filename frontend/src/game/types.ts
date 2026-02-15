@@ -26,11 +26,14 @@ export const SkillType = {
 
 export type SkillType = typeof SkillType[keyof typeof SkillType];
 
+export const WEAPON_TYPES: Set<SkillType> = new Set([SkillType.GUN, SkillType.SWORD]);
+
 export interface SkillData {
     name: string;
     description: string;
     maxLevel: number;
     icon: string;
+    value?: number; // For instant skills like Heal or Coin
     // Base stats or increment per level can be defined here if needed data-driven
 }
 

@@ -17,7 +17,10 @@ export class Player extends Container {
     private _speed: number;
     private _attackPower: number;
     /** 攻撃間隔 (ms) — 値が小さいほど速く撃つ */
-    private _attackInterval: number;
+    // Removed unused field
+
+    /** Dirty flag for UI updates */
+    public dirty: boolean = true;
 
 
     /** General speed multiplier */
@@ -61,7 +64,7 @@ export class Player extends Container {
         this._hp = this._maxHp;
         this._speed = 150; // px/sec
         this._attackPower = 10; // Initial attack power
-        this._attackInterval = 800; // 攻撃間隔
+
 
         // Initial Level Exp
         this._nextLevelExp = this.calculateNextLevelExp();
@@ -99,12 +102,14 @@ export class Player extends Container {
         // Flash red
         this.damageFlashTimer = DAMAGE_FLASH_DURATION;
         this.sprite.tint = 0xff4444;
+        this.dirty = true;
     }
 
     /** HPを回復する */
     public heal(amount: number): void {
         this._hp = Math.min(this._maxHp, this._hp + amount);
         this.hpBar.update(this._hp / this._maxHp);
+        this.dirty = true;
     }
 
     /** 毎フレーム呼び出してフラッシュを更新 */
@@ -123,6 +128,7 @@ export class Player extends Container {
     /** コインを追加 */
     public addCoins(amount: number): void {
         this._coins += amount;
+        this.dirty = true;
     }
 
     public onLevelUp?: (level: number) => void;
@@ -141,6 +147,7 @@ export class Player extends Container {
         this._exp -= this._nextLevelExp;
         this._level++;
         this._nextLevelExp = this.calculateNextLevelExp();
+        this.dirty = true;
 
         console.log(`Level Up! Lv.${this._level}`);
         if (this.onLevelUp) {
@@ -182,8 +189,8 @@ export class Player extends Container {
                 this._speedMultiplier += 0.1;
                 break;
             case SkillType.COOLDOWN_DOWN:
-                // Reduce interval by 10%
-                this._attackInterval *= 0.9;
+                // Reduce cooldown by 10%
+                this._cooldownMultiplier *= 0.9;
                 break;
             case SkillType.MULTI_SHOT:
                 // +1 Projectile
@@ -231,6 +238,7 @@ export class Player extends Container {
             this.weapons.push(weapon);
             this.addChild(weapon); // Add visual container (for Sword etc)
         }
+        this.dirty = true;
     }
 
     public hasWeapon(type: SkillType): boolean {
@@ -246,15 +254,8 @@ export class Player extends Container {
     }
 
     public updateWeapons(dt: number, enemies: Enemy[]): void {
-        // Note: spawnBullet is passed down if needed, but separate Weapon logic might handle it differently.
-        // GunWeapon handles bullets via its own callback.
-
         // Calculate functionality-based multiplier
-        // If we want AttackPower to directly be the damage, we pass 1.0 here and use attackPower in weapon.
-        // But previously it seemed to be a multiplier based on player stats.
-        // Let's standardize: The weapon has base damage.
-        // The player has an _attackPower stat (default 10).
-        // We can treat (this._attackPower / BASE_ATTACK_POWER) as the multiplier.
+        // Treating (this._attackPower / BASE_ATTACK_POWER) as the multiplier.
         const damageMultiplier = this._attackPower / BASE_ATTACK_POWER;
 
         for (const weapon of this.weapons) {
@@ -267,7 +268,7 @@ export class Player extends Container {
     public get maxHp(): number { return this._maxHp; }
     public get speed(): number { return this._speed; }
     public get attackPower(): number { return this._attackPower; }
-    // public get attackInterval(): number { return this._attackInterval; } // Deprecated for global, per weapon now
+    // public get attackInterval(): number { return this._attackInterval; } // Deprecated
     public get coins(): number { return this._coins; }
     public get exp(): number { return this._exp; }
     public get level(): number { return this._level; }
