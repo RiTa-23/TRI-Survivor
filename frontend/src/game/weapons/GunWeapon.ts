@@ -66,6 +66,5 @@ export class GunWeapon extends Weapon {
         if (this._level % 3 === 0) {
             this._projectileCount++;
         }
-        console.log(`Gun upgraded to Lv.${this._level}: Dmg=${this._damage}, CD=${this._baseCooldown}, Count=${this._projectileCount}`);
     }
 }

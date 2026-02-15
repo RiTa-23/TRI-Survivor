@@ -156,7 +156,5 @@ export class SwordWeapon extends Weapon {
         // Grip
         this._swordGraphics.rect(-5, -15, 10, 20);
         this._swordGraphics.fill({ color: 0x8B4513 });
-
-        console.log(`Sword upgraded to Lv.${this._level}: Dmg=${this._damage}`);
     }
 }

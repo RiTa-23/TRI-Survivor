@@ -163,7 +163,6 @@ export class GameApp {
             this.world.addChild(this.player);
 
             // Initial Weapon
-            //this.player.addWeapon(new GunWeapon((bullet) => this.spawnBullet(bullet)));
             this.player.addWeapon(new SwordWeapon());
 
 
@@ -659,8 +658,11 @@ export class GameApp {
             }
         }
 
-        // Shuffle
-        candidates.sort(() => 0.5 - Math.random());
+        // Shuffle (Fisher-Yates)
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
 
         // Pick top 3 valid options
         for (const type of candidates) {

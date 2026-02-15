@@ -63,12 +63,6 @@ export class Player extends Container {
         this._attackPower = 10; // Initial attack power
         this._attackInterval = 800; // 攻撃間隔
 
-        this._defense = 0;
-        this._projectileCount = 1;
-        this._speedMultiplier = 1.0;
-        this._magnetMultiplier = 1.0;
-        this._expMultiplier = 1.0;
-
         // Initial Level Exp
         this._nextLevelExp = this.calculateNextLevelExp();
 
@@ -203,6 +197,8 @@ export class Player extends Container {
                 // +10% EXP
                 this._expMultiplier += 0.1;
                 break;
+            default:
+                break;
         }
     }
 
@@ -211,7 +207,7 @@ export class Player extends Container {
     }
 
     public getSkills(): Map<SkillType, number> {
-        return this.skills;
+        return new Map(this.skills); // Defensive copy
     }
 
     private calculateNextLevelExp(): number {
@@ -234,7 +230,6 @@ export class Player extends Container {
         } else {
             this.weapons.push(weapon);
             this.addChild(weapon); // Add visual container (for Sword etc)
-            console.log(`Weapon added: ${weapon.type}`);
         }
     }
 
@@ -247,7 +242,7 @@ export class Player extends Container {
     }
 
     public get activeWeapons(): Weapon[] {
-        return this.weapons;
+        return [...this.weapons]; // Defensive copy
     }
 
     public updateWeapons(dt: number, enemies: Enemy[]): void {
