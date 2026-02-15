@@ -93,24 +93,26 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
         description: "Restores 30 HP immediately.",
         maxLevel: 999,
         icon: "/assets/images/heal.png",
+        value: 30, // HP restore amount
     },
     [SkillType.GET_COIN]: {
         name: "Treasure",
         description: "Get 50 Coins immediately.",
         maxLevel: 999,
         icon: "/assets/images/coin.png",
+        value: 50, // Coin amount
     },
     // Weapons
     [SkillType.GUN]: {
         name: "Pistol",
         description: "Fires bullets at the nearest enemy.",
         maxLevel: 5,
-        icon: "/assets/images/skills/gun.png", // Placeholder path
+        icon: "/assets/images/skills/gun.png",
     },
     [SkillType.SWORD]: {
         name: "Katana",
         description: "Slashes enemies in front of you.",
         maxLevel: 5,
-        icon: "/assets/images/skills/sword.png", // Placeholder path
+        icon: "/assets/images/skills/sword.png",
     },
 };

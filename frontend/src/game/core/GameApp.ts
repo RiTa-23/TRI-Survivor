@@ -693,15 +693,13 @@ export class GameApp {
                 level = this.player.getSkillLevel(type);
             }
 
-            if (level < def.maxLevel) {
-                options.push({
-                    type: type,
-                    name: def.name,
-                    description: def.description,
-                    icon: def.icon,
-                    level: level + 1
-                });
-            }
+            options.push({
+                type: type,
+                name: def.name,
+                description: def.description,
+                icon: def.icon,
+                level: level + 1
+            });
         }
 
         // Fallback: If no options available, offer HEAL or GET_COIN

@@ -1,6 +1,6 @@
 import { Container, Sprite } from "pixi.js";
 import { HPBar } from "./HPBar";
-import { SkillType } from "../types";
+import { SkillType, SKILL_DEFINITIONS } from "../types";
 import { Weapon } from "../weapons/Weapon";
 import { Enemy } from "./Enemy";
 
@@ -157,14 +157,16 @@ export class Player extends Container {
 
     /** スキルを追加・強化する */
     public addSkill(type: SkillType): void {
+        const def = SKILL_DEFINITIONS[type];
+
         // Instant effects (do not store in skills map)
         if (type === SkillType.HEAL) {
-            this.heal(30);
+            this.heal(def.value || 30);
             console.log(`Resource acquired: ${type} (Instant)`);
             return;
         }
         if (type === SkillType.GET_COIN) {
-            this.addCoins(50);
+            this.addCoins(def.value || 50);
             console.log(`Resource acquired: ${type} (Instant)`);
             return;
         }
