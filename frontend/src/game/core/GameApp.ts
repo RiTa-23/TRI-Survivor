@@ -641,6 +641,19 @@ export class GameApp {
         let candidates: SkillType[] = [];
 
         for (const type of allTypes) {
+            // Check max level first
+            const def = SKILL_DEFINITIONS[type];
+            let level = 0;
+
+            if (type === SkillType.GUN || type === SkillType.SWORD) {
+                const w = this.player.getWeapon(type);
+                level = w ? w.level : 0;
+            } else {
+                level = this.player.getSkillLevel(type);
+            }
+
+            if (level >= def.maxLevel) continue;
+
             const isWeapon = type === SkillType.GUN || type === SkillType.SWORD;
 
             if (isWeapon) {
