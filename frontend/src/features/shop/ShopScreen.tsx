@@ -29,39 +29,43 @@ import {
 import { useState } from "react"
 
 // -----------------------------
-// 商品カードコンポーネント
+// 型定義 (Item Type)
 // -----------------------------
-type ShopItem = {
+interface ShopItem {
   name: string;
   price: number;
   image: string;
   description: string;
-};
+}
+
+// -----------------------------
+// 商品カードコンポーネント
+// -----------------------------
+interface ShopItemCardProps extends ShopItem {
+  coins: number;
+  onHover: (item: ShopItem | null) => void;
+}
 
 export function ShopItemCard({
   name,
   price,
   image,
   description,
-  coins, // ← 追加: 親から現在のコイン数を受け取る
+  coins,
   onHover,
-}: {
-  name: string;
-  price: number;
-  image: string;
-  description: string;
-  coins: number; // ← 追加: 型定義
-  onHover: (item: Pick<ShopItem, "name" | "description"> | null) => void;
-}) {
+}: ShopItemCardProps) {
   const [purchased, setPurchased] = useState(false)
 
   const handlePurchase = () => {
     setPurchased(true)
   }
 
+  // 自身をオブジェクトとして渡すためのヘルパー
+  const currentItem: ShopItem = { name, price, image, description };
+
   return (
     <Card
-      onMouseEnter={() => onHover({ name, description })}
+      onMouseEnter={() => onHover(currentItem)}
       onMouseLeave={() => onHover(null)}
       className={`
         w-[180px] h-[250px]
@@ -105,45 +109,27 @@ export function ShopItemCard({
                 transition-all
                 disabled:opacity-50
               "
-              // ← 修正: 購入済み、または残高不足の場合はボタンを無効化
               disabled={purchased || price > coins}
             >
               {purchased ? (
-                <>
-                  <LockKeyholeOpen size={14} />
-                  購入済み
-                </>
+                <><LockKeyholeOpen size={14} />購入済み</>
               ) : price > coins ? (
-                // ← 追加: 残高不足時の表示
-                <>
-                  <LockKeyhole size={14} />
-                  コイン不足
-                </>
+                <><LockKeyhole size={14} />コイン不足</>
               ) : (
-                <>
-                  <LockKeyhole size={14} />
-                  購入する
-                </>
+                <><LockKeyhole size={14} />購入する</>
               )}
             </Button>
           </AlertDialogTrigger>
 
           <AlertDialogContent className="bg-white text-black border border-yellow-500">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-yellow-600 font-bold">
-                購入しますか？
-              </AlertDialogTitle>
-
+              <AlertDialogTitle className="text-yellow-600 font-bold">購入しますか？</AlertDialogTitle>
               <AlertDialogDescription>
                 {name} を {price} コインで購入します。
               </AlertDialogDescription>
             </AlertDialogHeader>
-
             <AlertDialogFooter>
-              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white">
-                いいえ
-              </AlertDialogCancel>
-
+              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white">いいえ</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-white border border-yellow-500 text-yellow-600 font-bold hover:bg-yellow-50"
                 onClick={handlePurchase}
@@ -164,10 +150,12 @@ export function ShopItemCard({
 export default function ShopScreen() {
   const navigate = useNavigate();
 
-  const [hoverItem, setHoverItem] = useState<Pick<ShopItem, "name" | "description"> | null>(null)
+  // State の型定義
+  const [hoverItem, setHoverItem] = useState<ShopItem | null>(null)
   const [coins] = useState(200)
 
-  const weaponItems = [
+  // アイテムリストの型定義
+  const weaponItems: ShopItem[] = [
     { name: "レジェンドソード", price: 500, image: "/images/item-legend.png", description: "古代の英雄が使ったとされる伝説の剣。攻撃力 +50。" },
     { name: "エピックボウ", price: 300, image: "/images/item-epic.png", description: "遠距離攻撃に優れた弓。クリティカル率が上昇する。" },
     { name: "レアダガー", price: 150, image: "/images/item-rare.png", description: "素早い攻撃が可能な短剣。スピード +10。" },
@@ -178,7 +166,7 @@ export default function ShopScreen() {
     { name: "アイスボウ", price: 350, image: "/images/item-ice.png", description: "氷の矢を放つ弓。敵の動きを遅くする効果あり。" },
   ].sort((a, b) => a.price - b.price)
 
-  const statusItems = [
+  const statusItems: ShopItem[] = [
     { name: "HPアップ", price: 200, image: "/images/status-hp.png", description: "最大HPが上昇する。耐久力が大幅にアップ。" },
     { name: "攻撃力アップ", price: 180, image: "/images/status-atk.png", description: "攻撃力が上昇。物理攻撃が強くなる。" },
     { name: "防御力アップ", price: 150, image: "/images/status-def.png", description: "防御力が上昇。受けるダメージを軽減。" },
@@ -192,13 +180,13 @@ export default function ShopScreen() {
   return (
     <div className="relative min-h-screen bg-white text-black flex flex-col items-center p-6">
 
-      {/* 所持コイン枠 */}
-      <div className="absolute top-7 right-7 bg-white border border-yellow-500 rounded-lg px-4 py-2 flex items-center gap-2">
+      {/* 所持コイン枠：アイコンは残し、数値だけ消去 */}
+      <div className="absolute top-7 right-7 bg-white border border-yellow-500 rounded-lg px-4 py-2 flex items-center gap-2 min-w-[60px] justify-center h-[46px]">
         <span className="text-yellow-500 text-xl">🪙</span>
-        <span className="font-bold text-black text-lg">{coins}</span>
+        {/* <span className="font-bold text-black text-lg">{coins}</span> */}
       </div>
 
-      {/* 詳細パネルの枠 */}
+      {/* 詳細パネル */}
       <div className="absolute top-44 left-12 w-64 bg-white text-black border border-black rounded-lg p-4">
         {hoverItem ? (
           <>
@@ -217,7 +205,6 @@ export default function ShopScreen() {
         className="absolute bottom-40 left-[8.75rem] w-48"
       />
 
-      {/* ホームに戻るボタン */}
       <button
         onClick={() => navigate("/home")}
         className="absolute top-4 left-4 p-2 rounded-lg border border-black/40 bg-black/10 hover:bg-black/20 transition-colors"
@@ -225,34 +212,15 @@ export default function ShopScreen() {
         <ArrowLeft size={24} />
       </button>
 
-      <h1 className="text-3xl font-bold mb-6 text-yellow-600">
-        Shop
-      </h1>
+      <h1 className="text-3xl font-bold mb-6 text-yellow-600">Shop</h1>
 
-      {/* タブ全体 */}
       <div className="w-full flex justify-end">
         <Tabs defaultValue="weapon" className="max-w-4xl w-full">
-
           <TabsList className="flex justify-end w-full pr-6 mb-4 bg-black/10 rounded-full p-1">
-            <TabsTrigger
-              value="weapon"
-              className="
-                px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
-                data-[state=active]:bg-green-300/30
-                data-[state=active]:text-green-700
-              "
-            >
+            <TabsTrigger value="weapon" className="px-6 py-2 rounded-full data-[state=active]:bg-green-300/30 data-[state=active]:text-green-700">
               <Axe size={18} /> 武器
             </TabsTrigger>
-
-            <TabsTrigger
-              value="status"
-              className="
-                px-6 py-2 text-sm md:text-base flex items-center gap-2 rounded-full
-                data-[state=active]:bg-green-300/30
-                data-[state=active]:text-green-700
-              "
-            >
+            <TabsTrigger value="status" className="px-6 py-2 rounded-full data-[state=active]:bg-green-300/30 data-[state=active]:text-green-700">
               <BicepsFlexed size={18} /> ステータス
             </TabsTrigger>
           </TabsList>
@@ -261,7 +229,6 @@ export default function ShopScreen() {
             <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
               <div className="flex flex-row flex-wrap justify-center gap-5 mt-6">
                 {weaponItems.map((item) => (
-                  // ← 修正: coins を props として渡す
                   <ShopItemCard key={item.name} {...item} coins={coins} onHover={setHoverItem} />
                 ))}
               </div>
@@ -272,13 +239,11 @@ export default function ShopScreen() {
             <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
               <div className="flex flex-row flex-wrap justify-center gap-5 mt-6">
                 {statusItems.map((item) => (
-                  // ← 修正: coins を props として渡す
                   <ShopItemCard key={item.name} {...item} coins={coins} onHover={setHoverItem} />
                 ))}
               </div>
             </ScrollArea>
           </TabsContent>
-
         </Tabs>
       </div>
     </div>
