@@ -30,6 +30,7 @@ export default function SettingScreen() {
                     defaultValue={[75]}
                     max={100}
                     step={1}
+                    inverted
                     className="w-full"
                 />
             </div>
@@ -41,6 +42,7 @@ export default function SettingScreen() {
                     defaultValue={[50]}
                     max={100}
                     step={1}
+                    inverted
                     className="w-full"
                 />
             </div>

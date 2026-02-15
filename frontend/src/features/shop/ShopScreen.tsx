@@ -156,6 +156,7 @@ export default function ShopScreen() {
 
   const [hoverItem, setHoverItem] = useState<Pick<ShopItem, "name" | "description"> | null>(null)
   const [coins] = useState(1000)
+  
 
   const weaponItems = [
     { name: "レジェンドソード", price: 500, image: "/images/item-legend.png", description: "古代の英雄が使ったとされる伝説の剣。攻撃力 +50。" },
@@ -189,7 +190,7 @@ export default function ShopScreen() {
       </div>
 
       {/* ★ 詳細パネルの枠を黒に変更 */}
-      <div className="absolute top-45 left-12 w-64 bg-white text-black border border-black rounded-lg p-4">
+      <div className="absolute top-44 left-12 w-64 bg-white text-black border border-black rounded-lg p-4">
         {hoverItem ? (
           <>
             <div className="font-bold text-yellow-600 mb-2">{hoverItem.name}</div>
