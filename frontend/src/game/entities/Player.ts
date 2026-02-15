@@ -207,6 +207,7 @@ export class Player extends Container {
             default:
                 break;
         }
+        this.dirty = true;
     }
 
     public getSkillLevel(type: SkillType): number {
@@ -259,7 +260,7 @@ export class Player extends Container {
         const damageMultiplier = this._attackPower / BASE_ATTACK_POWER;
 
         for (const weapon of this.weapons) {
-            weapon.update(dt, enemies, this.x, this.y, damageMultiplier, this._cooldownMultiplier);
+            weapon.update(dt, enemies, this.x, this.y, damageMultiplier, this._cooldownMultiplier, this._projectileCount);
         }
     }
 

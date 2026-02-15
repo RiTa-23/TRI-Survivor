@@ -392,6 +392,7 @@ export class GameApp {
                 .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
                 .map(([type, level]) => ({ type, level })),
         });
+        this.player.dirty = false;
     }
 
     /** 障害物を生成して配置 */

@@ -41,7 +41,8 @@ export abstract class Weapon extends Container {
         playerX: number,
         playerY: number,
         damageMultiplier: number,
-        cooldownMultiplier: number
+        cooldownMultiplier: number,
+        projectileCount: number
     ): void;
 
     protected abstract onUpgrade(): void;

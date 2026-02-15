@@ -6,7 +6,7 @@ import { Bullet } from "../entities/Bullet";
 export class GunWeapon extends Weapon {
     private onShoot: (bullet: Bullet) => void;
     private _range: number = 600;
-    private _projectileCount: number = 1;
+    // private _projectileCount: number = 1; // Handled by Player stats now
 
     constructor(onShoot: (bullet: Bullet) => void) {
         super(SkillType.GUN);
@@ -17,7 +17,7 @@ export class GunWeapon extends Weapon {
         this._level = 1;
     }
 
-    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number, cooldownMultiplier: number): void {
+    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number, cooldownMultiplier: number, projectileCount: number): void {
         if (this._cooldown > 0) {
             this._cooldown -= dt;
             return;
@@ -42,7 +42,7 @@ export class GunWeapon extends Weapon {
         if (targets.length === 0) return;
 
         // Shoot at N nearest enemies
-        const count = Math.min(targets.length, this._projectileCount);
+        const count = Math.min(targets.length, projectileCount);
 
         for (let i = 0; i < count; i++) {
             const target = targets[i].enemy;
@@ -63,8 +63,5 @@ export class GunWeapon extends Weapon {
         // Upgrade logic
         this._damage += 5;
         this._baseCooldown *= 0.9;
-        if (this._level % 3 === 0) {
-            this._projectileCount++;
-        }
     }
 }

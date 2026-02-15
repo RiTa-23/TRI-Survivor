@@ -48,7 +48,7 @@ export class SwordWeapon extends Weapon {
         this.addChild(this._swordGraphics);
     }
 
-    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number, cooldownMultiplier: number): void {
+    public update(dt: number, enemies: Enemy[], playerX: number, playerY: number, damageMultiplier: number, cooldownMultiplier: number, _projectileCount: number): void {
         // Handle slash animation
         if (this._swinging) {
             this._slashTimer -= dt;
