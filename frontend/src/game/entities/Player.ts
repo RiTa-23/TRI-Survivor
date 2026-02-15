@@ -191,6 +191,9 @@ export class Player extends Container {
             case SkillType.HEAL:
                 this.heal(30);
                 break;
+            case SkillType.GET_COIN:
+                this.addCoins(50);
+                break;
         }
     }
 

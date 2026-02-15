@@ -633,12 +633,12 @@ export class GameApp {
         const options: SkillOption[] = [];
 
         const acquiredSkills = this.player.getSkills();
-        // Count unique passive skills (exclude HEAL as it's instant)
+        // Count unique passive skills (exclude HEAL and GET_COIN as they are instant)
         let uniquePassives = 0;
         const currentPassiveTypes: SkillType[] = [];
 
         for (const [type, _level] of acquiredSkills.entries()) {
-            if (type !== SkillType.HEAL) {
+            if (type !== SkillType.HEAL && type !== SkillType.GET_COIN) {
                 uniquePassives++;
                 currentPassiveTypes.push(type);
             }
@@ -650,9 +650,9 @@ export class GameApp {
             // Can only pick from currently owned passives
             availableTypes = [...currentPassiveTypes];
         } else {
-            // Can pick any passive skill
+            // Can pick any passive skill (exclude instant ones)
             const allTypes = Object.values(SkillType);
-            availableTypes = allTypes.filter(t => t !== SkillType.HEAL);
+            availableTypes = allTypes.filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN);
         }
 
         // Shuffle
@@ -676,13 +676,13 @@ export class GameApp {
             }
         }
 
-        // Fallback: If no options available, offer HEAL
-        // Also if we have fewer than 3 options and HEAL is not already there?
-        // Let's just ensure if options is empty, we give HEAL. 
+        // Fallback: If no options available, offer HEAL or GET_COIN
         if (options.length === 0) {
-            const def = SKILL_DEFINITIONS[SkillType.HEAL];
+            const fallbackType = Math.random() < 0.5 ? SkillType.HEAL : SkillType.GET_COIN;
+            const def = SKILL_DEFINITIONS[fallbackType];
+
             options.push({
-                type: SkillType.HEAL,
+                type: fallbackType,
                 name: def.name,
                 description: def.description,
                 icon: def.icon,

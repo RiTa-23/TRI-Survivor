@@ -16,6 +16,7 @@ export const SkillType = {
     MAGNET_UP: "MAGNET_UP",
     EXP_UP: "EXP_UP",
     HEAL: "HEAL",
+    GET_COIN: "GET_COIN",
 } as const;
 
 export type SkillType = typeof SkillType[keyof typeof SkillType];
@@ -84,5 +85,11 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
         description: "Restores 30 HP immediately.",
         maxLevel: 999,
         icon: "/assets/images/heal.png",
+    },
+    [SkillType.GET_COIN]: {
+        name: "Treasure",
+        description: "Get 50 Coins immediately.",
+        maxLevel: 999,
+        icon: "/assets/images/coin.png",
     },
 };
