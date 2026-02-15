@@ -29,7 +29,7 @@ import {
 import { useState } from "react"
 
 // -----------------------------
-// 型定義 (Item Type)
+// 修正：型定義 (ShopItem Interface)
 // -----------------------------
 interface ShopItem {
   name: string;
@@ -43,6 +43,7 @@ interface ShopItem {
 // -----------------------------
 interface ShopItemCardProps extends ShopItem {
   coins: number;
+  // 修正：any を排除し ShopItem | null を指定
   onHover: (item: ShopItem | null) => void;
 }
 
@@ -60,7 +61,7 @@ export function ShopItemCard({
     setPurchased(true)
   }
 
-  // 自身をオブジェクトとして渡すためのヘルパー
+  // 修正：型安全なアイテムオブジェクトの作成
   const currentItem: ShopItem = { name, price, image, description };
 
   return (
@@ -150,11 +151,11 @@ export function ShopItemCard({
 export default function ShopScreen() {
   const navigate = useNavigate();
 
-  // State の型定義
+  // 修正：State の型定義から any を排除
   const [hoverItem, setHoverItem] = useState<ShopItem | null>(null)
   const [coins] = useState(200)
 
-  // アイテムリストの型定義
+  // アイテムリストの型定義（自動的に ShopItem[] と推論されます）
   const weaponItems: ShopItem[] = [
     { name: "レジェンドソード", price: 500, image: "/images/item-legend.png", description: "古代の英雄が使ったとされる伝説の剣。攻撃力 +50。" },
     { name: "エピックボウ", price: 300, image: "/images/item-epic.png", description: "遠距離攻撃に優れた弓。クリティカル率が上昇する。" },
@@ -180,10 +181,9 @@ export default function ShopScreen() {
   return (
     <div className="relative min-h-screen bg-white text-black flex flex-col items-center p-6">
 
-      {/* 所持コイン枠：アイコンは残し、数値だけ消去 */}
+      {/* 所持コイン枠 */}
       <div className="absolute top-7 right-7 bg-white border border-yellow-500 rounded-lg px-4 py-2 flex items-center gap-2 min-w-[60px] justify-center h-[46px]">
         <span className="text-yellow-500 text-xl">🪙</span>
-        {/* <span className="font-bold text-black text-lg">{coins}</span> */}
       </div>
 
       {/* 詳細パネル */}
