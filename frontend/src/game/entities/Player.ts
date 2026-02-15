@@ -92,7 +92,7 @@ export class Player extends Container {
         // max defense 80% to avoid invincibility
         const def = Math.min(80, this._defense);
         const multiplier = 1 - (def / 100);
-        const actualDamage = Math.max(1, amount * multiplier);
+        const actualDamage = Math.max(0, amount * multiplier);
 
         this._hp = Math.max(0, this._hp - actualDamage);
         this.hpBar.update(this._hp / this._maxHp);
