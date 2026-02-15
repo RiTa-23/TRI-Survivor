@@ -1,13 +1,13 @@
 import { Weapon } from "./Weapon";
 import { SkillType } from "../types";
 import { BasicEnemy } from "../entities/BasicEnemy";
-import { Sprite } from "pixi.js";
+import { Graphics } from "pixi.js";
 
 export class SwordWeapon extends Weapon {
     private _range: number = 150;
     private _arc: number = Math.PI * 0.75; // 135 degrees swing
     private _slashDuration: number = 0.15; // Fast swing
-    private _swordSprite: Sprite;
+    private _swordGraphics: Graphics;
     private _slashTimer: number = 0;
     private _targetAngle: number = 0;
     private _swinging: boolean = false;
@@ -19,19 +19,31 @@ export class SwordWeapon extends Weapon {
         this._damage = 20;
         this._level = 1;
 
-        // Initialize Sprite (texture might need to be loaded, but we'll assume preloaded or handle async)
-        // Note: Assets.get check isn't strictly necessary if GameApp loads it, but good practice.
-        // Assuming GameApp loaded "/assets/images/skills/sword.png" or we just use Sprite.from
-        this._swordSprite = Sprite.from("/assets/images/skills/sword.png");
-        this._swordSprite.anchor.set(0.5, 1.0); // Handle at bottom center
-        this._swordSprite.width = 100; // Adjust size
-        this._swordSprite.height = 100;
-        this._swordSprite.visible = false;
+        // Initialize Graphics for the sword (simple stick)
+        this._swordGraphics = new Graphics();
+
+        // Draw the sword shape
+        const bladeWidth = 10;
+        const bladeLength = 100;
+
+        this._swordGraphics.beginFill(0xDDDDDD); // Silver blade
+        this._swordGraphics.lineStyle(2, 0x888888); // Darker outline
+        // Pivot is at (0,0), drawing upwards (negative Y)
+        this._swordGraphics.drawRect(-bladeWidth / 2, -bladeLength, bladeWidth, bladeLength);
+        this._swordGraphics.endFill();
+
+        // Handle
+        this._swordGraphics.beginFill(0x8B4513); // Brown handle
+        this._swordGraphics.drawRect(-5, 0, 10, 20); // Handle
+        this._swordGraphics.drawRect(-12, -5, 24, 5); // Guard
+        this._swordGraphics.endFill();
+
+        this._swordGraphics.visible = false;
 
         // Offset sword from player center
-        this._swordSprite.y = 10;
+        this._swordGraphics.y = 10;
 
-        this.addChild(this._swordSprite);
+        this.addChild(this._swordGraphics);
     }
 
     public update(dt: number, enemies: BasicEnemy[], playerX: number, playerY: number, damageMultiplier: number): void {
@@ -41,26 +53,20 @@ export class SwordWeapon extends Weapon {
 
             if (this._slashTimer <= 0) {
                 this._swinging = false;
-                this._swordSprite.visible = false;
+                this._swordGraphics.visible = false;
             } else {
                 // Calculate swing progress (0.0 to 1.0)
                 const progress = 1 - (this._slashTimer / this._slashDuration);
 
-                // Swing from right to left (relative to target direction) or vice versa?
-                // Let's swing across the target angle.
-                // Start: targetAngle - arc/2
-                // End: targetAngle + arc/2
-
-                // Ease out for "hack" feel
+                // Swing logic
                 const t = Math.sin(progress * Math.PI / 2);
 
                 const startAngle = this._targetAngle - this._arc / 2;
                 const totalSwing = this._arc;
 
-                // Rotate sprite. Note: Sprite art points UP (usually). 
-                // We add PI/2 or something if art points right. 
-                // Assuming vertical sword art:
-                this._swordSprite.rotation = startAngle + (totalSwing * t) + Math.PI / 2;
+                // Rotate graphics.
+                // Up (-Y) needs +PI/2 to align with 0 rad (Right)
+                this._swordGraphics.rotation = startAngle + (totalSwing * t) + Math.PI / 2;
             }
         }
 
@@ -93,7 +99,7 @@ export class SwordWeapon extends Weapon {
         this._targetAngle = targetAngle;
         this._swinging = true;
         this._slashTimer = this._slashDuration;
-        this._swordSprite.visible = true;
+        this._swordGraphics.visible = true;
         this._cooldown = this._baseCooldown;
 
         // Damage Logic (Instant for now, matching the area)
@@ -103,7 +109,7 @@ export class SwordWeapon extends Weapon {
     private dealAreaDamage(angle: number, enemies: BasicEnemy[], px: number, py: number, multiplier: number): void {
         const damage = this._damage * multiplier;
         const rangeSq = this._range * this._range;
-        const halfArc = this._arc / 2; // Damage arc matches visual swing arc approximately
+        const halfArc = this._arc / 2;
 
         for (const e of enemies) {
             if (!e.alive) continue;
@@ -128,8 +134,24 @@ export class SwordWeapon extends Weapon {
         this._damage += 10;
         this._baseCooldown *= 0.9;
         this._range += 20;
-        this._swordSprite.height = Math.min(200, this._swordSprite.height + 20); // Longer sword
-        this._swordSprite.width = this._swordSprite.height; // Keep aspect ratio roughly
+
+        // Redraw longer sword
+        this._swordGraphics.clear();
+
+        const bladeWidth = 10;
+        const bladeLength = 100 + (this._level - 1) * 20;
+
+        this._swordGraphics.beginFill(0xDDDDDD);
+        this._swordGraphics.lineStyle(2, 0x888888);
+        this._swordGraphics.drawRect(-bladeWidth / 2, -bladeLength, bladeWidth, bladeLength);
+        this._swordGraphics.endFill();
+
+        // Handle
+        this._swordGraphics.beginFill(0x8B4513);
+        this._swordGraphics.drawRect(-5, 0, 10, 20);
+        this._swordGraphics.drawRect(-12, -5, 24, 5);
+        this._swordGraphics.endFill();
+
         console.log(`Sword upgraded to Lv.${this._level}: Dmg=${this._damage}`);
     }
 }
