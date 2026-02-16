@@ -11,6 +11,7 @@ import { SkillType, SKILL_DEFINITIONS, WEAPON_TYPES } from "../types";
 import type { SkillOption, PlayerStats } from "../types";
 import { GunWeapon } from "../weapons/GunWeapon";
 import { SwordWeapon } from "../weapons/SwordWeapon";
+import { SpecialSkillType } from "../types";
 
 /** Grid tile size (one cell) */
 const GRID_SIZE = 80;
@@ -22,6 +23,7 @@ const SPAWN_INTERVAL_MS = 500;
 const SPAWN_DISTANCE = 1000;
 const MAX_ENEMIES = 100;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
+const SPECIAL_EFFECT_DURATION = 10.0;
 
 /** Obstacle settings */
 const MAX_OBSTACLES = 15;
@@ -63,6 +65,25 @@ export class GameApp {
     private debugMode: boolean = false;
     private keysPressed: Set<string> = new Set();
 
+    // --- Special Skill State ---
+    private specialGauge: number = 0;
+    private specialMaxCooldown: number = 20; // Initial cooldown 20s
+    private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
+    private specialEffectTimer: number = 0;
+    private isSpecialEffectActive: boolean = false;
+    private domainOverlayWithFade: Graphics | null = null;
+    private domainExpansionMaxRadius: number = 0;
+    private domainExpansionCurrentRadius: number = 0;
+
+    // --- Kon Special Skill State ---
+    private konGraphics: Container | null = null;
+    private isKonActive: boolean = false;
+    private konVelocity: number = 1500; // Faster
+    private konHitboxRadius: number = 800; // Smaller than visual length to better match shape
+    private static readonly KON_VISUAL_SCALE = 4.0;
+    private static readonly KON_HITBOX_OFFSET_X = 200; // Based on shape
+    private static readonly INSTANT_KILL_DAMAGE = Number.MAX_SAFE_INTEGER;
+
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
@@ -82,7 +103,10 @@ export class GameApp {
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
-        }, onStatusChange, onSpecialMove);
+        }, onStatusChange, (move) => {
+            if (onSpecialMove) onSpecialMove(move);
+            this.handleSpecialMove(move);
+        });
     }
 
     /** Create a single grid cell texture for infinite tiling */
@@ -173,6 +197,9 @@ export class GameApp {
             this.elapsedTime = 0;
             this.killCount = 0;
             this.lastEmittedTime = 0;
+            this.specialGauge = 0;
+            this.specialEffectTimer = 0;
+            this.isSpecialEffectActive = false;
 
             // Handle Level Up
             this.player.onLevelUp = (level) => {
@@ -184,6 +211,11 @@ export class GameApp {
             // Initial Weapon
             this.player.addWeapon(new SwordWeapon());
 
+
+            // Initialize Domain Expansion Overlay (BEHIND world)
+            this.domainOverlayWithFade = new Graphics();
+            this.domainOverlayWithFade.visible = false;
+            this.app.stage.addChild(this.domainOverlayWithFade);
 
             this.app.stage.addChild(this.world);
         }
@@ -202,6 +234,39 @@ export class GameApp {
             this.handTrackingManager.stop();
             this.destroyApp();
             return;
+        }
+
+
+
+        // Initialize Kon Visual Effect (Top Layer)
+        if (!this.isDestroyed) {
+            this.konGraphics = new Container();
+            this.konGraphics.visible = false;
+
+            const s = GameApp.KON_VISUAL_SCALE; // Scale factor
+            const g = new Graphics();
+
+            // Main Head (Orange Triangle)
+            g.poly([-150 * s, 0, 150 * s, -100 * s, 150 * s, 100 * s]);
+            g.fill({ color: 0xFF8800 });
+
+            // Ears
+            g.poly([50 * s, -100 * s, 100 * s, -200 * s, 150 * s, -100 * s]);
+            g.poly([50 * s, 100 * s, 100 * s, 200 * s, 150 * s, 100 * s]);
+            g.fill({ color: 0xCC6600 });
+
+            // Eyes (White + Black)
+            g.circle(0, -30 * s, 15 * s);
+            g.circle(0, 30 * s, 15 * s);
+            g.fill({ color: 0xFFFFFF });
+            g.circle(-5 * s, -30 * s, 5 * s);
+            g.circle(-5 * s, 30 * s, 5 * s);
+            g.fill({ color: 0x000000 });
+
+            this.konGraphics.addChild(g);
+
+            // Add to stage (Top most)
+            this.app.stage.addChild(this.konGraphics);
         }
 
         // Start Game Loop
@@ -262,6 +327,9 @@ export class GameApp {
             // Update items (magnet & collect)
             this.updateItems(dt);
 
+            // --- Special Skill Update ---
+            this.updateSpecialSkill(dt);
+
             // Notify UI of player stats
             this.emitStats();
 
@@ -289,6 +357,11 @@ export class GameApp {
         const angle = Math.random() * Math.PI * 2;
         enemy.x = this.player.x + Math.cos(angle) * SPAWN_DISTANCE;
         enemy.y = this.player.y + Math.sin(angle) * SPAWN_DISTANCE;
+
+        // If special effect is active, freeze the new enemy immediately
+        if (this.isSpecialEffectActive && this.activeSpecialType === SpecialSkillType.MURYO_KUSHO) {
+            enemy.isFrozen = true;
+        }
 
         this.enemies.push(enemy);
         this.world.addChild(enemy);
@@ -414,6 +487,7 @@ export class GameApp {
         // Emit if dirty OR if integer time changed (for clock update)
         if (!this.player.dirty && currentIntTime === lastIntTime) return;
 
+
         this.onStatsUpdate?.({
             coins: this.player.coins,
             exp: this.player.exp,
@@ -425,6 +499,9 @@ export class GameApp {
             passives: Array.from(this.player.getSkills().entries())
                 .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
                 .map(([type, level]) => ({ type, level })),
+            specialGauge: this.specialGauge,
+            maxSpecialGauge: this.specialMaxCooldown,
+            activeSpecialType: this.activeSpecialType,
             time: this.elapsedTime,
             killCount: this.killCount,
         });
@@ -715,6 +792,8 @@ export class GameApp {
             }
         }
 
+        // SPECIAL_COOLDOWN_CUT is treated as a normal passive skill and counts towards the 3-skill limit.
+
         // Shuffle (Fisher-Yates)
         for (let i = candidates.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -785,5 +864,189 @@ export class GameApp {
 
         const length = Math.sqrt(x * x + y * y);
         return { x: x / length, y: y / length };
+    }
+
+    // --- Special Skill Logic ---
+
+    private updateSpecialSkill(dt: number) {
+        // Handle Active Effect Duration
+        if (this.isSpecialEffectActive) {
+            this.specialEffectTimer -= dt;
+
+            // --- Domain Expansion Visual Effect ---
+            if (this.activeSpecialType === SpecialSkillType.MURYO_KUSHO && this.domainOverlayWithFade) {
+                // Expansion Animation (First 0.5s)
+                const expansionDuration = 0.5;
+                const timeActive = SPECIAL_EFFECT_DURATION - this.specialEffectTimer;
+
+                if (timeActive < expansionDuration) {
+                    // Growing phase
+                    const progress = timeActive / expansionDuration;
+                    // Easing for impact (easeOutCubic)
+                    const t = 1 - Math.pow(1 - progress, 3);
+                    this.domainExpansionCurrentRadius = this.domainExpansionMaxRadius * t;
+                } else {
+                    // Fully expanded
+                    this.domainExpansionCurrentRadius = this.domainExpansionMaxRadius;
+                }
+
+                // Draw Overlay
+                this.domainOverlayWithFade.clear();
+
+                // 1. Dark Overlay (Dim everything outside the domain or inside? The request: centers expands, covers screen, dimmer)
+                // "Circular area expands ... covers the screen ... whole screen becomes dimmer"
+                // Implementation: Draw a black circle with alpha 0.5
+
+                const centerX = this.app.screen.width / 2;
+                const centerY = this.app.screen.height / 2;
+
+                this.domainOverlayWithFade.circle(centerX, centerY, this.domainExpansionCurrentRadius);
+                this.domainOverlayWithFade.fill({ color: 0x000000, alpha: 0.6 }); // Darker dim
+            }
+
+            if (this.specialEffectTimer <= 0) {
+                this.endSpecialSkill();
+            }
+            return; // Don't charge gauge while active
+        }
+
+        // --- Kon Update Logic ---
+        if (this.isKonActive && this.konGraphics) {
+            // Move Left
+            this.konGraphics.x -= this.konVelocity * dt;
+
+            // Collision Detection (Circle based for simplicity)
+            // Kon position is in Screen Coordinates.
+            // Enemy position is in World Coordinates.
+            // Need to convert Enemy World -> Screen to check, or Kon Screen -> World.
+            // Easier: Kon Screen -> World.
+            const konWorldX = this.konGraphics.x - this.world.x;
+            const konWorldY = this.konGraphics.y - this.world.y;
+
+            // Check collisions
+            this.enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+                // Visual Tip is around (-600, 0).
+                // Hitbox is slightly offset left from the visual center (tip of the head)
+                const dx = enemy.x - konWorldX - GameApp.KON_HITBOX_OFFSET_X;
+                const dy = enemy.y - konWorldY;
+                const distSq = dx * dx + dy * dy;
+
+                // Hitbox radius
+                const r = this.konHitboxRadius;
+                if (distSq < r * r) {
+                    enemy.takeDamage(GameApp.INSTANT_KILL_DAMAGE, konWorldX, konWorldY);
+                }
+            });
+
+            // End Condition (Off screen left)
+            // Since it's huge, wait until it's far off
+            if (this.konGraphics.x < -1000) {
+                this.isKonActive = false;
+                this.konGraphics.visible = false;
+                if (this.debugMode) console.log("Kon Finished");
+            }
+
+            // Kon blocks gauge charge too? Yes, usually.
+            return;
+        }
+
+        // Calculate Max Cooldown based on passive
+        const cooldownCutLevel = this.player.getSkillLevel(SkillType.SPECIAL_COOLDOWN_CUT);
+        // 10% per level (max 50%)
+        const reductionRatio = Math.min(0.5, cooldownCutLevel * 0.1);
+        this.specialMaxCooldown = 20 * (1.0 - reductionRatio);
+
+        // Charge Gauge
+        if (this.specialGauge < this.specialMaxCooldown) {
+            this.specialGauge += dt;
+            if (this.specialGauge > this.specialMaxCooldown) {
+                this.specialGauge = this.specialMaxCooldown;
+            }
+        }
+
+        // Toggle detection based on gauge
+        const isReady = this.specialGauge >= this.specialMaxCooldown;
+        this.handTrackingManager.setSpecialMoveDetection(isReady);
+    }
+
+    private handleSpecialMove(moveName: string) {
+        // "Muryo Kusho" -> SpecialSkillType.MURYO_KUSHO (Exact match check)
+        let type: SpecialSkillType | null = null;
+        if (moveName === "Muryo Kusho") type = SpecialSkillType.MURYO_KUSHO;
+        else if (moveName === "Kon") type = SpecialSkillType.KON;
+
+        if (type && type === this.activeSpecialType) {
+            if (this.specialGauge >= this.specialMaxCooldown && !this.isSpecialEffectActive) {
+                this.executeSpecialSkill(type);
+                this.specialGauge = 0; // Reset gauge
+                this.handTrackingManager.setSpecialMoveDetection(false);
+            }
+        }
+    }
+
+    private executeSpecialSkill(type: SpecialSkillType) {
+        if (type === SpecialSkillType.MURYO_KUSHO) {
+            console.log("EXECUTING SPECIAL: MURYO KUSHO");
+            this.isSpecialEffectActive = true;
+            this.specialEffectTimer = SPECIAL_EFFECT_DURATION;
+
+            // Apply Effects
+            this.player.setSpecialMode(true);
+
+            // Freeze all enemies
+            this.enemies.forEach(enemy => {
+                enemy.isFrozen = true;
+            });
+
+            // Visual feedback (optional log)
+            if (this.debugMode) console.log("Domain Expansion: Infinite Void - Active for 10s");
+
+            // Initialize Visual Effect
+            if (this.domainOverlayWithFade) {
+                this.domainOverlayWithFade.visible = true;
+                // Determine max radius needed to cover the screen from center
+                const w = this.app.screen.width;
+                const h = this.app.screen.height;
+                // Hypotenuse / 2 to cover corners
+                this.domainExpansionMaxRadius = Math.sqrt(w * w + h * h) * 0.6; // Slightly larger to be safe
+                this.domainExpansionCurrentRadius = 0;
+            }
+        } else if (type === SpecialSkillType.KON) {
+            if (this.debugMode) console.log("EXECUTING SPECIAL: KON");
+
+            if (this.konGraphics) {
+                this.isKonActive = true;
+                this.konGraphics.visible = true;
+                // Start right side, vertically centered
+                // Spawn further right because it's huge
+                this.konGraphics.x = this.app.screen.width + 1200;
+                this.konGraphics.y = this.app.screen.height / 2;
+
+                if (this.debugMode) console.log("Kon visual started");
+            }
+        }
+    }
+
+    private endSpecialSkill() {
+        if (this.debugMode) console.log("ENDING SPECIAL SKILL");
+        this.isSpecialEffectActive = false;
+        this.specialEffectTimer = 0;
+
+        // Reset Effects
+        this.player.setSpecialMode(false);
+
+        // Unfreeze all enemies
+        this.enemies.forEach(enemy => {
+            enemy.isFrozen = false;
+        });
+
+        // Resume gauge charging (handled in next update)
+
+        // Reset Visual Effect
+        if (this.domainOverlayWithFade) {
+            this.domainOverlayWithFade.visible = false;
+            this.domainOverlayWithFade.clear();
+        }
     }
 }

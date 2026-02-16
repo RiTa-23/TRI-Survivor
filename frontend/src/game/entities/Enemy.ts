@@ -65,6 +65,7 @@ export abstract class Enemy extends Container {
     protected _radius: number;
     protected _dropTable: DropTable;
     protected _alive: boolean = true;
+    public isFrozen: boolean = false;
     private damageEffects: DamageEffect[] = [];
 
     constructor(config: EnemyConfig) {
@@ -127,6 +128,8 @@ export abstract class Enemy extends Container {
 
     /** プレイヤー座標に向かって移動 */
     public moveToward(targetX: number, targetY: number, dt: number): void {
+        if (this.isFrozen) return;
+
         const dx = targetX - this.x;
         const dy = targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
