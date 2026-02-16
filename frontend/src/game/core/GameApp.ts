@@ -68,7 +68,7 @@ export class GameApp {
     // --- Special Skill State ---
     private specialGauge: number = 0;
     private specialMaxCooldown: number = 20; // Initial cooldown 20s
-    private activeSpecialType: SpecialSkillType = SpecialSkillType.KON;
+    private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
     private specialEffectTimer: number = 0;
     private isSpecialEffectActive: boolean = false;
     private domainOverlayWithFade: Graphics | null = null;
