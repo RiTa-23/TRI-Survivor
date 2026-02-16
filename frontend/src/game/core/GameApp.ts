@@ -74,6 +74,12 @@ export class GameApp {
     private domainExpansionMaxRadius: number = 0;
     private domainExpansionCurrentRadius: number = 0;
 
+    // --- Kon Special Skill State ---
+    private konGraphics: Container | null = null;
+    private isKonActive: boolean = false;
+    private konVelocity: number = 1500; // Faster
+    private konHitboxRadius: number = 800; // Smaller than visual length to better match shape
+
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
@@ -227,6 +233,44 @@ export class GameApp {
         }
 
 
+
+        // Initialize Kon Visual Effect (Top Layer)
+        if (!this.isDestroyed) {
+            this.konGraphics = new Container();
+            this.konGraphics.visible = false;
+
+            // Draw Fox Head Shape (Facing Left)
+            // MAKE IT HUGE (Screen Height scale)
+            // Screen height approx 1080? Let's make it 800-1000 height.
+            const s = 4.0; // Scale factor
+
+            const g = new Graphics();
+
+            // Main Head (Orange Triangle)
+            // Tip at (-150, 0) * s -> (-600, 0)
+            // Base at (150, -100) * s -> (600, -400)
+            // Base at (150, 100) * s -> (600, 400)
+            g.poly([-150 * s, 0, 150 * s, -100 * s, 150 * s, 100 * s]);
+            g.fill({ color: 0xFF8800 });
+
+            // Ears
+            g.poly([50 * s, -100 * s, 100 * s, -200 * s, 150 * s, -100 * s]);
+            g.poly([50 * s, 100 * s, 100 * s, 200 * s, 150 * s, 100 * s]);
+            g.fill({ color: 0xCC6600 });
+
+            // Eyes (White + Black)
+            g.circle(0, -30 * s, 15 * s);
+            g.circle(0, 30 * s, 15 * s);
+            g.fill({ color: 0xFFFFFF });
+            g.circle(-5 * s, -30 * s, 5 * s);
+            g.circle(-5 * s, 30 * s, 5 * s);
+            g.fill({ color: 0x000000 });
+
+            this.konGraphics.addChild(g);
+
+            // Add to stage (Top most)
+            this.app.stage.addChild(this.konGraphics);
+        }
 
         // Start Game Loop
         this.app.start();
@@ -892,6 +936,49 @@ export class GameApp {
             return; // Don't charge gauge while active
         }
 
+        // --- Kon Update Logic ---
+        if (this.isKonActive && this.konGraphics) {
+            // Move Left
+            this.konGraphics.x -= this.konVelocity * dt;
+
+            // Collision Detection (Circle based for simplicity)
+            // Kon position is in Screen Coordinates.
+            // Enemy position is in World Coordinates.
+            // Need to convert Enemy World -> Screen to check, or Kon Screen -> World.
+            // Easier: Kon Screen -> World.
+            const konWorldX = this.konGraphics.x - this.world.x;
+            const konWorldY = this.konGraphics.y - this.world.y;
+
+            // Check collisions
+            this.enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+                // Visual Tip is around (-600, 0).
+                // If radius is 800, center should be somewhat behind the tip.
+                // Center at (200, 0) -> Front edge at -600 (Tip).
+                // Let's try offset +200.
+                const dx = enemy.x - konWorldX - 200;
+                const dy = enemy.y - konWorldY;
+                const distSq = dx * dx + dy * dy;
+
+                // Hitbox radius
+                const r = this.konHitboxRadius;
+                if (distSq < r * r) {
+                    enemy.takeDamage(99999, enemy.x, enemy.y);
+                }
+            });
+
+            // End Condition (Off screen left)
+            // Since it's huge, wait until it's far off
+            if (this.konGraphics.x < -1000) {
+                this.isKonActive = false;
+                this.konGraphics.visible = false;
+                console.log("Kon Finished");
+            }
+
+            // Kon blocks gauge charge too? Yes, usually.
+            return;
+        }
+
         // Calculate Max Cooldown based on passive
         const cooldownCutLevel = this.player.getSkillLevel(SkillType.SPECIAL_COOLDOWN_CUT);
         // 10% per level (max 50%)
@@ -955,27 +1042,17 @@ export class GameApp {
             }
         } else if (type === SpecialSkillType.KON) {
             console.log("EXECUTING SPECIAL: KON");
-            // Screen boundaries in world coordinates
-            const screenWidth = this.app.screen.width;
-            const screenHeight = this.app.screen.height;
-            const worldLeft = -this.world.x;
-            const worldTop = -this.world.y;
-            const worldRight = worldLeft + screenWidth;
-            const worldBottom = worldTop + screenHeight;
 
-            // Kill all enemies on screen
-            const enemiesToKill = [...this.enemies]; // Copy array
-            let killCount = 0;
-            enemiesToKill.forEach(enemy => {
-                // Check if enemy is within screen bounds (with slight margin for radius)
-                const margin = enemy.radius;
-                if (enemy.x + margin >= worldLeft && enemy.x - margin <= worldRight &&
-                    enemy.y + margin >= worldTop && enemy.y - margin <= worldBottom) {
-                    enemy.takeDamage(99999, enemy.x, enemy.y);
-                    killCount++;
-                }
-            });
-            console.log(`Kon executed: Killed ${killCount} enemies on screen.`);
+            if (this.konGraphics) {
+                this.isKonActive = true;
+                this.konGraphics.visible = true;
+                // Start right side, vertically centered
+                // Spawn further right because it's huge
+                this.konGraphics.x = this.app.screen.width + 1200;
+                this.konGraphics.y = this.app.screen.height / 2;
+
+                console.log("Kon visual started");
+            }
         }
     }
 
