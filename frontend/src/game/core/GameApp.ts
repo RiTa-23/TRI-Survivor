@@ -24,6 +24,7 @@ const SPAWN_DISTANCE = 1000;
 const MAX_ENEMIES = 100;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 const SPECIAL_EFFECT_DURATION = 10.0;
+const GAME_CLEAR_TIME = 333; // 5 minutes 33 seconds
 
 /** Obstacle settings */
 const MAX_OBSTACLES = 15;
@@ -57,6 +58,7 @@ export class GameApp {
     private isPaused = false;
     private onStatsUpdate?: (stats: PlayerStats) => void;
     private onLevelUpCallback?: (options: SkillOption[]) => void;
+    private onGameClearCallback?: (stats: PlayerStats) => void;
     private elapsedTime: number = 0;
     private killCount: number = 0;
     private lastEmittedTime: number = 0;
@@ -90,7 +92,8 @@ export class GameApp {
         onStatusChange?: (status: string) => void,
         onSpecialMove?: (moveName: string) => void,
         onStatsUpdate?: (stats: PlayerStats) => void,
-        onLevelUp?: (options: SkillOption[]) => void
+        onLevelUp?: (options: SkillOption[]) => void,
+        onGameClear?: (stats: PlayerStats) => void
     ) {
         this.app = new Application();
         // this.player will be initialized in init()
@@ -100,6 +103,7 @@ export class GameApp {
 
         this.onStatsUpdate = onStatsUpdate;
         this.onLevelUpCallback = onLevelUp;
+        this.onGameClearCallback = onGameClear;
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
@@ -279,6 +283,12 @@ export class GameApp {
             if (this.isPaused) return;
 
             this.elapsedTime += dt;
+
+            // Check Game Clear
+            if (this.elapsedTime >= GAME_CLEAR_TIME && !this.isDestroyed) {
+                this.handleGameClear();
+                return;
+            }
 
             // Player movement & animation update
             if (this.debugMode && this.keysPressed.size > 0) {
@@ -968,6 +978,30 @@ export class GameApp {
         // Toggle detection based on gauge
         const isReady = this.specialGauge >= this.specialMaxCooldown;
         this.handTrackingManager.setSpecialMoveDetection(isReady);
+    }
+
+    private handleGameClear() {
+        this.pauseGame();
+        // Emit final stats
+        if (this.onGameClearCallback) {
+            this.onGameClearCallback({
+                coins: this.player.coins,
+                exp: this.player.exp,
+                hp: this.player.hp,
+                maxHp: this.player.maxHp,
+                level: this.player.level,
+                nextLevelExp: this.player.nextLevelExp,
+                weapons: this.player.activeWeapons.map(w => ({ type: w.type, level: w.level })),
+                passives: Array.from(this.player.getSkills().entries())
+                    .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
+                    .map(([type, level]) => ({ type, level })),
+                specialGauge: this.specialGauge,
+                maxSpecialGauge: this.specialMaxCooldown,
+                activeSpecialType: this.activeSpecialType,
+                time: this.elapsedTime,
+                killCount: this.killCount,
+            });
+        }
     }
 
     private handleSpecialMove(moveName: string) {

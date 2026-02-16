@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GameApp } from "@/game/core/GameApp";
 import { type PlayerStats, SkillType, type SkillOption, SKILL_DEFINITIONS } from "../../game/types";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ export default function GameScreen() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameAppRef = useRef<GameApp | null>(null);
+    const navigate = useNavigate();
 
     const [status, setStatus] = useState<string>("Initializing...");
     const [stats, setStats] = useState<PlayerStats>({
@@ -88,10 +89,13 @@ export default function GameScreen() {
                         setStats(s);
                     }
                 },
-                // onLevelUp Callback
                 (options: SkillOption[]) => {
                     setSkillOptions(options);
                     setIsLevelUpModalOpen(true);
+                },
+                // onGameClear Callback
+                (finalStats: PlayerStats) => {
+                    navigate("/result", { state: { stats: finalStats } });
                 }
             );
 
