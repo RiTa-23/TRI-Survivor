@@ -107,23 +107,26 @@ export default function TutorialScreen() {
                             <span className="text-xs font-bold uppercase tracking-tighter opacity-50">Image Placeholder</span>
                         </div>
                         
-                        {/* キャラクター名バッジ */}
-                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 wood-panel px-6 py-2 rounded-full font-black text-sm text-amber-100 shadow-xl border-2 border-[#2d1b18]">
-                            トロワ
-                        </div>
+                            {/* キャラクター名バッジ */}
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 wood-panel px-6 py-2 rounded-full font-black text-sm text-amber-100 shadow-xl border-2 border-[#2d1b18]">
+                                トロワ
+                            </div>
                     </div>
+                    
+                        {/* decorative ornament removed per request */}
                 </div>
 
-                {/* 説明文エリア (木製パネル風) */}
-                <div className="flex-1 w-full max-w-2xl space-y-8 wood-panel p-8 md:p-12 rounded-[2rem] relative">
-                    {/* 吹き出しの尻尾 (左側、デスクトップ用) */}
-                    <div className="hidden md:block absolute left-[-12px] top-1/2 -translate-y-1/2 w-6 h-6 bg-[#3e2723] border-l-4 border-b-4 border-[#2d1b18] rotate-45" />
-                    
+                {/* 説明文エリア — 羊皮紙風の装飾パネル */}
+                <div className="flex-1 w-full max-w-2xl space-y-8 parchment-panel p-8 md:p-12 rounded-[2rem] relative">
+                    {/* 尻尾はデザイン的に小さめの羊皮紙色 */}
+                    <div className="hidden md:block absolute left-[-18px] top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f3e7c2] border-l-4 border-b-4 border-[#d5b48b] rotate-45" />
+
                     <div className="space-y-6 relative z-10">
-                        <h1 className="text-2xl md:text-4xl font-black tracking-tight text-amber-50 leading-tight">
+                        <div className="inner-band" />
+                        <h1 className="text-2xl md:text-4xl font-black tracking-tight parchment-title leading-tight parchment-text">
                             {TUTORIAL_PAGES[currentPage].title}
                         </h1>
-                        <p className="text-base md:text-xl text-amber-200/70 leading-relaxed font-medium">
+                        <p className="text-base md:text-xl leading-relaxed font-medium parchment-text">
                             {TUTORIAL_PAGES[currentPage].description}
                         </p>
                     </div>
