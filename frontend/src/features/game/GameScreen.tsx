@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { GameApp } from "@/game/core/GameApp";
 import { type PlayerStats, SkillType, type SkillOption, SKILL_DEFINITIONS } from "../../game/types";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Coins, Heart, Zap } from "lucide-react";
+import { ArrowUp, Coins, Heart, Zap, Clock, Skull } from "lucide-react";
 import { SkillSelectionModal } from "./SkillSelectionModal";
 
 export default function GameScreen() {
@@ -22,7 +22,9 @@ export default function GameScreen() {
         level: 1,
         nextLevelExp: 5,
         weapons: [],
-        passives: []
+        passives: [],
+        time: 0,
+        killCount: 0
     });
 
     // Skill System State
@@ -80,7 +82,7 @@ export default function GameScreen() {
                 },
                 (s: PlayerStats) => {
                     // Throttle stats update
-                    const key = `${s.coins},${s.exp},${Math.round(s.hp)},${s.level}`;
+                    const key = `${s.coins},${s.exp},${Math.round(s.hp)},${s.level},${Math.floor(s.time)},${s.killCount}`;
                     if (key !== lastStatsRef.current) {
                         lastStatsRef.current = key;
                         setStats(s);
@@ -270,6 +272,30 @@ export default function GameScreen() {
                         </div>
                     </div>
                 )}
+
+            </div>
+
+            {/* Top Right HUD (Time & Kills) */}
+            <div className="absolute top-4 right-4 bg-black/70 text-white px-5 py-3 rounded-xl flex flex-col gap-3 pointer-events-none select-none shadow-lg border border-white/10">
+                {/* Time */}
+                <div className="flex items-center justify-between min-w-[140px]">
+                    <div className="flex items-center gap-2 text-yellow-400">
+                        <Clock className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div className="text-2xl font-mono font-bold text-white tabular-nums">
+                        {Math.floor(stats.time)}<span className="text-sm text-gray-400 ml-1">s</span>
+                    </div>
+                </div>
+
+                {/* Kills */}
+                <div className="flex items-center justify-between min-w-[140px]">
+                    <div className="flex items-center gap-2 text-red-500">
+                        <Skull className="w-5 h-5" />
+                    </div>
+                    <div className="text-2xl font-mono font-bold text-white tabular-nums">
+                        {stats.killCount}
+                    </div>
+                </div>
             </div>
         </div>
     );

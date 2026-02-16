@@ -7,6 +7,8 @@ export interface PlayerStats {
     nextLevelExp: number;
     weapons: { type: SkillType; level: number }[];
     passives: { type: SkillType; level: number }[];
+    time: number; // Elapsed time in seconds
+    killCount: number; // Number of enemies defeated
 }
 
 export const SkillType = {

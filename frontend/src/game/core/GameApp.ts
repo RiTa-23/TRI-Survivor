@@ -55,6 +55,9 @@ export class GameApp {
     private isPaused = false;
     private onStatsUpdate?: (stats: PlayerStats) => void;
     private onLevelUpCallback?: (options: SkillOption[]) => void;
+    private elapsedTime: number = 0;
+    private killCount: number = 0;
+    private lastEmittedTime: number = 0;
 
     constructor(
         videoElement: HTMLVideoElement,
@@ -154,6 +157,9 @@ export class GameApp {
             this.player = new Player();
             this.player.x = 0;
             this.player.y = 0;
+            this.elapsedTime = 0;
+            this.killCount = 0;
+            this.lastEmittedTime = 0;
 
             // Handle Level Up
             this.player.onLevelUp = (level) => {
@@ -193,6 +199,8 @@ export class GameApp {
             const dt = dtMs / 1000; // seconds
 
             if (this.isPaused) return;
+
+            this.elapsedTime += dt;
 
             // Player movement & animation update
             if (this.currentDirection) {
@@ -272,6 +280,8 @@ export class GameApp {
             const enemy = this.enemies[i];
 
             if (!enemy.alive) {
+                this.killCount++;
+                this.player.dirty = true; // Force UI update on kill
                 // Drop items from enemy
                 const droppedItems = enemy.dropItems();
                 droppedItems.forEach(item => {
@@ -378,7 +388,11 @@ export class GameApp {
 
     /** プレイヤーステータスをUIに通知 */
     private emitStats(): void {
-        if (!this.player.dirty) return;
+        const currentIntTime = Math.floor(this.elapsedTime);
+        const lastIntTime = Math.floor(this.lastEmittedTime);
+
+        // Emit if dirty OR if integer time changed (for clock update)
+        if (!this.player.dirty && currentIntTime === lastIntTime) return;
 
         this.onStatsUpdate?.({
             coins: this.player.coins,
@@ -391,8 +405,11 @@ export class GameApp {
             passives: Array.from(this.player.getSkills().entries())
                 .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
                 .map(([type, level]) => ({ type, level })),
+            time: this.elapsedTime,
+            killCount: this.killCount,
         });
         this.player.dirty = false;
+        this.lastEmittedTime = this.elapsedTime;
     }
 
     /** 障害物を生成して配置 */
