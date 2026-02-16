@@ -7,6 +7,9 @@ export interface PlayerStats {
     nextLevelExp: number;
     weapons: { type: SkillType; level: number }[];
     passives: { type: SkillType; level: number }[];
+    specialGauge: number;
+    maxSpecialGauge: number;
+    activeSpecialType: SpecialSkillType;
     time: number; // Elapsed time in seconds
     killCount: number; // Number of enemies defeated
 }
@@ -21,6 +24,7 @@ export const SkillType = {
     EXP_UP: "EXP_UP",
     HEAL: "HEAL",
     GET_COIN: "GET_COIN",
+    SPECIAL_COOLDOWN_CUT: "SPECIAL_COOLDOWN_CUT",
     // Weapons
     GUN: "GUN",
     SWORD: "SWORD",
@@ -29,6 +33,13 @@ export const SkillType = {
 export type SkillType = typeof SkillType[keyof typeof SkillType];
 
 export const WEAPON_TYPES: Set<SkillType> = new Set([SkillType.GUN, SkillType.SWORD]);
+
+export const SpecialSkillType = {
+    MURYO_KUSHO: "MURYO_KUSHO",
+    KON: "KON",
+} as const;
+
+export type SpecialSkillType = typeof SpecialSkillType[keyof typeof SpecialSkillType];
 
 export interface SkillData {
     name: string;
@@ -103,6 +114,12 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
         maxLevel: 999,
         icon: "/assets/images/coin.png",
         value: 50, // Coin amount
+    },
+    [SkillType.SPECIAL_COOLDOWN_CUT]: {
+        name: "集中力",
+        description: "必殺技のチャージ時間を 10% 短縮します",
+        maxLevel: 5,
+        icon: "/assets/images/skills/cooldown_down.png", // Reuse icon for now
     },
     // Weapons
     [SkillType.GUN]: {

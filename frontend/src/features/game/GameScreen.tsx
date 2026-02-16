@@ -24,7 +24,10 @@ export default function GameScreen() {
         weapons: [],
         passives: [],
         time: 0,
-        killCount: 0
+        killCount: 0,
+        specialGauge: 0,
+        maxSpecialGauge: 20,
+        activeSpecialType: "MURYO_KUSHO"
     });
 
     // Skill System State
@@ -295,6 +298,54 @@ export default function GameScreen() {
                     <div className="text-2xl font-mono font-bold text-white tabular-nums">
                         {stats.killCount}
                     </div>
+                </div>
+            </div>
+
+            {/* Special Skill Gauge (Bottom Right, left of camera) */}
+            <div className="absolute bottom-6 right-72 pointer-events-none select-none flex flex-col items-center gap-1">
+                <div className="relative w-24 h-24">
+                    {/* Background Circle */}
+                    <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                            cx="48"
+                            cy="48"
+                            r="44"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="transparent"
+                            className="text-gray-800"
+                        />
+                        {/* Progress Circle */}
+                        <circle
+                            cx="48"
+                            cy="48"
+                            r="44"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="transparent"
+                            strokeDasharray={2 * Math.PI * 44}
+                            strokeDashoffset={2 * Math.PI * 44 * (1 - Math.min(1, stats.specialGauge / stats.maxSpecialGauge))}
+                            className={`transition-all duration-200 ${stats.specialGauge >= stats.maxSpecialGauge ? "text-purple-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]" : "text-purple-900"
+                                }`}
+                        />
+                    </svg>
+
+                    {/* Center Icon */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden border-2 ${stats.specialGauge >= stats.maxSpecialGauge ? "border-purple-400 bg-purple-900/50 animate-pulse" : "border-gray-700 bg-black/50"
+                            }`}>
+                            {/* Placeholder Icon/Text for Muryo Kusho */}
+                            <span className={`text-xs font-bold text-center ${stats.specialGauge >= stats.maxSpecialGauge ? "text-purple-100" : "text-gray-500"
+                                }`}>
+                                {stats.activeSpecialType === "MURYO_KUSHO" ? "無量\n空処" : "狐"}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Cooldown Text */}
+                <div className="text-sm font-mono font-bold bg-black/70 px-2 py-0.5 rounded text-white">
+                    {stats.specialGauge >= stats.maxSpecialGauge ? "READY" : `${(stats.maxSpecialGauge - stats.specialGauge).toFixed(1)}s`}
                 </div>
             </div>
         </div>
