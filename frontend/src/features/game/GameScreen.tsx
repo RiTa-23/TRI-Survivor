@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { GameApp } from "@/game/core/GameApp";
 import { type PlayerStats, SkillType, type SkillOption, SKILL_DEFINITIONS } from "../../game/types";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Coins, Heart, Zap } from "lucide-react";
+import { ArrowUp, Coins, Heart, Zap, Hourglass, Skull } from "lucide-react";
 import { SkillSelectionModal } from "./SkillSelectionModal";
 
 export default function GameScreen() {
@@ -276,12 +276,25 @@ export default function GameScreen() {
             </div>
 
             {/* Top Right HUD (Time & Kills) */}
-            <div className="absolute top-4 right-4 bg-black/70 text-white px-4 py-2 rounded-xl flex flex-col items-end pointer-events-none select-none min-w-[120px]">
-                <div className="text-2xl font-mono font-bold text-yellow-100">
-                    {Math.floor(stats.time)}<span className="text-sm ml-1 text-gray-400">s</span>
+            <div className="absolute top-4 right-4 bg-black/70 text-white px-5 py-3 rounded-xl flex flex-col gap-3 pointer-events-none select-none shadow-lg border border-white/10">
+                {/* Time */}
+                <div className="flex items-center justify-between min-w-[140px]">
+                    <div className="flex items-center gap-2 text-yellow-400">
+                        <Hourglass className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div className="text-2xl font-mono font-bold text-white tabular-nums">
+                        {Math.floor(stats.time)}<span className="text-sm text-gray-400 ml-1">s</span>
+                    </div>
                 </div>
-                <div className="text-xs text-gray-300 font-mono">
-                    KILLS: <span className="text-red-400 font-bold text-sm">{stats.killCount}</span>
+
+                {/* Kills */}
+                <div className="flex items-center justify-between min-w-[140px]">
+                    <div className="flex items-center gap-2 text-red-500">
+                        <Skull className="w-5 h-5" />
+                    </div>
+                    <div className="text-2xl font-mono font-bold text-white tabular-nums">
+                        {stats.killCount}
+                    </div>
                 </div>
             </div>
         </div>
