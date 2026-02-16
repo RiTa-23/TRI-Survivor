@@ -148,7 +148,7 @@ export default function TutorialScreen() {
                 <div className="w-40 flex justify-start">
                     {!isFirstPage && (
                         <div 
-                            className="flex flex-col items-center gap-2 text-amber-200/50 hover:text-white transition-all px-4 py-2 group/back"
+                            className="flex flex-col items-center gap-2 text-amber-300 hover:text-white transition-all px-4 py-2 group/back"
                             onClick={handleBack}
                         >
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">TAP TO BACK</span>
@@ -160,7 +160,7 @@ export default function TutorialScreen() {
                 {/* 右側: 次へ案内 */}
                 <div className="w-40 flex justify-end">
                     {!isLastPage && (
-                        <div className="flex flex-col items-center gap-2 text-amber-200/50 hover:text-white transition-all px-4 py-2 pointer-events-auto group/next">
+                        <div className="flex flex-col items-center gap-2 text-amber-300 hover:text-white transition-all px-4 py-2 pointer-events-auto group/next">
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">TAP TO NEXT</span>
                             <ChevronRight className="w-5 h-5 transition-transform group-hover/next:translate-x-1" />
                         </div>
@@ -170,7 +170,7 @@ export default function TutorialScreen() {
 
             {/* ヒントメッセージ (画面最下部) */}
             {!isLastPage && (
-                <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 text-amber-300/60 text-xs font-black tracking-[0.4em] uppercase z-10">
+                <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 text-amber-200 text-xs font-black tracking-[0.4em] uppercase z-10">
                     <div className="h-px w-8 bg-gradient-to-r from-transparent to-amber-400/30" />
                     <span>{TUTORIAL_PAGES[currentPage].hint}</span>
                     <div className="h-px w-8 bg-gradient-to-l from-transparent to-amber-400/30" />
