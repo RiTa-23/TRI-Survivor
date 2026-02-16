@@ -68,6 +68,8 @@ export class GameApp {
     private specialGauge: number = 0;
     private specialMaxCooldown: number = 20; // Initial cooldown 20s
     private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
+    private specialEffectTimer: number = 0;
+    private isSpecialEffectActive: boolean = false;
 
     constructor(
         videoElement: HTMLVideoElement,
@@ -183,6 +185,8 @@ export class GameApp {
             this.killCount = 0;
             this.lastEmittedTime = 0;
             this.specialGauge = 0;
+            this.specialEffectTimer = 0;
+            this.isSpecialEffectActive = false;
 
             // Handle Level Up
             this.player.onLevelUp = (level) => {
@@ -302,6 +306,11 @@ export class GameApp {
         const angle = Math.random() * Math.PI * 2;
         enemy.x = this.player.x + Math.cos(angle) * SPAWN_DISTANCE;
         enemy.y = this.player.y + Math.sin(angle) * SPAWN_DISTANCE;
+
+        // If special effect is active, freeze the new enemy immediately
+        if (this.isSpecialEffectActive && this.activeSpecialType === SpecialSkillType.MURYO_KUSHO) {
+            enemy.isFrozen = true;
+        }
 
         this.enemies.push(enemy);
         this.world.addChild(enemy);
@@ -832,6 +841,15 @@ export class GameApp {
     // --- Special Skill Logic ---
 
     private updateSpecialSkill(dt: number) {
+        // Handle Active Effect Duration
+        if (this.isSpecialEffectActive) {
+            this.specialEffectTimer -= dt;
+            if (this.specialEffectTimer <= 0) {
+                this.endSpecialSkill();
+            }
+            return; // Don't charge gauge while active
+        }
+
         // Calculate Max Cooldown based on passive
         const cooldownCutLevel = this.player.getSkillLevel(SkillType.SPECIAL_COOLDOWN_CUT);
         // 10% per level (max 50%)
@@ -858,7 +876,7 @@ export class GameApp {
         else if (moveName === "Kon") type = SpecialSkillType.KON;
 
         if (type && type === this.activeSpecialType) {
-            if (this.specialGauge >= this.specialMaxCooldown) {
+            if (this.specialGauge >= this.specialMaxCooldown && !this.isSpecialEffectActive) {
                 this.executeSpecialSkill(type);
                 this.specialGauge = 0; // Reset gauge
                 this.handTrackingManager.setSpecialMoveDetection(false);
@@ -869,12 +887,35 @@ export class GameApp {
     private executeSpecialSkill(type: SpecialSkillType) {
         if (type === SpecialSkillType.MURYO_KUSHO) {
             console.log("EXECUTING SPECIAL: MURYO KUSHO");
-            // Kill all enemies on screen
-            // Copy array to avoid modification issues during iteration
-            const enemiesToKill = [...this.enemies];
-            enemiesToKill.forEach(enemy => {
-                enemy.takeDamage(99999, enemy.x, enemy.y); // Instant kill
+            this.isSpecialEffectActive = true;
+            this.specialEffectTimer = 10.0; // 10 seconds duration
+
+            // Apply Effects
+            this.player.setSpecialMode(true);
+
+            // Freeze all enemies
+            this.enemies.forEach(enemy => {
+                enemy.isFrozen = true;
             });
+
+            // Visual feedback (optional log)
+            console.log("Domain Expansion: Infinite Void - Active for 10s");
         }
+    }
+
+    private endSpecialSkill() {
+        console.log("ENDING SPECIAL SKILL");
+        this.isSpecialEffectActive = false;
+        this.specialEffectTimer = 0;
+
+        // Reset Effects
+        this.player.setSpecialMode(false);
+
+        // Unfreeze all enemies
+        this.enemies.forEach(enemy => {
+            enemy.isFrozen = false;
+        });
+
+        // Resume gauge charging (handled in next update)
     }
 }

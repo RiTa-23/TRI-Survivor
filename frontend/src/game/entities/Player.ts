@@ -34,6 +34,12 @@ export class Player extends Container {
     /** Magnet range multiplier */
     private _magnetMultiplier: number = 1.0;
 
+    // --- Temporary Modifiers (Special Skill) ---
+    private _tempSpeedMultiplier: number = 1.0;
+    private _tempAttackMultiplier: number = 1.0;
+    private _tempCooldownMultiplier: number = 1.0;
+    private _isInvincible: boolean = false;
+
     // --- Resources ---
     private _coins: number = 0;
     private _exp: number = 0;
@@ -85,12 +91,16 @@ export class Player extends Container {
     }
 
     public move(dx: number, dy: number, dt: number): void {
-        this.x += dx * this._speed * this._speedMultiplier * dt;
-        this.y += dy * this._speed * this._speedMultiplier * dt;
+        // Speed calculation is now in getter with cap
+        const currentSpeed = this.speed;
+        this.x += dx * currentSpeed * dt;
+        this.y += dy * currentSpeed * dt;
     }
 
     /** ダメージを受ける */
     public takeDamage(amount: number): void {
+        if (this._isInvincible) return;
+
         // Apply defense (percentage reduction)
         // max defense 80% to avoid invincibility
         const def = Math.min(80, this._defense);
@@ -262,15 +272,34 @@ export class Player extends Container {
         const damageMultiplier = this._attackPower / BASE_ATTACK_POWER;
 
         for (const weapon of this.weapons) {
-            weapon.update(dt, enemies, this.x, this.y, damageMultiplier, this._cooldownMultiplier, this._projectileCount);
+            weapon.update(dt, enemies, this.x, this.y, damageMultiplier * this._tempAttackMultiplier, this._cooldownMultiplier * this._tempCooldownMultiplier, this._projectileCount);
         }
+    }
+
+    // --- Special Skill Modifiers ---
+    public setSpecialMode(enabled: boolean) {
+        if (enabled) {
+            this._isInvincible = true;
+            this._tempSpeedMultiplier = 2.0;
+            this._tempAttackMultiplier = 2.0;
+            this._tempCooldownMultiplier = 0.5; // Half cooldown = Double speed
+        } else {
+            this._isInvincible = false;
+            this._tempSpeedMultiplier = 1.0;
+            this._tempAttackMultiplier = 1.0;
+            this._tempCooldownMultiplier = 1.0;
+        }
+        this.dirty = true;
     }
 
     // --- Getters ---
     public get hp(): number { return this._hp; }
     public get maxHp(): number { return this._maxHp; }
-    public get speed(): number { return this._speed; }
-    public get attackPower(): number { return this._attackPower; }
+    public get speed(): number {
+        const s = this._speed * this._speedMultiplier * this._tempSpeedMultiplier;
+        return Math.min(300, s); // Capp at 300
+    }
+    public get attackPower(): number { return this._attackPower * this._tempAttackMultiplier; }
     // public get attackInterval(): number { return this._attackInterval; } // Deprecated
     public get coins(): number { return this._coins; }
     public get exp(): number { return this._exp; }
