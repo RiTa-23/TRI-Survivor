@@ -21,7 +21,7 @@ export default function AuthScreen() {
             await signInWithGoogle();
         } catch (err) {
             console.error("Login failed:", err);
-            setError("Failed to sign in with Google. Please try again.");
+            setError("Googleログインに失敗しました。もう一度お試しください。");
         }
     };
 
@@ -36,7 +36,7 @@ export default function AuthScreen() {
                     className="text-white hover:bg-white/10"
                     onClick={() => navigate("/")}
                 >
-                    ← BACK
+                    ← 戻る
                 </Button>
             </div>
 
@@ -51,7 +51,7 @@ export default function AuthScreen() {
                 <div className="relative z-10 content text-center space-y-8">
                     <div>
                         <h2 className="text-3xl font-black fantasy-title mb-2 tracking-tight">冒険の記録</h2>
-                        <p className="parchment-text opacity-70 font-serif">Sign in to continue your journey</p>
+                        <p className="parchment-text opacity-70 font-serif">ログインして冒険の旅を続けよう</p>
                     </div>
 
                     {error && (
