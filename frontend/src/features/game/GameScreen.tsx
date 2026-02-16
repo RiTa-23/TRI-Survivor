@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { GameApp } from "@/game/core/GameApp";
 import { type PlayerStats, SkillType, type SkillOption, SKILL_DEFINITIONS } from "../../game/types";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Coins, Heart, Zap, Hourglass, Skull } from "lucide-react";
+import { ArrowUp, Coins, Heart, Zap, Clock, Skull } from "lucide-react";
 import { SkillSelectionModal } from "./SkillSelectionModal";
 
 export default function GameScreen() {
@@ -280,7 +280,7 @@ export default function GameScreen() {
                 {/* Time */}
                 <div className="flex items-center justify-between min-w-[140px]">
                     <div className="flex items-center gap-2 text-yellow-400">
-                        <Hourglass className="w-5 h-5 animate-pulse" />
+                        <Clock className="w-5 h-5 animate-pulse" />
                     </div>
                     <div className="text-2xl font-mono font-bold text-white tabular-nums">
                         {Math.floor(stats.time)}<span className="text-sm text-gray-400 ml-1">s</span>

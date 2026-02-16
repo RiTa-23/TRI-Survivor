@@ -56,6 +56,7 @@ export class GameApp {
     private onStatsUpdate?: (stats: PlayerStats) => void;
     private onLevelUpCallback?: (options: SkillOption[]) => void;
     private elapsedTime: number = 0;
+    private killCount: number = 0;
     private lastEmittedTime: number = 0;
 
     constructor(
@@ -156,6 +157,7 @@ export class GameApp {
             this.player = new Player();
             this.player.x = 0;
             this.player.y = 0;
+            this.elapsedTime = 0;
             this.elapsedTime = 0;
             this.killCount = 0;
             this.lastEmittedTime = 0;
