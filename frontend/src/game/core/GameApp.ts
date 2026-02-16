@@ -59,6 +59,10 @@ export class GameApp {
     private killCount: number = 0;
     private lastEmittedTime: number = 0;
 
+    // --- Debug Properties ---
+    private debugMode: boolean = false;
+    private keysPressed: Set<string> = new Set();
+
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
@@ -116,6 +120,15 @@ export class GameApp {
             resizeTo: window,
             backgroundColor: GRID_BG_COLOR,
         });
+
+        // Debug Mode Check
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("debug") === "true") {
+            this.debugMode = true;
+            console.log("DEBUG MODE ACTIVE: Keyboard controls enabled (WASD / Arrows)");
+            window.addEventListener("keydown", this.handleKeyDown);
+            window.addEventListener("keyup", this.handleKeyUp);
+        }
 
         if (this.isDestroyed) {
             this.destroyApp();
@@ -203,6 +216,13 @@ export class GameApp {
             this.elapsedTime += dt;
 
             // Player movement & animation update
+            if (this.debugMode && this.keysPressed.size > 0) {
+                const kbDir = this.getKeyboardDirection();
+                if (kbDir) {
+                    this.currentDirection = kbDir;
+                }
+            }
+
             if (this.currentDirection) {
                 this.player.move(this.currentDirection.x, this.currentDirection.y, dt);
             }
@@ -586,6 +606,11 @@ export class GameApp {
                 GameApp.RENDERER_DESTROY_OPTIONS,
                 GameApp.STAGE_DESTROY_OPTIONS
             );
+
+            if (this.debugMode) {
+                window.removeEventListener("keydown", this.handleKeyDown);
+                window.removeEventListener("keyup", this.handleKeyUp);
+            }
         } catch (e) {
             console.error("Error destroying PixiJS app:", e);
         }
@@ -734,5 +759,31 @@ export class GameApp {
         }
 
         return options;
+    }
+
+    // --- Keyboard Handlers (Debug) ---
+    private handleKeyDown = (e: KeyboardEvent) => {
+        if (!this.debugMode) return;
+        this.keysPressed.add(e.code);
+    };
+
+    private handleKeyUp = (e: KeyboardEvent) => {
+        if (!this.debugMode) return;
+        this.keysPressed.delete(e.code);
+    };
+
+    private getKeyboardDirection(): Vector2D | null {
+        let x = 0;
+        let y = 0;
+
+        if (this.keysPressed.has("KeyW") || this.keysPressed.has("ArrowUp")) y -= 1;
+        if (this.keysPressed.has("KeyS") || this.keysPressed.has("ArrowDown")) y += 1;
+        if (this.keysPressed.has("KeyA") || this.keysPressed.has("ArrowLeft")) x -= 1;
+        if (this.keysPressed.has("KeyD") || this.keysPressed.has("ArrowRight")) x += 1;
+
+        if (x === 0 && y === 0) return null;
+
+        const length = Math.sqrt(x * x + y * y);
+        return { x: x / length, y: y / length };
     }
 }
