@@ -13,7 +13,6 @@ export default function GameScreen() {
     const gameAppRef = useRef<GameApp | null>(null);
 
     const [status, setStatus] = useState<string>("Initializing...");
-    const [specialMove, setSpecialMove] = useState<string | null>(null);
     const [stats, setStats] = useState<PlayerStats>({
         coins: 0,
         exp: 0,
@@ -60,7 +59,6 @@ export default function GameScreen() {
                 (msg) => {
                     // Urgent per-frame side effects
                     if (msg.startsWith("Active:")) {
-                        setSpecialMove(null);
                         if (timerRef.current) {
                             clearTimeout(timerRef.current);
                             timerRef.current = null;
@@ -75,11 +73,10 @@ export default function GameScreen() {
                         setStatus(msg);
                     }
                 },
-                (move) => {
-                    setSpecialMove(move);
+                (_move) => {
+                    // Special move callback (now unused for overlay)
                     if (timerRef.current) clearTimeout(timerRef.current);
                     timerRef.current = setTimeout(() => {
-                        setSpecialMove(null);
                         timerRef.current = null;
                     }, 1000);
                 },
@@ -141,17 +138,7 @@ export default function GameScreen() {
                 />
             )}
 
-            {/* Special Move Overlay */}
-            {specialMove && (
-                <div className="absolute top-24 left-1/2 transform -translate-x-1/2 pointer-events-none z-50 text-center w-full">
-                    <div className="text-5xl font-black text-yellow-400 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] animate-bounce tracking-wider uppercase">
-                        {specialMove}!!
-                    </div>
-                    <div className="text-2xl text-white font-bold mt-2 drop-shadow-md tracking-widest bg-black/50 inline-block px-4 py-1 rounded uppercase">
-                        {specialMove === "Muryo Kusho" ? "DOMAIN EXPANSION" : "FOX DEVIL"}
-                    </div>
-                </div>
-            )}
+
 
             {/* Status Overlay */}
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full pointer-events-none z-50 flex items-center gap-2">

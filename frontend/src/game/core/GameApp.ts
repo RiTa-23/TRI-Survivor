@@ -68,7 +68,7 @@ export class GameApp {
     // --- Special Skill State ---
     private specialGauge: number = 0;
     private specialMaxCooldown: number = 20; // Initial cooldown 20s
-    private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
+    private activeSpecialType: SpecialSkillType = SpecialSkillType.KON;
     private specialEffectTimer: number = 0;
     private isSpecialEffectActive: boolean = false;
     private domainOverlayWithFade: Graphics | null = null;
@@ -993,10 +993,7 @@ export class GameApp {
         if (moveName === "Muryo Kusho") type = SpecialSkillType.MURYO_KUSHO;
         else if (moveName === "Kon") type = SpecialSkillType.KON;
 
-        if (type) {
-            // Auto switch active type if gesture matches
-            this.activeSpecialType = type;
-
+        if (type && type === this.activeSpecialType) {
             if (this.specialGauge >= this.specialMaxCooldown && !this.isSpecialEffectActive) {
                 this.executeSpecialSkill(type);
                 this.specialGauge = 0; // Reset gauge
