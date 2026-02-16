@@ -47,71 +47,71 @@ export interface SkillOption {
 
 export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
     [SkillType.ATTACK_UP]: {
-        name: "Attack Up",
-        description: "Increases attack damage by 20%.",
+        name: "攻撃力アップ",
+        description: "攻撃力が 2 上昇します",
         maxLevel: 5,
         icon: "/assets/images/skills/attack_up.png",
     },
     [SkillType.DEFENSE_UP]: {
-        name: "Defense Up",
-        description: "Reduces incoming damage by 10%.",
+        name: "防御力アップ",
+        description: "受けるダメージを 10% 軽減します",
         maxLevel: 5,
         icon: "/assets/images/skills/defense_up.png",
     },
     [SkillType.SPEED_UP]: {
-        name: "Speed Up",
-        description: "Increases movement speed by 10%.",
+        name: "スピードアップ",
+        description: "移動速度が 10% 上昇します",
         maxLevel: 5,
         icon: "/assets/images/skills/speed_up.png",
     },
     [SkillType.COOLDOWN_DOWN]: {
-        name: "Rapid Fire",
-        description: "Reduces attack cooldown by 10%.",
+        name: "ラピッドファイア",
+        description: "攻撃間隔が 10% 短縮されます",
         maxLevel: 5,
         icon: "/assets/images/skills/cooldown_down.png",
     },
     [SkillType.MULTI_SHOT]: {
-        name: "Multi Shot",
-        description: "Fires an additional projectile.",
+        name: "マルチショット",
+        description: "発射数が 1 増加します",
         maxLevel: 1, // Lower max level for powerful skill
         icon: "/assets/images/skills/multi_shot.png",
     },
     [SkillType.MAGNET_UP]: {
-        name: "Magnet Range",
-        description: "Increases item collection range by 25%.",
+        name: "マグネット範囲",
+        description: "アイテム回収範囲が 25% 広がります",
         maxLevel: 5,
         icon: "/assets/images/skills/magnet_up.png",
     },
     [SkillType.EXP_UP]: {
-        name: "Growth",
-        description: "Increases experience gain by 10%.",
+        name: "成長促進",
+        description: "経験値獲得量が 10% 増加します",
         maxLevel: 5,
         icon: "/assets/images/skills/exp_up.png",
     },
     [SkillType.HEAL]: {
-        name: "Recovery",
-        description: "Restores 30 HP immediately.",
+        name: "回復",
+        description: "HPを 30 回復します",
         maxLevel: 999,
         icon: "/assets/images/heal.png",
         value: 30, // HP restore amount
     },
     [SkillType.GET_COIN]: {
-        name: "Treasure",
-        description: "Get 50 Coins immediately.",
+        name: "宝物",
+        description: "コインを 50 獲得します",
         maxLevel: 999,
         icon: "/assets/images/coin.png",
         value: 50, // Coin amount
     },
     // Weapons
     [SkillType.GUN]: {
-        name: "Pistol",
-        description: "Fires bullets at the nearest enemy.",
+        name: "ピストル",
+        description: "近くの敵を自動で攻撃します",
         maxLevel: 5,
         icon: "/assets/images/skills/gun.png",
     },
     [SkillType.SWORD]: {
-        name: "Katana",
-        description: "Slashes enemies in front of you.",
+        name: "カタナ",
+        description: "前方の敵を斬りつけます",
         maxLevel: 5,
         icon: "/assets/images/skills/sword.png",
     },
