@@ -97,8 +97,7 @@ export default function TutorialScreen() {
                 
                 {/* ナビゲーターキャラクター: トロワ */}
                 <div className="relative group shrink-0">
-                    {/* 背後の光輪エフェクト */}
-                    <div className="absolute inset-0 bg-amber-500/10 blur-[80px] rounded-full" />
+                    {/* 背後の光輪エフェクト（削除済） */}
                     
                     {/* キャラクター画像配置用エリア */}
                     <div className="relative w-48 h-64 md:w-64 md:h-[360px] rounded-3xl border-2 border-dashed border-amber-900/30 bg-white/5 backdrop-blur-[2px] flex flex-col items-center justify-center text-amber-200/30 transition-all hover:border-amber-400/50">
