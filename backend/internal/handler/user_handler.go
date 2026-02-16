@@ -68,8 +68,7 @@ func (h *UserHandler) GetMe(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, user)
 }
-	return c.JSON(http.StatusOK, user)
-}
+
 
 type AddCoinRequest struct {
 	Amount int `json:"amount"`
