@@ -7,6 +7,10 @@ import { Item } from "../entities/Item";
 import { Obstacle } from "../entities/Obstacle";
 import { HandTrackingManager } from "@/lib/handTracking";
 import type { Vector2D } from "@/lib/handTracking";
+import { SkillType, SKILL_DEFINITIONS, WEAPON_TYPES } from "../types";
+import type { SkillOption, PlayerStats } from "../types";
+import { GunWeapon } from "../weapons/GunWeapon";
+import { SwordWeapon } from "../weapons/SwordWeapon";
 
 /** Grid tile size (one cell) */
 const GRID_SIZE = 80;
@@ -16,7 +20,7 @@ const GRID_BG_COLOR = 0x0e8aaa;
 /** Enemy spawn settings */
 const SPAWN_INTERVAL_MS = 500;
 const SPAWN_DISTANCE = 1000;
-const MAX_ENEMIES = 30;
+const MAX_ENEMIES = 100;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 
 /** Obstacle settings */
@@ -30,16 +34,6 @@ const OBSTACLE_SPAWN_INTERVAL = 0.5; // 秒
 /** Item drop settings */
 const ITEM_DESPAWN_DISTANCE = 2000;
 
-/** Player stats callback */
-export interface PlayerStats {
-    coins: number;
-    exp: number;
-    hp: number;
-    maxHp: number;
-    level: number;
-    nextLevelExp: number;
-}
-
 export class GameApp {
     private app: Application;
     private player!: Player; // Initialized in init() after assets load
@@ -51,20 +45,24 @@ export class GameApp {
     private obstacles: Obstacle[] = [];
     private obstacleSpawnTimer: number = 0;
     private spawnTimer: number = 0;
-    private attackTimer: number = 0;
     private handTrackingManager: HandTrackingManager;
     private currentDirection: Vector2D | null = null;
     private videoElement: HTMLVideoElement;
     private canvasElement: HTMLCanvasElement;
     private isDestroyed = false;
+
+    // --- State ---
+    private isPaused = false;
     private onStatsUpdate?: (stats: PlayerStats) => void;
+    private onLevelUpCallback?: (options: SkillOption[]) => void;
 
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
         onStatusChange?: (status: string) => void,
         onSpecialMove?: (moveName: string) => void,
-        onStatsUpdate?: (stats: PlayerStats) => void
+        onStatsUpdate?: (stats: PlayerStats) => void,
+        onLevelUp?: (options: SkillOption[]) => void
     ) {
         this.app = new Application();
         // this.player will be initialized in init()
@@ -73,6 +71,7 @@ export class GameApp {
         this.canvasElement = canvasElement;
 
         this.onStatsUpdate = onStatsUpdate;
+        this.onLevelUpCallback = onLevelUp;
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
@@ -133,6 +132,8 @@ export class GameApp {
                 "/assets/images/coin.png",
                 "/assets/images/heal.png",
                 "/assets/images/damage.png",
+                "/assets/images/skills/gun.png",
+                "/assets/images/skills/sword.png",
             ]);
         } catch (e) {
             console.error("Failed to load assets:", e);
@@ -153,7 +154,17 @@ export class GameApp {
             this.player = new Player();
             this.player.x = 0;
             this.player.y = 0;
+
+            // Handle Level Up
+            this.player.onLevelUp = (level) => {
+                this.handleLevelUp(level);
+            };
+
             this.world.addChild(this.player);
+
+            // Initial Weapon
+            this.player.addWeapon(new SwordWeapon());
+
 
             this.app.stage.addChild(this.world);
         }
@@ -180,6 +191,8 @@ export class GameApp {
         this.app.ticker.add((ticker) => {
             const dtMs = ticker.deltaMS;
             const dt = dtMs / 1000; // seconds
+
+            if (this.isPaused) return;
 
             // Player movement & animation update
             if (this.currentDirection) {
@@ -209,12 +222,8 @@ export class GameApp {
             // Check player vs enemies (prevent overlap)
             this.checkPlayerEnemyCollisions();
 
-            // Auto-attack: shoot at nearest enemy
-            this.attackTimer += dtMs;
-            if (this.attackTimer >= this.player.attackInterval) {
-                this.attackTimer = 0;
-                this.shootNearestEnemy();
-            }
+            // Auto-attack: Update weapons
+            this.player.updateWeapons(dt, this.enemies);
 
             // Update bullets
             this.updateBullets(dt);
@@ -300,33 +309,7 @@ export class GameApp {
         }
     }
 
-    /** Find and shoot the nearest enemy */
-    private shootNearestEnemy(): void {
-        if (this.enemies.length === 0) return;
-
-        let nearest: Enemy | null = null;
-        let nearestDist = Infinity;
-
-        for (const enemy of this.enemies) {
-            if (!enemy.alive) continue;
-            const dx = enemy.x - this.player.x;
-            const dy = enemy.y - this.player.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < nearestDist) {
-                nearestDist = dist;
-                nearest = enemy;
-            }
-        }
-
-        if (!nearest || nearestDist > 600) return; // Max attack range
-
-        const bullet = new Bullet(
-            this.player.x,
-            this.player.y,
-            nearest.x,
-            nearest.y,
-            this.player.attackPower
-        );
+    private spawnBullet(bullet: Bullet) {
         this.bullets.push(bullet);
         this.world.addChild(bullet);
     }
@@ -395,6 +378,8 @@ export class GameApp {
 
     /** プレイヤーステータスをUIに通知 */
     private emitStats(): void {
+        if (!this.player.dirty) return;
+
         this.onStatsUpdate?.({
             coins: this.player.coins,
             exp: this.player.exp,
@@ -402,7 +387,12 @@ export class GameApp {
             maxHp: this.player.maxHp,
             level: this.player.level,
             nextLevelExp: this.player.nextLevelExp,
+            weapons: this.player.activeWeapons.map(w => ({ type: w.type, level: w.level })),
+            passives: Array.from(this.player.getSkills().entries())
+                .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
+                .map(([type, level]) => ({ type, level })),
         });
+        this.player.dirty = false;
     }
 
     /** 障害物を生成して配置 */
@@ -451,14 +441,6 @@ export class GameApp {
 
     /**
      * 円同士の衝突判定と押し戻しベクトル計算
-     * @param x1 対象1のX
-     * @param y1 対象1のY
-     * @param r1 対象1の半径
-     * @param x2 対象2のX
-     * @param y2 対象2のY
-     * @param r2 対象2の半径
-     * @param pushRatio1 対象1への押し戻し割合 (0.0 - 1.0)
-     * @returns 対象1に適用する移動ベクトル {x, y} または衝突していない場合 null
      */
     private resolveCircleOverlap(
         x1: number, y1: number, r1: number,
@@ -603,5 +585,137 @@ export class GameApp {
         this.obstacles.length = 0;
 
         this.destroyApp();
+    }
+
+    public pauseGame() {
+        this.isPaused = true;
+    }
+
+    public resumeGame() {
+        this.isPaused = false;
+    }
+
+    public applySkill(skillType: SkillType) {
+        if (skillType === SkillType.GUN) {
+            // Pass private spawnBullet via arrow function
+            this.player.addWeapon(new GunWeapon((b) => this.spawnBullet(b)));
+        } else if (skillType === SkillType.SWORD) {
+            this.player.addWeapon(new SwordWeapon());
+        } else {
+            this.player.addSkill(skillType);
+        }
+
+        this.resumeGame();
+        this.emitStats(); // Immediately update UI
+    }
+
+    private handleLevelUp(_level: number) {
+        this.pauseGame();
+
+        // Generate 3 random skill options
+        const options = this.generateSkillOptions();
+
+        if (this.onLevelUpCallback) {
+            this.onLevelUpCallback(options);
+        } else {
+            // If no callback is registered, we must resume immediately or the game freezes
+            console.warn("No onLevelUpCallback registered, resuming game immediately.");
+            this.resumeGame();
+        }
+    }
+
+    private generateSkillOptions(): SkillOption[] {
+        const options: SkillOption[] = [];
+
+        // Identify current state
+        const acquiredSkills = this.player.getSkills(); // Map<SkillType, level> - Passives are here
+        const activeWeapons = this.player.activeWeapons; // Weapon[]
+
+        const currentPassiveTypes = Array.from(acquiredSkills.keys())
+            .filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN);
+
+        const currentWeaponTypes = activeWeapons.map(w => w.type);
+
+        const canAddPassive = currentPassiveTypes.length < 3;
+        const canAddWeapon = activeWeapons.length < 3;
+
+        // Candidate Types
+        const allTypes = Object.values(SkillType).filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN);
+
+        let candidates: SkillType[] = [];
+
+        for (const type of allTypes) {
+            // Check max level first
+            const def = SKILL_DEFINITIONS[type];
+            let level = 0;
+
+            if (WEAPON_TYPES.has(type)) {
+                const w = this.player.getWeapon(type);
+                level = w ? w.level : 0;
+            } else {
+                level = this.player.getSkillLevel(type);
+            }
+
+            if (level >= def.maxLevel) continue;
+
+            if (WEAPON_TYPES.has(type)) {
+                const hasIt = currentWeaponTypes.includes(type);
+                // Can pick if we have it (for upgrade) OR if we have space for new
+                if (hasIt || canAddWeapon) {
+                    candidates.push(type);
+                }
+            } else {
+                // Passive
+                const hasIt = currentPassiveTypes.includes(type);
+                if (hasIt || canAddPassive) {
+                    candidates.push(type);
+                }
+            }
+        }
+
+        // Shuffle (Fisher-Yates)
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+
+        // Pick top 3 valid options
+        for (const type of candidates) {
+            if (options.length >= 3) break;
+
+            const def = SKILL_DEFINITIONS[type];
+            let level = 0;
+
+            if (WEAPON_TYPES.has(type)) {
+                const w = this.player.getWeapon(type);
+                level = w ? w.level : 0;
+            } else {
+                level = this.player.getSkillLevel(type);
+            }
+
+            options.push({
+                type: type,
+                name: def.name,
+                description: def.description,
+                icon: def.icon,
+                level: level + 1
+            });
+        }
+
+        // Fallback: If no options available, offer HEAL or GET_COIN
+        if (options.length === 0) {
+            const fallbackType = Math.random() < 0.5 ? SkillType.HEAL : SkillType.GET_COIN;
+            const def = SKILL_DEFINITIONS[fallbackType];
+
+            options.push({
+                type: fallbackType,
+                name: def.name,
+                description: def.description,
+                icon: def.icon,
+                level: 1 // Treated as Lv.1 internally for consistency
+            });
+        }
+
+        return options;
     }
 }
