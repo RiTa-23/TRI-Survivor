@@ -116,12 +116,21 @@ export default function TutorialScreen() {
                         {/* decorative ornament removed per request */}
                 </div>
 
-                {/* 説明文エリア — 羊皮紙風の装飾パネル */}
-                <div className="flex-1 w-full max-w-2xl space-y-8 parchment-panel p-8 md:p-12 rounded-[2rem] relative">
-                    {/* 尻尾はデザイン的に小さめの羊皮紙色 */}
-                    <div className="hidden md:block absolute left-[-18px] top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f3e7c2] border-l-4 border-b-4 border-[#d5b48b] rotate-45" />
+                {/* 説明文エリア — 実物の羊皮紙に見えるリアルなパネル */}
+                <div className="flex-1 w-full max-w-2xl space-y-8 parchment-realistic p-8 md:p-12 relative">
+                    {/* 尻尾は羊皮紙の色味で控えめに */}
+                    <div className="hidden md:block absolute left-[-18px] top-1/2 -translate-y-1/2 w-8 h-8 bg-[#efe1b8] border-l-2 border-b-2 border-[#d2b88b] rotate-45" />
 
-                    <div className="space-y-6 relative z-10">
+                    {/* overlays for realistic texture */}
+                    <div className="fibers" aria-hidden />
+                    <div className="wrinkles" aria-hidden />
+                    <div className="wave" aria-hidden />
+                    <div className="ink-bleed one" aria-hidden />
+                    <div className="ink-bleed two" aria-hidden />
+                    <div className="corner-wear" aria-hidden />
+                    <div className="curl" aria-hidden />
+
+                    <div className="space-y-6 relative z-20 content">
                         <div className="inner-band" />
                         <h1 className="text-2xl md:text-4xl font-black tracking-tight parchment-title leading-tight parchment-text">
                             {TUTORIAL_PAGES[currentPage].title}
