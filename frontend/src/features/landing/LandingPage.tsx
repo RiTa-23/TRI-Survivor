@@ -59,7 +59,7 @@ export default function LandingPage() {
                     幾何学の混沌を生き延びろ。装備を強化し、虚無を支配せよ。
                 </p>
 
-                <div className="animate-pulse">
+                <div className="motion-safe:animate-pulse">
                     <Button asChild className="px-20 py-10 text-4xl font-black btn-fantasy-red rounded-2xl shadow-[0_0_40px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border-4 border-amber-200">
                         <Link to="/auth">GAME START</Link>
                     </Button>
