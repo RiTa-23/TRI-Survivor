@@ -233,6 +233,48 @@ h1 {
     box-shadow: 0 2px 10px rgba(183, 28, 28, 0.4);
   }
 
+  /* Warm wood background with subtle grid + grain for landing */
+  .wood-bg {
+    background-color: #3a2418; /* deep warm brown */
+    background-image:
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px), /* subtle vertical grid */
+      linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px),  /* subtle horizontal grid */
+      radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.015), transparent 8%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='160' viewBox='0 0 800 160'%3E%3Cpath d='M0 40 C40 30 80 50 120 44 C160 38 200 56 240 46 C280 36 320 54 360 46 C400 38 440 56 480 46 C520 36 560 54 600 46 C640 38 680 56 720 46 C760 36 800 54' stroke='%23000000' stroke-opacity='0.06' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-size: 40px 40px, 40px 40px, cover, 100% 60px;
+    background-blend-mode: multiply, multiply, overlay, multiply;
+    color: #f7e6d8;
+    min-height: 100vh;
+  }
+
+  /* Decorative fantasy title (falls back to system serif if custom font isn't loaded) */
+  .fantasy-title {
+    font-family: 'Cinzel', 'Playfair Display', Georgia, 'Times New Roman', serif;
+    color: #f6e7c8;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 6px 18px rgba(0,0,0,0.45);
+    background: linear-gradient(180deg, #ffd88a 0%, #e4b85a 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Wood-tile textured red button with white border for landing */
+  .btn-wood-red {
+    border: 2px solid rgba(255,255,255,0.95);
+    border-radius: 10px;
+    background-image:
+      linear-gradient(180deg, #c62828 0%, #b71c1c 100%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 4px, rgba(0,0,0,0.03) 4px 8px); /* subtle wooden plank stripes */
+    color: #fff;
+    box-shadow: inset 0 -6px 12px rgba(0,0,0,0.35), 0 10px 30px rgba(0,0,0,0.45);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+  }
+
+  .btn-wood-red:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+
   /* --- Monastery parchment: aged, fibrous, subtly stained --- */
   .parchment-panel {
     --p-center-1: #fff8ea; /* pale ivory */
