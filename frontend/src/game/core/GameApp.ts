@@ -67,7 +67,8 @@ export class GameApp {
     // --- Special Skill State ---
     private specialGauge: number = 0;
     private specialMaxCooldown: number = 20; // Initial cooldown 20s
-    private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
+    //private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
+    private activeSpecialType: SpecialSkillType = SpecialSkillType.KON;
     private specialEffectTimer: number = 0;
     private isSpecialEffectActive: boolean = false;
 
@@ -900,6 +901,29 @@ export class GameApp {
 
             // Visual feedback (optional log)
             console.log("Domain Expansion: Infinite Void - Active for 10s");
+        } else if (type === SpecialSkillType.KON) {
+            console.log("EXECUTING SPECIAL: KON");
+            // Screen boundaries in world coordinates
+            const screenWidth = this.app.screen.width;
+            const screenHeight = this.app.screen.height;
+            const worldLeft = -this.world.x;
+            const worldTop = -this.world.y;
+            const worldRight = worldLeft + screenWidth;
+            const worldBottom = worldTop + screenHeight;
+
+            // Kill all enemies on screen
+            const enemiesToKill = [...this.enemies]; // Copy array
+            let killCount = 0;
+            enemiesToKill.forEach(enemy => {
+                // Check if enemy is within screen bounds (with slight margin for radius)
+                const margin = enemy.radius;
+                if (enemy.x + margin >= worldLeft && enemy.x - margin <= worldRight &&
+                    enemy.y + margin >= worldTop && enemy.y - margin <= worldBottom) {
+                    enemy.takeDamage(99999, enemy.x, enemy.y);
+                    killCount++;
+                }
+            });
+            console.log(`Kon executed: Killed ${killCount} enemies on screen.`);
         }
     }
 
