@@ -14,7 +14,7 @@ export default function LandingPage() {
     }, [user, loading, navigate]);
 
     return (
-        <div className="h-screen forest-bg text-white flex flex-col items-center justify-evenly pt-6 pb-48 relative overflow-hidden">
+        <div className="min-h-screen forest-bg text-white flex flex-col items-center justify-evenly pt-6 pb-12 md:pb-48 relative overflow-hidden">
 
             {/* メインエリア */}
             <div className="flex-1 flex flex-col items-center justify-center w-full max-w-7xl relative z-10 pt-8">

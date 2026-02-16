@@ -75,4 +75,3 @@ export default function AuthScreen() {
         </div>
     );
 }
-//ログイン画面
