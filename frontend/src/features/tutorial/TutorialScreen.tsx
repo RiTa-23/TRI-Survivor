@@ -58,115 +58,121 @@ export default function TutorialScreen() {
 
     return (
         <div 
-            className="min-h-screen bg-[#020617] text-white flex flex-col items-center justify-center p-4 md:p-8 cursor-pointer overflow-hidden relative"
+            className="min-h-screen forest-bg text-white flex flex-col cursor-pointer overflow-hidden relative"
             onClick={handleNext}
         >
-            {/* バックグラウンド効果 */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-from),_var(--tw-gradient-to))] from-slate-900 to-[#020617] z-0" />
-
-            {/* ホームに戻るボタン (左上に移動) */}
-            <div className="absolute top-6 left-6 z-30">
+            {/* --- 上部バー (木製パネル) --- */}
+            <div className="h-16 w-full wood-panel z-30 flex items-center justify-between px-6 border-t-0 border-x-0">
+                {/* ホームに戻るボタン */}
                 <Button 
                     variant="ghost"
-                    size="lg"
-                    className="flex items-center gap-2 px-6 py-4 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl glass-morphism border-slate-700/30 transition-all font-bold"
+                    className="flex items-center gap-2 px-4 py-2 text-amber-200/60 hover:text-white hover:bg-white/5 rounded-lg transition-all font-bold"
                     onClick={(e) => {
                         e.stopPropagation();
                         navigate("/home");
                     }}
                 >
                     <Home className="w-5 h-5" />
-                    <span>ホームへ</span>
+                    <span className="text-sm">ホームへ</span>
                 </Button>
-            </div>
 
-            <div className="z-10 w-full max-w-6xl flex flex-col items-center gap-12">
-                
-                {/* ページ番号表示 (上部に配置) */}
+                {/* ページ進捗インジケーター */}
                 <div className="flex gap-2">
                     {TUTORIAL_PAGES.map((_, index) => (
                         <div 
                             key={index}
-                            className={`h-1.5 w-12 rounded-full transition-colors ${
-                                index === currentPage ? "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" : "bg-slate-800"
+                            className={`h-1.5 w-8 md:w-12 rounded-full transition-colors ${
+                                index === currentPage ? "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]" : "bg-[#1b110e]"
                             }`}
                         />
                     ))}
                 </div>
 
-                {/* メインレイアウト: キャラクターと説明文 (中央寄せに修正) */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 w-full py-4">
+                {/* スペーサー */}
+                <div className="w-24" />
+            </div>
+
+            {/* --- メインコンテンツ --- */}
+            <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 px-6 md:px-16 py-8 relative z-10">
+                
+                {/* ナビゲーターキャラクター: トロワ */}
+                <div className="relative group shrink-0">
+                    {/* 背後の光輪エフェクト（削除済） */}
                     
-                    {/* ナビゲーターキャラクター: トロワ (プレースホルダー) */}
-                    <div className="relative group shrink-0">
-                        {/* 背後の光輪エフェクト */}
-                        <div className="absolute inset-0 bg-indigo-500/10 blur-[80px] rounded-full group-hover:bg-indigo-500/20 transition-all" />
+                    {/* キャラクター画像配置用エリア */}
+                    <div className="relative w-48 h-64 md:w-64 md:h-[360px] rounded-3xl border-2 border-dashed border-amber-900/30 bg-white/5 backdrop-blur-[2px] flex flex-col items-center justify-center text-amber-200/30 transition-all hover:border-amber-400/50">
+                        <div className="text-center space-y-2">
+                            <span className="text-2xl font-black tracking-widest block">trois</span>
+                            <span className="text-xs font-bold uppercase tracking-tighter opacity-50">Image Placeholder</span>
+                        </div>
                         
-                        {/* キャラクター画像配置用エリア */}
-                        <div className="relative w-64 h-80 md:w-80 md:h-[450px] glass-morphism rounded-3xl border-2 border-dashed border-slate-700/50 flex flex-col items-center justify-center text-slate-500 transition-all hover:border-indigo-500/50">
-                            <div className="text-center space-y-2">
-                                <span className="text-2xl font-black tracking-widest block">trois</span>
-                                <span className="text-xs font-bold uppercase tracking-tighter opacity-50">Image Placeholder</span>
-                            </div>
-                            
                             {/* キャラクター名バッジ */}
-                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-indigo-600 px-6 py-2 rounded-full font-black text-sm shadow-xl">
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 wood-panel px-6 py-2 rounded-full font-black text-sm text-amber-100 shadow-xl border-2 border-[#2d1b18]">
                                 トロワ
                             </div>
-                        </div>
                     </div>
-
-                    {/* 説明文エリア (吹き出し/パネル風) */}
-                    <div className="flex-1 w-full max-w-2xl space-y-8 glass-morphism p-8 md:p-12 rounded-[2.5rem] border-slate-700/30 relative">
-                        {/* 吹き出しの尻尾 (左側、デスクトップ用: 中央に配置) */}
-                        <div className="hidden md:block absolute left-[-16px] top-1/2 -translate-y-1/2 w-8 h-8 glass-morphism border-r-0 border-t-0 rotate-45 border-slate-700/30" />
-                        
-                        <div className="space-y-6">
-                            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white leading-tight">
-                                {TUTORIAL_PAGES[currentPage].title}
-                            </h1>
-                            <p className="text-lg md:text-2xl text-slate-400 leading-relaxed font-medium">
-                                {TUTORIAL_PAGES[currentPage].description}
-                            </p>
-                        </div>
-                    </div>
+                    
+                        {/* decorative ornament removed per request */}
                 </div>
 
-                {/* ナビゲーションエリア: 左右に案内を配置 */}
-                <div className="flex items-center justify-between w-full max-w-4xl px-8">
-                    {/* 左側: 戻る案内 */}
-                    <div className="w-40 flex justify-start">
-                        {!isFirstPage && (
-                            <div 
-                                className="flex flex-col items-center gap-3 text-indigo-400/80 hover:text-white hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all px-4 py-2 group/back"
-                                onClick={handleBack}
-                            >
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap drop-shadow-[0_0_8px_rgba(129,140,248,0.3)] group-hover/back:drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">TAP TO BACK</span>
-                                <ChevronLeft className="w-6 h-6 transition-transform group-hover/back:-translate-x-1" />
-                            </div>
-                        )}
-                    </div>
+                {/* 説明文エリア — 実物の羊皮紙に見えるリアルなパネル */}
+                <div className="flex-1 w-full max-w-2xl space-y-8 parchment-realistic p-8 md:p-12 relative">
+                    {/* 尻尾は羊皮紙の色味で控えめに */}
+                    <div className="hidden md:block absolute left-[-18px] top-1/2 -translate-y-1/2 w-8 h-8 bg-[#efe1b8] border-l-2 border-b-2 border-[#d2b88b] rotate-45" />
 
-                    {/* 右側: 次へ案内 (最終ページ以外) */}
-                    <div className="w-40 flex justify-end">
-                        {!isLastPage && (
-                            <div className="flex flex-col items-center gap-3 text-indigo-400 hover:text-white hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all px-4 py-2 pointer-events-auto group/next">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap drop-shadow-[0_0_8px_rgba(129,140,248,0.5)] group-hover/next:drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">TAP TO NEXT</span>
-                                <ChevronRight className="w-6 h-6 transition-transform group-hover/next:translate-x-1" />
-                            </div>
-                        )}
+                    {/* overlays for realistic texture */}
+                    <div className="fibers" aria-hidden />
+                    <div className="wrinkles" aria-hidden />
+                    <div className="wave" aria-hidden />
+                    <div className="ink-bleed one" aria-hidden />
+                    <div className="ink-bleed two" aria-hidden />
+                    <div className="corner-wear" aria-hidden />
+                    <div className="curl" aria-hidden />
+
+                    <div className="space-y-6 relative z-20 content">
+                        <div className="inner-band" />
+                        <h1 className="text-2xl md:text-4xl font-black tracking-tight parchment-title leading-tight parchment-text">
+                            {TUTORIAL_PAGES[currentPage].title}
+                        </h1>
+                        <p className="text-base md:text-xl leading-relaxed font-medium parchment-text">
+                            {TUTORIAL_PAGES[currentPage].description}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            {/* ヒントメッセージ (画面最下部: 視認性を向上し、動的な光を復活) */}
+            {/* --- ナビゲーションエリア --- */}
+            <div className="flex items-center justify-between w-full max-w-4xl mx-auto px-8 pb-4 z-10">
+                {/* 左側: 戻る案内 */}
+                <div className="w-40 flex justify-start">
+                    {!isFirstPage && (
+                        <div 
+                            className="flex flex-col items-center gap-2 text-amber-300 hover:text-white transition-all px-4 py-2 group/back"
+                            onClick={handleBack}
+                        >
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">TAP TO BACK</span>
+                            <ChevronLeft className="w-5 h-5 transition-transform group-hover/back:-translate-x-1" />
+                        </div>
+                    )}
+                </div>
+
+                {/* 右側: 次へ案内 */}
+                <div className="w-40 flex justify-end">
+                    {!isLastPage && (
+                        <div className="flex flex-col items-center gap-2 text-amber-300 hover:text-white transition-all px-4 py-2 pointer-events-auto group/next">
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">TAP TO NEXT</span>
+                            <ChevronRight className="w-5 h-5 transition-transform group-hover/next:translate-x-1" />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ヒントメッセージ (画面最下部) */}
             {!isLastPage && (
-                <div className="absolute bottom-10 md:bottom-12 flex items-center gap-4 text-indigo-400 text-sm font-black tracking-[0.4em] uppercase animate-pulse">
-                    <div className="h-px w-8 bg-gradient-to-r from-transparent to-indigo-500/50" />
-                    <span className="drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]">
-                        {TUTORIAL_PAGES[currentPage].hint}
-                    </span>
-                    <div className="h-px w-8 bg-gradient-to-l from-transparent to-indigo-500/50" />
+                <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 text-amber-200 text-xs font-black tracking-[0.4em] uppercase z-10">
+                    <div className="h-px w-8 bg-gradient-to-r from-transparent to-amber-400/30" />
+                    <span>{TUTORIAL_PAGES[currentPage].hint}</span>
+                    <div className="h-px w-8 bg-gradient-to-l from-transparent to-amber-400/30" />
                 </div>
             )}
         </div>
