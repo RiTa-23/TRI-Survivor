@@ -158,7 +158,6 @@ export class GameApp {
             this.player.x = 0;
             this.player.y = 0;
             this.elapsedTime = 0;
-            this.elapsedTime = 0;
             this.killCount = 0;
             this.lastEmittedTime = 0;
 
