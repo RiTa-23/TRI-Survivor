@@ -67,10 +67,12 @@ export class GameApp {
     // --- Special Skill State ---
     private specialGauge: number = 0;
     private specialMaxCooldown: number = 20; // Initial cooldown 20s
-    //private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
-    private activeSpecialType: SpecialSkillType = SpecialSkillType.KON;
+    private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
     private specialEffectTimer: number = 0;
     private isSpecialEffectActive: boolean = false;
+    private domainOverlayWithFade: Graphics | null = null;
+    private domainExpansionMaxRadius: number = 0;
+    private domainExpansionCurrentRadius: number = 0;
 
     constructor(
         videoElement: HTMLVideoElement,
@@ -200,6 +202,11 @@ export class GameApp {
             this.player.addWeapon(new SwordWeapon());
 
 
+            // Initialize Domain Expansion Overlay (BEHIND world, TOP of grid)
+            this.domainOverlayWithFade = new Graphics();
+            this.domainOverlayWithFade.visible = false;
+            this.app.stage.addChild(this.domainOverlayWithFade);
+
             this.app.stage.addChild(this.world);
         }
 
@@ -218,6 +225,8 @@ export class GameApp {
             this.destroyApp();
             return;
         }
+
+
 
         // Start Game Loop
         this.app.start();
@@ -845,6 +854,38 @@ export class GameApp {
         // Handle Active Effect Duration
         if (this.isSpecialEffectActive) {
             this.specialEffectTimer -= dt;
+
+            // --- Domain Expansion Visual Effect ---
+            if (this.activeSpecialType === SpecialSkillType.MURYO_KUSHO && this.domainOverlayWithFade) {
+                // Expansion Animation (First 0.5s)
+                const expansionDuration = 0.5;
+                const timeActive = 10.0 - this.specialEffectTimer;
+
+                if (timeActive < expansionDuration) {
+                    // Growing phase
+                    const progress = timeActive / expansionDuration;
+                    // Easing for impact (easeOutCubic)
+                    const t = 1 - Math.pow(1 - progress, 3);
+                    this.domainExpansionCurrentRadius = this.domainExpansionMaxRadius * t;
+                } else {
+                    // Fully expanded
+                    this.domainExpansionCurrentRadius = this.domainExpansionMaxRadius;
+                }
+
+                // Draw Overlay
+                this.domainOverlayWithFade.clear();
+
+                // 1. Dark Overlay (Dim everything outside the domain or inside? The request: centers expands, covers screen, dimmer)
+                // "Circular area expands ... covers the screen ... whole screen becomes dimmer"
+                // Implementation: Draw a black circle with alpha 0.5
+
+                const centerX = this.app.screen.width / 2;
+                const centerY = this.app.screen.height / 2;
+
+                this.domainOverlayWithFade.circle(centerX, centerY, this.domainExpansionCurrentRadius);
+                this.domainOverlayWithFade.fill({ color: 0x000000, alpha: 0.6 }); // Darker dim
+            }
+
             if (this.specialEffectTimer <= 0) {
                 this.endSpecialSkill();
             }
@@ -901,6 +942,17 @@ export class GameApp {
 
             // Visual feedback (optional log)
             console.log("Domain Expansion: Infinite Void - Active for 10s");
+
+            // Initialize Visual Effect
+            if (this.domainOverlayWithFade) {
+                this.domainOverlayWithFade.visible = true;
+                // Determine max radius needed to cover the screen from center
+                const w = this.app.screen.width;
+                const h = this.app.screen.height;
+                // Hypotenuse / 2 to cover corners
+                this.domainExpansionMaxRadius = Math.sqrt(w * w + h * h) * 0.6; // Slightly larger to be safe
+                this.domainExpansionCurrentRadius = 0;
+            }
         } else if (type === SpecialSkillType.KON) {
             console.log("EXECUTING SPECIAL: KON");
             // Screen boundaries in world coordinates
@@ -941,5 +993,11 @@ export class GameApp {
         });
 
         // Resume gauge charging (handled in next update)
+
+        // Reset Visual Effect
+        if (this.domainOverlayWithFade) {
+            this.domainOverlayWithFade.visible = false;
+            this.domainOverlayWithFade.clear();
+        }
     }
 }
