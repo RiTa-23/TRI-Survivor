@@ -249,15 +249,18 @@ h1 {
 
   /* Decorative fantasy title (falls back to system serif if custom font isn't loaded) */
   .fantasy-title {
-    font-family: 'Cinzel', 'Playfair Display', Georgia, 'Times New Roman', serif;
-    color: #f6e7c8;
+    font-family: Cinzel, 'Playfair Display', Georgia, 'Times New Roman', serif;
     font-weight: 900;
     letter-spacing: -0.02em;
     text-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 6px 18px rgba(0,0,0,0.45);
-    background: linear-gradient(180deg, #ffd88a 0%, #e4b85a 60%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #f6e7c8;
+    
+    @supports (background-clip: text) or (-webkit-background-clip: text) {
+      background: linear-gradient(180deg, #ffd88a 0%, #e4b85a 60%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
   }
 
   /* Wood-tile textured red button with white border for landing */
