@@ -23,6 +23,7 @@ const SPAWN_INTERVAL_MS = 500;
 const SPAWN_DISTANCE = 1000;
 const MAX_ENEMIES = 100;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
+const SPECIAL_EFFECT_DURATION = 10.0;
 
 /** Obstacle settings */
 const MAX_OBSTACLES = 15;
@@ -208,7 +209,7 @@ export class GameApp {
             this.player.addWeapon(new SwordWeapon());
 
 
-            // Initialize Domain Expansion Overlay (BEHIND world, TOP of grid)
+            // Initialize Domain Expansion Overlay (BEHIND world)
             this.domainOverlayWithFade = new Graphics();
             this.domainOverlayWithFade.visible = false;
             this.app.stage.addChild(this.domainOverlayWithFade);
@@ -500,7 +501,7 @@ export class GameApp {
             nextLevelExp: this.player.nextLevelExp,
             weapons: this.player.activeWeapons.map(w => ({ type: w.type, level: w.level })),
             passives: Array.from(this.player.getSkills().entries())
-                .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN && t !== SkillType.SPECIAL_COOLDOWN_CUT)
+                .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
                 .map(([type, level]) => ({ type, level })),
             specialGauge: this.specialGauge,
             maxSpecialGauge: this.specialMaxCooldown,
@@ -754,7 +755,7 @@ export class GameApp {
         const activeWeapons = this.player.activeWeapons; // Weapon[]
 
         const currentPassiveTypes = Array.from(acquiredSkills.keys())
-            .filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN && t !== SkillType.SPECIAL_COOLDOWN_CUT);
+            .filter(t => t !== SkillType.HEAL && t !== SkillType.GET_COIN);
 
         const currentWeaponTypes = activeWeapons.map(w => w.type);
 
@@ -786,21 +787,8 @@ export class GameApp {
                 if (hasIt || canAddWeapon) {
                     candidates.push(type);
                 }
-            } else if (type === SkillType.SPECIAL_COOLDOWN_CUT) {
-                // Always available if not maxed (doesn't take a passive slot in logic for now, or assume it does?)
-                // Requirement said "New passive skill", usually takes a slot.
-                // But let's follow the logic: "currentPassiveTypes" filters it out?
-                // If the user wants it to take a slot, I should include it in currentPassiveTypes.
-                // "currentPassiveTypes = ... filter(... && t !== SPECIAL_COOLDOWN_CUT)" removes it from slot count?
-                // Let's assume it DOES take a slot.
-                // Re-reading code:
-                // currentPassiveTypes filters out HEAL/COIN because they are instant.
-                // SPECIAL_COOLDOWN_CUT is permanent passive. usage in emitStats filters it out for UI?
-                // Wait, emitStats filters it out for UI display? Maybe user wants to see it?
-                // Requirement: "Паッシブスキルに必殺技のクールタイムを10%減少させるスキルも新規実装（最大5個）"
-                // It should be treated like other passives.
-                // Let's fix loop logic.
             } else {
+                // Passive
                 // Passive
                 const hasIt = currentPassiveTypes.includes(type);
                 if (hasIt || canAddPassive) {
@@ -900,10 +888,11 @@ export class GameApp {
             this.specialEffectTimer -= dt;
 
             // --- Domain Expansion Visual Effect ---
+            // --- Domain Expansion Visual Effect ---
             if (this.activeSpecialType === SpecialSkillType.MURYO_KUSHO && this.domainOverlayWithFade) {
                 // Expansion Animation (First 0.5s)
                 const expansionDuration = 0.5;
-                const timeActive = 10.0 - this.specialEffectTimer;
+                const timeActive = SPECIAL_EFFECT_DURATION - this.specialEffectTimer;
 
                 if (timeActive < expansionDuration) {
                     // Growing phase
@@ -963,7 +952,7 @@ export class GameApp {
                 // Hitbox radius
                 const r = this.konHitboxRadius;
                 if (distSq < r * r) {
-                    enemy.takeDamage(99999, enemy.x, enemy.y);
+                    enemy.takeDamage(99999, konWorldX, konWorldY);
                 }
             });
 
@@ -1004,7 +993,10 @@ export class GameApp {
         if (moveName === "Muryo Kusho") type = SpecialSkillType.MURYO_KUSHO;
         else if (moveName === "Kon") type = SpecialSkillType.KON;
 
-        if (type && type === this.activeSpecialType) {
+        if (type) {
+            // Auto switch active type if gesture matches
+            this.activeSpecialType = type;
+
             if (this.specialGauge >= this.specialMaxCooldown && !this.isSpecialEffectActive) {
                 this.executeSpecialSkill(type);
                 this.specialGauge = 0; // Reset gauge
@@ -1017,7 +1009,7 @@ export class GameApp {
         if (type === SpecialSkillType.MURYO_KUSHO) {
             console.log("EXECUTING SPECIAL: MURYO KUSHO");
             this.isSpecialEffectActive = true;
-            this.specialEffectTimer = 10.0; // 10 seconds duration
+            this.specialEffectTimer = SPECIAL_EFFECT_DURATION;
 
             // Apply Effects
             this.player.setSpecialMode(true);

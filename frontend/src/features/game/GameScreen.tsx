@@ -337,7 +337,7 @@ export default function GameScreen() {
                             {/* Placeholder Icon/Text for Muryo Kusho */}
                             <span className={`text-xs font-bold text-center ${stats.specialGauge >= stats.maxSpecialGauge ? "text-purple-100" : "text-gray-500"
                                 }`}>
-                                {stats.activeSpecialType === "MURYO_KUSHO" ? "無量\n空処" : "狐"}
+                                {stats.activeSpecialType === "MURYO_KUSHO" ? <>無量<br />空処</> : "狐"}
                             </span>
                         </div>
                     </div>

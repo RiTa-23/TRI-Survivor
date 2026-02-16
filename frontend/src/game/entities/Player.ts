@@ -297,7 +297,7 @@ export class Player extends Container {
     public get maxHp(): number { return this._maxHp; }
     public get speed(): number {
         const s = this._speed * this._speedMultiplier * this._tempSpeedMultiplier;
-        return Math.min(300, s); // Capp at 300
+        return Math.min(300, s); // Cap at 300
     }
     public get attackPower(): number { return this._attackPower * this._tempAttackMultiplier; }
     // public get attackInterval(): number { return this._attackInterval; } // Deprecated
