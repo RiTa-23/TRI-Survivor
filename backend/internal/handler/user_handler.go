@@ -68,3 +68,31 @@ func (h *UserHandler) GetMe(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, user)
 }
+	return c.JSON(http.StatusOK, user)
+}
+
+type AddCoinRequest struct {
+	Amount int `json:"amount"`
+}
+
+// AddCoin ユーザーにコインを追加する
+// POST /api/v1/users/me/coins
+func (h *UserHandler) AddCoin(c echo.Context) error {
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+	}
+
+	req := new(AddCoinRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+	}
+
+	user, err := h.service.AddCoin(c.Request().Context(), userID, req.Amount)
+	if err != nil {
+		log.Printf("AddCoin Error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+	}
+
+	return c.JSON(http.StatusOK, user)
+}

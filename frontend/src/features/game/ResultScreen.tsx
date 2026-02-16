@@ -2,12 +2,41 @@ import { useLocation, useNavigate } from "react-router-dom";
 import type { PlayerStats } from "../../game/types";
 import { Button } from "@/components/ui/button";
 import { Coins, Skull, Star, Clock, Home } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { api } from "@/lib/api";
+import { useGameStore } from "@/store/gameStore";
 
 export default function ResultScreen() {
     const navigate = useNavigate();
     const location = useLocation();
     const stats = location.state?.stats as PlayerStats | undefined;
     const isClear = location.state?.isClear as boolean | undefined;
+
+    // API Call State
+    const hasSavedRef = useRef(false);
+
+    useEffect(() => {
+        if (!stats || hasSavedRef.current) return;
+
+        const saveCoins = async () => {
+            hasSavedRef.current = true;
+            try {
+                if (stats.coins > 0) {
+                    const response = await api.post('/users/me/coins', { amount: stats.coins });
+                    // Update store with latest coin amount from backend
+                    if (response.data && typeof response.data.coin === 'number') {
+                        useGameStore.getState().setCoins(response.data.coin);
+                        console.log("Coins saved:", response.data.coin);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to save coins:", error);
+                // Retry logic could be added here if needed
+            }
+        };
+
+        saveCoins();
+    }, [stats]);
 
     if (!stats) {
         return (
