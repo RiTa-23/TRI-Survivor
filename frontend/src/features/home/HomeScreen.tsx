@@ -91,12 +91,6 @@ export default function HomeScreen() {
                                     className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
                                 />
                             </div>
-
-                            {/* 装飾パーツ (四隅) */}
-                            <div className="absolute -top-3 -left-3 w-10 h-10 border-t-2 border-l-2 border-amber-400/20 rounded-tl-xl pointer-events-none" />
-                            <div className="absolute -top-3 -right-3 w-10 h-10 border-t-2 border-r-2 border-amber-400/20 rounded-tr-xl pointer-events-none" />
-                            <div className="absolute -bottom-3 -left-3 w-10 h-10 border-b-2 border-l-2 border-amber-400/20 rounded-bl-xl pointer-events-none" />
-                            <div className="absolute -bottom-3 -right-3 w-10 h-10 border-b-2 border-r-2 border-amber-400/20 rounded-br-xl pointer-events-none" />
                         </motion.div>
                     </div>
 
