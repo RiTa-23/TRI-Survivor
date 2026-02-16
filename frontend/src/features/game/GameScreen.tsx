@@ -93,9 +93,9 @@ export default function GameScreen() {
                     setSkillOptions(options);
                     setIsLevelUpModalOpen(true);
                 },
-                // onGameClear Callback
-                (finalStats: PlayerStats) => {
-                    navigate("/result", { state: { stats: finalStats } });
+                // onGameEnd Callback
+                (finalStats: PlayerStats, isClear: boolean) => {
+                    navigate("/result", { state: { stats: finalStats, isClear } });
                 }
             );
 

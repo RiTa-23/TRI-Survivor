@@ -58,7 +58,7 @@ export class GameApp {
     private isPaused = false;
     private onStatsUpdate?: (stats: PlayerStats) => void;
     private onLevelUpCallback?: (options: SkillOption[]) => void;
-    private onGameClearCallback?: (stats: PlayerStats) => void;
+    private onGameEndCallback?: (stats: PlayerStats, isClear: boolean) => void;
     private elapsedTime: number = 0;
     private killCount: number = 0;
     private lastEmittedTime: number = 0;
@@ -93,7 +93,7 @@ export class GameApp {
         onSpecialMove?: (moveName: string) => void,
         onStatsUpdate?: (stats: PlayerStats) => void,
         onLevelUp?: (options: SkillOption[]) => void,
-        onGameClear?: (stats: PlayerStats) => void
+        onGameEnd?: (stats: PlayerStats, isClear: boolean) => void
     ) {
         this.app = new Application();
         // this.player will be initialized in init()
@@ -103,7 +103,7 @@ export class GameApp {
 
         this.onStatsUpdate = onStatsUpdate;
         this.onLevelUpCallback = onLevelUp;
-        this.onGameClearCallback = onGameClear;
+        this.onGameEndCallback = onGameEnd;
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
@@ -286,7 +286,13 @@ export class GameApp {
 
             // Check Game Clear
             if (this.elapsedTime >= GAME_CLEAR_TIME && !this.isDestroyed) {
-                this.handleGameClear();
+                this.handleGameEnd(true);
+                return;
+            }
+
+            // Check Game Over
+            if (this.player.hp <= 0 && !this.isDestroyed) {
+                this.handleGameEnd(false);
                 return;
             }
 
@@ -980,11 +986,12 @@ export class GameApp {
         this.handTrackingManager.setSpecialMoveDetection(isReady);
     }
 
-    private handleGameClear() {
+    private handleGameEnd(isClear: boolean) {
         this.pauseGame();
+        this.isDestroyed = true; // Prevent multiple calls
         // Emit final stats
-        if (this.onGameClearCallback) {
-            this.onGameClearCallback({
+        if (this.onGameEndCallback) {
+            this.onGameEndCallback({
                 coins: this.player.coins,
                 exp: this.player.exp,
                 hp: this.player.hp,
@@ -1000,7 +1007,7 @@ export class GameApp {
                 activeSpecialType: this.activeSpecialType,
                 time: this.elapsedTime,
                 killCount: this.killCount,
-            });
+            }, isClear);
         }
     }
 

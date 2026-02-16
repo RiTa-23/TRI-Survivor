@@ -7,6 +7,7 @@ export default function ResultScreen() {
     const navigate = useNavigate();
     const location = useLocation();
     const stats = location.state?.stats as PlayerStats | undefined;
+    const isClear = location.state?.isClear as boolean | undefined;
 
     if (!stats) {
         return (
@@ -25,14 +26,27 @@ export default function ResultScreen() {
         return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
 
+    // Style configuration based on result
+    const bgGradient = isClear
+        ? "bg-linear-to-br from-indigo-900 to-black"
+        : "bg-linear-to-br from-red-900 to-black";
+
+    const titleGradient = isClear
+        ? "bg-linear-to-r from-yellow-300 via-orange-400 to-red-500"
+        : "bg-linear-to-r from-gray-200 via-gray-400 to-gray-600";
+
+    const titleText = isClear ? "GAME CLEAR!!" : "GAME OVER...";
+    const subtitleText = isClear ? "MISSION ACCOMPLISHED" : "DON'T GIVE UP!";
+    const shadowColor = isClear ? "rgba(255,165,0,0.5)" : "rgba(255,0,0,0.5)";
+
     return (
-        <div className="w-full h-screen bg-linear-to-br from-indigo-900 to-black text-white flex flex-col items-center justify-center p-8">
+        <div className={`w-full h-screen ${bgGradient} text-white flex flex-col items-center justify-center p-8`}>
             <div className="max-w-2xl w-full bg-black/60 backdrop-blur-md rounded-3xl p-8 border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-500">
-                <h1 className="text-6xl font-black text-center mb-2 bg-linear-to-r from-yellow-300 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(255,165,0,0.5)]">
-                    GAME CLEAR!!
+                <h1 className={`text-6xl font-black text-center mb-2 ${titleGradient} bg-clip-text text-transparent drop-shadow-[0_2px_10px_${shadowColor}]`}>
+                    {titleText}
                 </h1>
                 <p className="text-center text-gray-400 mb-12 text-xl font-light tracking-widest">
-                    MISSION ACCOMPLISHED
+                    {subtitleText}
                 </p>
 
                 <div className="grid grid-cols-2 gap-8 mb-12">
