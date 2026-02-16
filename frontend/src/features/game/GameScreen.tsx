@@ -332,7 +332,7 @@ export default function GameScreen() {
 
                 {/* Cooldown Text */}
                 <div className="text-sm font-mono font-bold bg-black/70 px-2 py-0.5 rounded text-white">
-                    {stats.specialGauge >= stats.maxSpecialGauge ? "READY" : `${(stats.maxSpecialGauge - stats.specialGauge).toFixed(1)}s`}
+                    {stats.specialGauge >= stats.maxSpecialGauge ? "READY" : `${Math.ceil(stats.maxSpecialGauge - stats.specialGauge)}s`}
                 </div>
             </div>
         </div>

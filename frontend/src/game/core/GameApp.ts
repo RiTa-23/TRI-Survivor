@@ -80,6 +80,9 @@ export class GameApp {
     private isKonActive: boolean = false;
     private konVelocity: number = 1500; // Faster
     private konHitboxRadius: number = 800; // Smaller than visual length to better match shape
+    private static readonly KON_VISUAL_SCALE = 4.0;
+    private static readonly KON_HITBOX_OFFSET_X = 200; // Based on shape
+    private static readonly INSTANT_KILL_DAMAGE = Number.MAX_SAFE_INTEGER;
 
     constructor(
         videoElement: HTMLVideoElement,
@@ -240,17 +243,10 @@ export class GameApp {
             this.konGraphics = new Container();
             this.konGraphics.visible = false;
 
-            // Draw Fox Head Shape (Facing Left)
-            // MAKE IT HUGE (Screen Height scale)
-            // Screen height approx 1080? Let's make it 800-1000 height.
-            const s = 4.0; // Scale factor
-
+            const s = GameApp.KON_VISUAL_SCALE; // Scale factor
             const g = new Graphics();
 
             // Main Head (Orange Triangle)
-            // Tip at (-150, 0) * s -> (-600, 0)
-            // Base at (150, -100) * s -> (600, -400)
-            // Base at (150, 100) * s -> (600, 400)
             g.poly([-150 * s, 0, 150 * s, -100 * s, 150 * s, 100 * s]);
             g.fill({ color: 0xFF8800 });
 
@@ -878,7 +874,6 @@ export class GameApp {
             this.specialEffectTimer -= dt;
 
             // --- Domain Expansion Visual Effect ---
-            // --- Domain Expansion Visual Effect ---
             if (this.activeSpecialType === SpecialSkillType.MURYO_KUSHO && this.domainOverlayWithFade) {
                 // Expansion Animation (First 0.5s)
                 const expansionDuration = 0.5;
@@ -932,17 +927,15 @@ export class GameApp {
             this.enemies.forEach(enemy => {
                 if (!enemy.alive) return;
                 // Visual Tip is around (-600, 0).
-                // If radius is 800, center should be somewhat behind the tip.
-                // Center at (200, 0) -> Front edge at -600 (Tip).
-                // Let's try offset +200.
-                const dx = enemy.x - konWorldX - 200;
+                // Hitbox is slightly offset left from the visual center (tip of the head)
+                const dx = enemy.x - konWorldX - GameApp.KON_HITBOX_OFFSET_X;
                 const dy = enemy.y - konWorldY;
                 const distSq = dx * dx + dy * dy;
 
                 // Hitbox radius
                 const r = this.konHitboxRadius;
                 if (distSq < r * r) {
-                    enemy.takeDamage(99999, konWorldX, konWorldY);
+                    enemy.takeDamage(GameApp.INSTANT_KILL_DAMAGE, konWorldX, konWorldY);
                 }
             });
 
@@ -951,7 +944,7 @@ export class GameApp {
             if (this.konGraphics.x < -1000) {
                 this.isKonActive = false;
                 this.konGraphics.visible = false;
-                console.log("Kon Finished");
+                if (this.debugMode) console.log("Kon Finished");
             }
 
             // Kon blocks gauge charge too? Yes, usually.
@@ -1007,7 +1000,7 @@ export class GameApp {
             });
 
             // Visual feedback (optional log)
-            console.log("Domain Expansion: Infinite Void - Active for 10s");
+            if (this.debugMode) console.log("Domain Expansion: Infinite Void - Active for 10s");
 
             // Initialize Visual Effect
             if (this.domainOverlayWithFade) {
@@ -1020,7 +1013,7 @@ export class GameApp {
                 this.domainExpansionCurrentRadius = 0;
             }
         } else if (type === SpecialSkillType.KON) {
-            console.log("EXECUTING SPECIAL: KON");
+            if (this.debugMode) console.log("EXECUTING SPECIAL: KON");
 
             if (this.konGraphics) {
                 this.isKonActive = true;
@@ -1030,13 +1023,13 @@ export class GameApp {
                 this.konGraphics.x = this.app.screen.width + 1200;
                 this.konGraphics.y = this.app.screen.height / 2;
 
-                console.log("Kon visual started");
+                if (this.debugMode) console.log("Kon visual started");
             }
         }
     }
 
     private endSpecialSkill() {
-        console.log("ENDING SPECIAL SKILL");
+        if (this.debugMode) console.log("ENDING SPECIAL SKILL");
         this.isSpecialEffectActive = false;
         this.specialEffectTimer = 0;
 
