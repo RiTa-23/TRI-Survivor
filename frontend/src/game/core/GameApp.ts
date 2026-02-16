@@ -789,24 +789,14 @@ export class GameApp {
                 }
             } else {
                 // Passive
-                // Passive
                 const hasIt = currentPassiveTypes.includes(type);
                 if (hasIt || canAddPassive) {
                     candidates.push(type);
                 }
             }
         }
-        // FIX: The loop above needs better handling for SPECIAL_COOLDOWN_CUT if I filtered it out in `currentPassiveTypes`.
-        // Actually, I should probably NOT filter it out in `currentPassiveTypes` if it counts towards the limit of 3 passives.
-        // But for now, let's treat it as a normal passive.
-        // Wait, I filtered it out in the ReplacementContent for generateSkillOptions above? 
-        // No, I filtered it out in `emitStats`.
-        // In `generateSkillOptions`, I see I added `&& t !== SkillType.SPECIAL_COOLDOWN_CUT` to currentPassiveTypes filter.
-        // This means it won't count towards the 3 passive limit. Is this intended?
-        // Usually "Passive skills" count towards the limit. 
-        // Let's remove it from the filter in `generateSkillOptions` so it counts.
 
-
+        // SPECIAL_COOLDOWN_CUT is treated as a normal passive skill and counts towards the 3-skill limit.
 
         // Shuffle (Fisher-Yates)
         for (let i = candidates.length - 1; i > 0; i--) {
