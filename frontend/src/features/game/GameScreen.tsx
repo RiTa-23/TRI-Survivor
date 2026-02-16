@@ -82,7 +82,7 @@ export default function GameScreen() {
                 },
                 (s: PlayerStats) => {
                     // Throttle stats update
-                    const key = `${s.coins},${s.exp},${Math.round(s.hp)},${s.level},${Math.floor(s.time)},${s.killCount}`;
+                    const key = `${s.coins},${s.exp},${Math.round(s.hp)},${s.level},${Math.floor(s.time)},${s.killCount},${s.specialGauge.toFixed(1)},${s.maxSpecialGauge},${s.activeSpecialType}`;
                     if (key !== lastStatsRef.current) {
                         lastStatsRef.current = key;
                         setStats(s);
