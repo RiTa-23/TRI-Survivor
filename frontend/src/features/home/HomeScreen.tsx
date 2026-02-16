@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/gameStore";
@@ -9,6 +10,18 @@ export default function HomeScreen() {
     const navigate = useNavigate();
     const { user, signOut } = useAuthStore();
     const { coins } = useGameStore();
+
+    // パーティクルデータを初回のみ生成（再レンダリング時のちらつき防止）
+    const particles = useMemo(() => 
+        Array.from({ length: 6 }, (_, i) => ({
+            width: Math.random() * 100 + 50,
+            height: Math.random() * 100 + 50,
+            top: Math.random() * 100,
+            left: Math.random() * 100,
+            delay: i * 0.5,
+            opacity: Math.random() * 0.2,
+        })),
+    []);
 
     const handleLogout = async () => {
         try {
@@ -96,17 +109,17 @@ export default function HomeScreen() {
 
                     {/* --- 背景の装飾粒子 --- */}
                     <div className="absolute inset-0 pointer-events-none opacity-30">
-                        {[...Array(6)].map((_, i) => (
+                        {particles.map((p, i) => (
                             <div 
                                 key={i}
                                 className="absolute bg-white rounded-full blur-xl animate-pulse"
                                 style={{
-                                    width: Math.random() * 100 + 50 + 'px',
-                                    height: Math.random() * 100 + 50 + 'px',
-                                    top: Math.random() * 100 + '%',
-                                    left: Math.random() * 100 + '%',
-                                    animationDelay: i * 0.5 + 's',
-                                    opacity: Math.random() * 0.2
+                                    width: p.width + 'px',
+                                    height: p.height + 'px',
+                                    top: p.top + '%',
+                                    left: p.left + '%',
+                                    animationDelay: p.delay + 's',
+                                    opacity: p.opacity
                                 }}
                             />
                         ))}
