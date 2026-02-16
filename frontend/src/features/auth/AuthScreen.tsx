@@ -70,11 +70,6 @@ export default function AuthScreen() {
                         </Button>
                     </div>
                     
-                    <div className="pt-6 border-t border-[#c7a16f]/30">
-                        <p className="text-xs parchment-text opacity-50">
-                            ログインすることで、利用規約とプライバシーポリシーに同意したものとみなされます。
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>
