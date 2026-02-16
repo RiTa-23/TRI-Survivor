@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
+import { useGameStore } from '@/store/gameStore';
 import type { Session, User } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -19,13 +20,18 @@ const syncUserWithBackend = async (user: User) => {
     try {
         const { email, user_metadata } = user;
         if (email) {
-            await api.post('/users', {
+            const response = await api.post('/users', {
                 id: user.id,
                 email: email,
                 name: user_metadata.full_name || email,
                 avatarUrl: user_metadata.avatar_url,
             });
             console.log('User synced with backend');
+            
+            // バックエンドから取得した最新のコイン枚数を gameStore に反映
+            if (response.data && typeof response.data.coin === 'number') {
+                useGameStore.getState().setCoins(response.data.coin);
+            }
         }
     } catch (apiError) {
         console.error('Failed to sync user with backend:', apiError);
