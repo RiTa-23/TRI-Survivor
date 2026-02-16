@@ -18,7 +18,7 @@ export default function SettingScreen() {
   const [user, setUser] = useState({
     id: "Gamer_01",
     avatarUrl: "", // 外部URLを削除し、実際のパスを参照するように修正
-    displayName: "Gemini User"
+    displayName: "Player"
   });
 
   // 2. 音量管理用のステート (Sliderは配列形式を想定)
@@ -89,7 +89,7 @@ export default function SettingScreen() {
           <div className="flex-1 space-y-3">
             <div className="grid w-full items-center gap-1.5">
               <label htmlFor="input-username" className="text-sm font-bold text-slate-600">
-                ユーザーネーム
+                user name
               </label>
               <Input 
                 id="input-username" 
