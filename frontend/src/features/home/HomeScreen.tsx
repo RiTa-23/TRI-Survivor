@@ -127,12 +127,12 @@ export default function HomeScreen() {
                 </div>
 
                 {/* --- 右下: バトル開始ボタン --- */}
-                <div className="absolute bottom-10 right-10 z-30">
+                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 z-30">
                     <motion.div
                         whileHover={{ scale: 1.08 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        <Button asChild className="px-12 py-12 text-2xl font-black btn-fantasy-red rounded-3xl group">
+                        <Button asChild className="px-8 py-8 md:px-12 md:py-12 text-xl md:text-2xl font-black btn-fantasy-red rounded-3xl group">
                             <Link to="/game" className="tracking-[0.25em] flex flex-col items-center leading-tight">
                                 <span className="flex items-center gap-2">
                                     BATTLE START
