@@ -16,4 +16,5 @@ type User struct {
 	AvatarURL string    `bun:",nullzero" json:"avatarUrl"` // GoogleアイコンURL
 	Coin      int       `bun:",notnull,default:0" json:"coin"`
 	CreatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp" json:"createdAt"`
+	UpdatedAt time.Time `bun:",nullzero,notnull,default:current_timestamp" json:"updatedAt"`
 }
