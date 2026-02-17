@@ -14,7 +14,7 @@ const DEFAULT_WIDTH = 40;
 const DEFAULT_HEIGHT = 4;
 const DEFAULT_OFFSET_Y = -30;
 const BG_COLOR = 0x333333;
-const HP_COLOR = 0x2ecc71;
+const HP_COLOR = 0x39FF14; // Neon Green
 const LOW_HP_COLOR = 0xe74c3c;
 const LOW_HP_THRESHOLD = 0.3;
 
