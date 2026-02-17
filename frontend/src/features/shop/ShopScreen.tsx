@@ -194,7 +194,7 @@ export default function ShopScreen() {
             <div className="text-sm">{hoverItem.description}</div>
           </>
         ) : (
-          <div className="text-sm text-gray-500 text-center">なに買うの～？</div>
+          <div className="text-sm text-gray-500 text-center">アン・ドゥ・トロワ♪<br />トロワのショップにようこそ！</div>
         )}
       </div>
 
