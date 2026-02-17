@@ -1,10 +1,10 @@
 // src/features/setting/SettingScreen.tsx
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
+import { Camera, Volume1, Volume2, VolumeOff, X, CheckCircle2 } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -13,166 +13,217 @@ import {
 
 export default function SettingScreen() {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. ユーザー情報のステート (avatarUrlは本番環境の実際の値を受け取れるよう空に)
+  // --- ステート管理 ---
   const [user, setUser] = useState({
     id: "Gamer_01",
-    avatarUrl: "", // 外部URLを削除し、実際のパスを参照するように修正
-    displayName: "Gemini User"
+    avatarUrl: "", 
+    displayName: "Player"
   });
 
-  // 2. 音量管理用のステート (Sliderは配列形式を想定)
   const [bgmVolume, setBgmVolume] = useState([75]);
   const [seVolume, setSeVolume] = useState([50]);
-
-  // 3. 保存状態の管理
   const [isSaved, setIsSaved] = useState(false);
+  
+  // ★ ポップアップ通知用のステート
+  const [showToast, setShowToast] = useState(false);
 
-  // 値が変更されたら「保存しました！」状態を解除する共通ハンドラ
+  // 共通のボタンスタイル
+  const iconBtnStyle = "p-1.5 rounded-full transition-all active:bg-black active:bg-opacity-20 active:opacity-70 text-slate-400 hover:bg-slate-200";
+
+  // --- ハンドラ ---
   const handleValueChange = () => {
     if (isSaved) setIsSaved(false);
   };
 
-  // スライダーと同期させるための数値入力ハンドラ
-  const handleVolumeInputChange = (
-    val: string, 
-    setter: React.Dispatch<React.SetStateAction<number[]>>
-  ) => {
+  const handleSave = () => {
+    console.log("Saved:", user);
+    
+    // 保存完了状態にする（ボタンの表示切り替え）
+    setIsSaved(true);
+    
+    // ★ ポップアップを表示して3秒後に消す
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
+  const adjustVolume = (current: number[], delta: number, setter: React.Dispatch<React.SetStateAction<number[]>>) => {
+    const newValue = Math.max(0, Math.min(100, current[0] + delta));
+    setter([newValue]);
+    handleValueChange();
+  };
+
+  const handleMute = (setter: React.Dispatch<React.SetStateAction<number[]>>) => {
+    setter([0]);
+    handleValueChange();
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUser({ ...user, avatarUrl: reader.result as string });
+        handleValueChange();
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVolumeInputChange = (val: string, setter: React.Dispatch<React.SetStateAction<number[]>>) => {
     const num = parseInt(val);
     const clampedVal = isNaN(num) ? 0 : Math.max(0, Math.min(100, num));
     setter([clampedVal]);
     handleValueChange();
   };
 
-  // 保存処理
-  const handleSave = () => {
-    console.log("Settings saved for:", user.id, {
-      displayName: user.displayName,
-      bgm: bgmVolume[0],
-      se: seVolume[0]
-    });
-    // 保存完了フラグをオンにする
-    setIsSaved(true);
-  };
-
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-8 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
       
-      {/* 戻るボタン */}
-      <button
-        onClick={() => navigate("/home")}
-        className="absolute top-4 left-4 p-2 rounded-lg border border-black/40 bg-black/10 hover:bg-black/20 transition-colors"
-      >
-        <ArrowLeft size={24} />
-      </button>
+      {/* ★ 自作ポップアップ通知 (保存ボタンを押した時に出現) */}
+      {showToast && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl animate-in slide-in-from-top-full duration-300">
+          <CheckCircle2 className="text-green-400" size={20} />
+          <span className="font-bold text-sm tracking-tight">設定を保存しました！</span>
+        </div>
+      )}
 
-      <h1 className="text-4xl font-bold mb-8 text-yellow-600">
-        Setting
-      </h1>
-      
-      {/* 設定カードのコンテナ (space-y-4 で各カードを接近) */}
-      <div className="w-full max-w-md space-y-4">
+      {/* モーダル本体 */}
+      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
         
-        {/* ユーザープロフィール設定カード */}
-        <div className="flex items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <Avatar className="h-20 w-20 border-2 border-yellow-500 shadow-sm">
-            {/* サンプルURLを削除し、ステートのavatarUrlを参照。なければFallbackへ */}
-            <AvatarImage 
-              src={user.avatarUrl || undefined} 
-              alt={user.displayName} 
-            />
-            <AvatarFallback className="bg-yellow-100 text-yellow-700 font-bold text-xl">
-              {user.displayName ? user.displayName.substring(0, 2).toUpperCase() : "??"}
-            </AvatarFallback>
-          </Avatar>
+        {/* ヘッダー */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-yellow-600 font-mono tracking-tighter">
+              Setting
+            </h1>
+          </div>
+          <button
+            onClick={() => navigate("/home")}
+            className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* コンテンツエリア */}
+        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto bg-white text-slate-900">
           
-          <div className="flex-1 space-y-3">
-            <div className="grid w-full items-center gap-1.5">
-              <label htmlFor="input-username" className="text-sm font-bold text-slate-600">
-                ユーザーネーム
-              </label>
+          {/* ユーザー設定セクション */}
+          <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-slate-900">
+            <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
+              <Avatar className="h-16 w-16 border-2 border-yellow-500 shadow-sm transition-opacity group-hover:opacity-90">
+                <AvatarImage src={user.avatarUrl || undefined} className="object-cover" />
+                <AvatarFallback className="bg-yellow-100 text-yellow-700 font-bold">
+                  {user.displayName ? user.displayName.substring(0, 2).toUpperCase() : "??"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-full">
+                <Camera size={16} className="text-white" />
+              </div>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+            </div>
+            
+            <div className="flex-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1 block">User Name</label>
               <Input 
-                id="input-username" 
-                type="text" 
                 value={user.displayName} 
-                onChange={(e) => {
-                  setUser({ ...user, displayName: e.target.value });
-                  handleValueChange();
-                }}
-                className="bg-white border-slate-300 focus:border-yellow-500 text-black font-medium"
+                onChange={(e) => { setUser({ ...user, displayName: e.target.value }); handleValueChange(); }}
+                className="bg-white border-slate-200 h-9 text-sm focus:border-yellow-500 transition-colors text-slate-900"
               />
             </div>
           </div>
-        </div>
 
-        {/* ボリューム設定カード */}
-        <div className="space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
-          
-          {/* BGM Volume */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">BGM Volume</span>
-              <div className="flex items-center gap-2">
-                <Input 
-                  type="number"
-                  value={bgmVolume[0]}
-                  onChange={(e) => handleVolumeInputChange(e.target.value, setBgmVolume)}
-                  className="w-16 h-8 p-1 text-center font-bold text-yellow-600 border-none bg-transparent"
-                />
-                <span className="text-sm font-mono font-bold text-yellow-600">%</span>
+          {/* ボリューム設定エリア */}
+          <div className="space-y-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            
+            {/* BGM Volume */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">BGM Volume</span>
+                  <button 
+                    onClick={() => handleMute(setBgmVolume)} 
+                    className={`p-1 rounded-full transition-all active:bg-black active:bg-opacity-30 ${bgmVolume[0] === 0 ? "text-red-500 bg-red-50" : "text-slate-400 hover:bg-slate-200"}`}
+                  >
+                    <VolumeOff size={16} />
+                  </button>
+                </div>
+                <div className="flex items-center gap-1 text-yellow-600 font-bold text-sm">
+                  <Input 
+                    type="number"
+                    value={bgmVolume[0]}
+                    onChange={(e) => handleVolumeInputChange(e.target.value, setBgmVolume)}
+                    className="w-10 h-6 p-0 text-center border-none bg-transparent font-bold focus:ring-0 text-slate-900"
+                  />
+                  <span className="text-[10px]">%</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 px-1">
+                <button onClick={() => adjustVolume(bgmVolume, -1, setBgmVolume)} className={iconBtnStyle}>
+                  <Volume1 size={20} />
+                </button>
+                <Slider value={bgmVolume} onValueChange={(val) => { setBgmVolume(val); handleValueChange(); }} max={100} step={1} className="flex-1 py-4" />
+                <button onClick={() => adjustVolume(bgmVolume, 1, setBgmVolume)} className={iconBtnStyle}>
+                  <Volume2 size={20} />
+                </button>
               </div>
             </div>
-            <Slider
-              value={bgmVolume}
-              onValueChange={(val) => {
-                setBgmVolume(val);
-                handleValueChange();
-              }}
-              max={100}
-              step={1}
-              className="py-2"
-            />
-          </div>
 
-          {/* SE Volume */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">SE Volume</span>
-              <div className="flex items-center gap-2">
-                <Input 
-                  type="number"
-                  value={seVolume[0]}
-                  onChange={(e) => handleVolumeInputChange(e.target.value, setSeVolume)}
-                  className="w-16 h-8 p-1 text-center font-bold text-yellow-600 border-none bg-transparent"
-                />
-                <span className="text-sm font-mono font-bold text-yellow-600">%</span>
+            {/* SE Volume */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">SE Volume</span>
+                  <button 
+                    onClick={() => handleMute(setSeVolume)} 
+                    className={`p-1 rounded-full transition-all active:bg-black active:bg-opacity-30 ${seVolume[0] === 0 ? "text-red-500 bg-red-50" : "text-slate-400 hover:bg-slate-200"}`}
+                  >
+                    <VolumeOff size={16} />
+                  </button>
+                </div>
+                <div className="flex items-center gap-1 text-yellow-600 font-bold text-sm">
+                  <Input 
+                    type="number"
+                    value={seVolume[0]}
+                    onChange={(e) => handleVolumeInputChange(e.target.value, setSeVolume)}
+                    className="w-10 h-6 p-0 text-center border-none bg-transparent font-bold focus:ring-0 text-slate-900"
+                  />
+                  <span className="text-[10px]">%</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 px-1">
+                <button onClick={() => adjustVolume(seVolume, -1, setSeVolume)} className={iconBtnStyle}>
+                  <Volume1 size={20} />
+                </button>
+                <Slider value={seVolume} onValueChange={(val) => { setSeVolume(val); handleValueChange(); }} max={100} step={1} className="flex-1 py-4" />
+                <button onClick={() => adjustVolume(seVolume, 1, setSeVolume)} className={iconBtnStyle}>
+                  <Volume2 size={20} />
+                </button>
               </div>
             </div>
-            <Slider
-              value={seVolume}
-              onValueChange={(val) => {
-                setSeVolume(val);
-                handleValueChange();
-              }}
-              max={100}
-              step={1}
-              className="py-2"
-            />
           </div>
         </div>
 
-        {/* 保存ボタン */}
-        <div className="pt-2">
+        {/* フッター（保存ボタン） */}
+        <div className="p-6 bg-slate-50 border-t border-slate-100">
           <button
             onClick={handleSave}
             disabled={isSaved}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all active:scale-[0.98] shadow-md
+            className={`w-full py-4 rounded-2xl font-bold text-lg transition-all active:scale-[0.97] shadow-lg
               ${isSaved 
-                ? "bg-green-500 text-white cursor-default" 
-                : "bg-black text-white hover:bg-slate-800"
+                ? "bg-green-500 text-white cursor-default shadow-green-200" 
+                : "bg-black text-white hover:bg-slate-800 shadow-slate-200"
               }`}
           >
-            {isSaved ? "保存しました！" : "保存する"}
+            {isSaved ? "保存完了！" : "設定を保存する"}
           </button>
         </div>
       </div>
