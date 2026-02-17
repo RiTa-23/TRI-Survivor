@@ -86,7 +86,7 @@ export default function LandingPage() {
                 </p>
 
                 {/* GAME START ボタン */}
-                <div className="motion-safe:animate-pulse w-full md:w-auto">
+                <div className="w-full md:w-auto">
                     <Button asChild className="w-full md:w-auto px-12 py-8 md:px-16 md:py-10 text-3xl md:text-4xl font-black btn-fantasy-red rounded-xl shadow-[0_0_40px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border-4 border-amber-200/80 group">
                         <Link to="/auth" className="flex items-center justify-center">
                             <span className="font-serif tracking-[0.15em] text-white drop-shadow-[0_4px_2px_rgba(0,0,0,0.8)]">
@@ -114,7 +114,7 @@ export default function LandingPage() {
                          <div className="character-aura w-[150%] h-[150%] bg-purple-900/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                          {/* Image */}
                          <img src="/assets/images/enemy_1.png" 
-                             className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] filter brightness-90 saturate-120 animate-[float-breathing_6s_ease-in-out_infinite]"
+                             className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] filter brightness-90 saturate-[1.2] animate-[float-breathing_6s_ease-in-out_infinite]"
                              style={{ animationDelay: '1s' }}
                              alt="Enemy"
                         />
