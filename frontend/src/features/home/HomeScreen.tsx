@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/gameStore";
-import { Settings, LogOut, Coins, ShoppingBag, BookOpen, ChevronRight, User as UserIcon } from "lucide-react";
+import { Settings, LogOut, Coins, ShoppingBag, BookOpen, User as UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function HomeScreen() {
@@ -94,7 +94,7 @@ export default function HomeScreen() {
                             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                         >
                             {/* 足元の影 */}
-                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-40 h-10 bg-black/30 blur-xl rounded-full scale-x-110" />
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-40 h-10 bg-black/40 blur-[3px] rounded-full scale-x-110" />
                             
                             {/* キャラクター画像 */}
                             <div className="relative w-48 h-60 md:w-64 md:h-[320px] flex items-center justify-center">
@@ -128,19 +128,13 @@ export default function HomeScreen() {
 
                 {/* --- 右下: バトル開始ボタン --- */}
                 <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 z-30">
-                    <motion.div
-                        whileHover={{ scale: 1.08 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <Button asChild className="px-8 py-8 md:px-12 md:py-12 text-xl md:text-2xl font-black btn-fantasy-red rounded-3xl group">
-                            <Link to="/game" className="tracking-[0.25em] flex flex-col items-center leading-tight">
-                                <span className="flex items-center gap-2">
-                                    BATTLE START
-                                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                                </span>
-                            </Link>
-                        </Button>
-                    </motion.div>
+                    <Button asChild className="px-12 py-8 md:px-16 md:py-10 text-3xl md:text-4xl font-black btn-fantasy-red rounded-xl shadow-[0_0_40px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border-4 border-amber-200/80 group">
+                        <Link to="/game" className="flex items-center justify-center">
+                            <span className="font-serif tracking-[0.15em] text-white drop-shadow-[0_4px_2px_rgba(0,0,0,0.8)] uppercase">
+                                BATTLE START
+                            </span>
+                        </Link>
+                    </Button>
                 </div>
             </div>
         </div>
