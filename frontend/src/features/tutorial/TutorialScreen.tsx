@@ -5,33 +5,38 @@ import { Button } from "@/components/ui/button";
 
 const TUTORIAL_PAGES = [
     {
-        title: "TRI-Survivorへようこそ",
-        description: "このゲームは、押し寄せる幾何学的な敵から生き残るサバイバルゲームです。",
+        title: "チュートリアルへようこそ！",
+        description: "ナビゲータマスコットの私と一緒に、このゲームについて\n学びましょう♪",
+        hint: "画面をタップして次へ"
+    },
+    {
+        title: "TRI-Survivorとは？",
+        description: "TRI-Survivorは、押し寄せるモンスターを攻撃して、生存を目指すサバイバー系ゲームだよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "革新的な操作方法",
-        description: "カメラに指をかざしてください。指で刺している方向にキャラクターが自在に移動します。",
+        description: "カメラに指をかざしてね！指を向けた方向へキャラクターを操作できるよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "自動攻撃と必殺技",
-        description: "通常攻撃は自動で行われますが、特定のジェスチャーを繰り出すことで強力な「必殺技」を発動できます。",
+        description: "通常攻撃は自動で行われるよ！特定のジェスチャーによって強力な必殺技を発動することもできるみたい……！？",
         hint: "画面をタップして次へ"
     },
     {
         title: "成長と報酬",
-        description: "敵を倒して経験値を稼ぎ、レベルアップで強くなりましょう。集めたコインはショップでの強化に使えます。",
+        description: "経験値を稼いで、レベルアップ！集めたコインは「(トロワの)ショップ」で強化に使用することができるよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "スコアシステム",
-        description: "幾何学の混沌の中で「何秒生き残れたか」があなたのスコアとなります。一秒でも長く生存しましょう。",
+        description: "「何秒生き残れたか」があなたのスコアとなるよ。一秒でも長く生き残ろう!333秒生き残れたらクリアだよ!",
         hint: "画面をタップして次へ"
     },
     {
         title: "勝利の鍵",
-        description: "レベルを上げ、最強の装備を整えて、世界の記録を塗り替えましょう。準備はいいですか？",
+        description: "レベルを上げて、最強の装備を整えたら準備はいいかな？\n最後まで生き残りましょうね!",
         hint: ""
     }
 ];
@@ -116,27 +121,34 @@ export default function TutorialScreen() {
                 </div>
 
                 {/* 説明文エリア — 実物の羊皮紙に見えるリアルなパネル */}
-                <div className="flex-1 w-full max-w-2xl space-y-8 parchment-realistic p-8 md:p-12 relative">
-                    {/* 尻尾は羊皮紙の色味で控えめに */}
-                    <div className="hidden md:block absolute left-[-18px] top-1/2 -translate-y-1/2 w-8 h-8 bg-[#efe1b8] border-l-2 border-b-2 border-[#d2b88b] rotate-45" />
+                <div className="flex-1 w-full max-w-4xl space-y-6 flex flex-col items-center md:items-start">
+                    {/* タイトルは吹き出しの外（上部）へ */}
+                    <h1 
+                        className="text-3xl md:text-5xl font-bold tracking-tight font-serif text-[#2d2318] mb-4 md:pl-4"
+                        style={{ textShadow: '1px 1px 0px #d2b88b, 2px 2px 0px #5d4037, 3px 3px 5px rgba(0,0,0,0.3)' }}
+                    >
+                        {TUTORIAL_PAGES[currentPage].title}
+                    </h1>
 
-                    {/* overlays for realistic texture */}
-                    <div className="fibers" aria-hidden />
-                    <div className="wrinkles" aria-hidden />
-                    <div className="wave" aria-hidden />
-                    <div className="ink-bleed one" aria-hidden />
-                    <div className="ink-bleed two" aria-hidden />
-                    <div className="corner-wear" aria-hidden />
-                    <div className="curl" aria-hidden />
+                    <div className="w-full parchment-realistic p-12 md:p-20 relative">
+                        {/* 尻尾は羊皮紙の色味で控えめに */}
+                        <div className="hidden md:block absolute left-[-18px] top-1/2 -translate-y-1/2 w-8 h-8 bg-[#efe1b8] border-l-2 border-b-2 border-[#d2b88b] rotate-45" />
 
-                    <div className="space-y-6 relative z-20 content">
-                        <div className="inner-band" />
-                        <h1 className="text-2xl md:text-4xl font-black tracking-tight parchment-title leading-tight parchment-text">
-                            {TUTORIAL_PAGES[currentPage].title}
-                        </h1>
-                        <p className="text-base md:text-xl leading-relaxed font-medium parchment-text">
-                            {TUTORIAL_PAGES[currentPage].description}
-                        </p>
+                        {/* overlays for realistic texture */}
+                        <div className="fibers" aria-hidden />
+                        <div className="wrinkles" aria-hidden />
+                        <div className="wave" aria-hidden />
+                        <div className="ink-bleed one" aria-hidden />
+                        <div className="ink-bleed two" aria-hidden />
+                        <div className="corner-wear" aria-hidden />
+                        <div className="curl" aria-hidden />
+
+                        <div className="relative z-20 content">
+                            <div className="inner-band" />
+                            <p className="text-xl md:text-3xl leading-relaxed font-medium parchment-text whitespace-pre-line">
+                                {TUTORIAL_PAGES[currentPage].description}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
