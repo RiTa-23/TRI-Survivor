@@ -118,7 +118,8 @@ export default function LandingPage() {
                          <div className="character-aura w-[150%] h-[150%] bg-blue-900/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                          {/* Image */}
                          <img src="/assets/images/Player_1.png" 
-                             className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] transform -scale-x-100 filter brightness-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] animate-[float-breathing_5s_ease-in-out_infinite]"
+                             className="w-full object-contain transform -scale-x-100 animate-[float-breathing_5s_ease-in-out_infinite]"
+                             style={{ filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.8)) brightness(1.1) drop-shadow(0 0 15px rgba(255,255,255,0.3))" }}
                              alt="Hero"
                         />
                     </div>
