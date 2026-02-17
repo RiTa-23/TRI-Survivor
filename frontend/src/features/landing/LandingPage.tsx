@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
@@ -13,21 +13,39 @@ export default function LandingPage() {
         }
     }, [user, loading, navigate]);
 
+    const embers = useMemo<{
+        id: number;
+        left: string;
+        animationDuration: string;
+        animationDelay: string;
+        opacity: number;
+        scale: number;
+    }[]>(() => {
+        return [...Array(20)].map((_, i) => ({
+            id: i,
+            left: `${Math.random() * 100}%`,
+            animationDuration: `${3 + Math.random() * 4}s`,
+            animationDelay: `${Math.random() * 5}s`,
+            opacity: 0.3 + Math.random() * 0.7,
+            scale: 0.5 + Math.random(),
+        }));
+    }, []);
+
     return (
         <div className="min-h-screen forest-bg text-white relative overflow-hidden flex flex-col md:flex-row items-center">
             {/* バトル演出: 火の粉 (Embers) */}
             <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                {[...Array(20)].map((_, i) => (
+                {embers.map((ember) => (
                     <div
-                        key={i}
+                        key={ember.id}
                         className="ember"
                         style={{
-                            left: `${Math.random() * 100}%`,
-                            animationDuration: `${3 + Math.random() * 4}s`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            opacity: 0.3 + Math.random() * 0.7,
-                            transform: `scale(${0.5 + Math.random()})` 
-                        }}
+                            left: ember.left,
+                            animationDuration: ember.animationDuration,
+                            animationDelay: ember.animationDelay,
+                            '--ember-opacity': ember.opacity,
+                            '--ember-scale': ember.scale,
+                        } as React.CSSProperties}
                     />
                 ))}
             </div>
