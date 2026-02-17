@@ -62,6 +62,9 @@ export class Player extends Container {
     /** 当たり判定の半径 */
     public readonly radius: number = 40;
 
+    /** Base scale of the sprite to maintain aspect ratio */
+    private baseScale: number;
+
     constructor() {
         super();
 
@@ -76,12 +79,13 @@ export class Player extends Container {
         this._nextLevelExp = this.calculateNextLevelExp();
 
         // Create Player Sprite
-        this.sprite = Sprite.from("/assets/images/player.png");
+        this.sprite = Sprite.from("/assets/images/Player_1.png");
         this.sprite.anchor.set(0.5);
 
         // アスペクト比を維持してリサイズ
         const scale = (this.radius * 2) / Math.max(this.sprite.texture.width, this.sprite.texture.height);
-        this.sprite.scale.set(scale);
+        this.baseScale = scale;
+        this.sprite.scale.set(this.baseScale);
 
         this.addChild(this.sprite);
 
@@ -95,6 +99,16 @@ export class Player extends Container {
         const currentSpeed = this.speed;
         this.x += dx * currentSpeed * dt;
         this.y += dy * currentSpeed * dt;
+
+        // Flip sprite based on direction
+        // Assuming Player_1.png faces Left by default
+        if (dx > 0) {
+            // Moving Right -> Flip to face Right
+            this.sprite.scale.x = -this.baseScale;
+        } else if (dx < 0) {
+            // Moving Left -> Reset to face Left
+            this.sprite.scale.x = this.baseScale;
+        }
     }
 
     /** ダメージを受ける */

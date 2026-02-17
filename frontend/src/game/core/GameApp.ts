@@ -170,7 +170,7 @@ export class GameApp {
         // Preload Assets
         try {
             await Assets.load([
-                "/assets/images/player.png",
+                "/assets/images/Player_1.png",
                 "/assets/images/basic_enemy.png",
                 "/assets/images/experience.png",
                 "/assets/images/coin.png",
