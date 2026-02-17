@@ -34,12 +34,22 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *entity.User) erro
 
 // UpdateCoin ユーザーのコインを加算または減算します
 func (r *UserRepository) UpdateCoin(ctx context.Context, userID string, amount int) error {
-	_, err := r.db.NewUpdate().
+	res, err := r.db.NewUpdate().
 		Table("users").
 		Set("coin = coin + ?", amount).
 		Where("id = ?", userID).
 		Exec(ctx)
-	return err
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return errors.New("user not found")
+	}
+	return nil
 }
 
 // FindByID IDからユーザーを取得します

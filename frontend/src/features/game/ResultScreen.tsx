@@ -19,19 +19,21 @@ export default function ResultScreen() {
         if (!stats || hasSavedRef.current) return;
 
         const saveCoins = async () => {
-            hasSavedRef.current = true;
             try {
                 if (stats.coins > 0) {
+                    console.log("[ResultScreen] Saving coins:", stats.coins); // DEBUG
                     const response = await api.post('/users/me/coins', { amount: stats.coins });
+                    console.log("[ResultScreen] API Response:", response.data); // DEBUG
                     // Update store with latest coin amount from backend
                     if (response.data && typeof response.data.coin === 'number') {
                         useGameStore.getState().setCoins(response.data.coin);
                         console.log("Coins saved:", response.data.coin);
+                        hasSavedRef.current = true; // Mark as saved only on success
                     }
                 }
             } catch (error) {
                 console.error("Failed to save coins:", error);
-                // Retry logic could be added here if needed
+                // hasSavedRef.current remains false, allowing retry on remount
             }
         };
 
@@ -71,7 +73,10 @@ export default function ResultScreen() {
     return (
         <div className={`w-full h-screen ${bgGradient} text-white flex flex-col items-center justify-center p-8`}>
             <div className="max-w-2xl w-full bg-black/60 backdrop-blur-md rounded-3xl p-8 border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-500">
-                <h1 className={`text-6xl font-black text-center mb-2 ${titleGradient} bg-clip-text text-transparent drop-shadow-[0_2px_10px_${shadowColor}]`}>
+                <h1
+                    className={`text-6xl font-black text-center mb-2 ${titleGradient} bg-clip-text text-transparent`}
+                    style={{ filter: `drop-shadow(0 2px 10px ${shadowColor})` }}
+                >
                     {titleText}
                 </h1>
                 <p className="text-center text-gray-400 mb-12 text-xl font-light tracking-widest">
@@ -113,7 +118,7 @@ export default function ResultScreen() {
 
                 <div className="flex justify-center">
                     <Button
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate("/home")}
                         className="bg-white text-black hover:bg-gray-200 text-xl px-12 py-6 rounded-full font-bold tracking-widest transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                     >
                         <Home className="w-6 h-6 mr-3" />

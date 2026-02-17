@@ -8,6 +8,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const MaxAddCoin = 1000000
+
+
 type UserHandler struct {
 	service *service.UserService
 }
@@ -87,10 +90,18 @@ func (h *UserHandler) AddCoin(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
+	if req.Amount <= 0 || req.Amount > MaxAddCoin {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid amount"})
+	}
+
 	user, err := h.service.AddCoin(c.Request().Context(), userID, req.Amount)
 	if err != nil {
 		log.Printf("AddCoin Error: %v", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+	}
+	if user == nil {
+		log.Printf("AddCoin Error: user not found after update (userID=%s)", userID)
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "user not found"})
 	}
 
 	return c.JSON(http.StatusOK, user)
