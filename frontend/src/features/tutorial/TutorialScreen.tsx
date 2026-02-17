@@ -6,36 +6,43 @@ import { Button } from "@/components/ui/button";
 const TUTORIAL_PAGES = [
     {
         title: "チュートリアルへようこそ！",
+        image: "/assets/images/Trois_3.png",
         description: "ナビゲータマスコットの私と一緒に、このゲームについて\n学びましょう♪",
         hint: "画面をタップして次へ"
     },
     {
         title: "TRI-Survivorとは？",
+        image: "/assets/images/Trois_5.png",
         description: "TRI-Survivorは、押し寄せるモンスターを攻撃して、生存を目指すサバイバー系ゲームだよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "革新的な操作方法",
+        image: "/assets/images/Trois_5.png",
         description: "カメラに指をかざしてね！指を向けた方向へキャラクターを操作できるよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "自動攻撃と必殺技",
+        image: "/assets/images/Trois_6.png",
         description: "通常攻撃は自動で行われるよ！特定のジェスチャーによって強力な必殺技を発動することもできるみたい……！？",
         hint: "画面をタップして次へ"
     },
     {
         title: "成長と報酬",
+        image: "/assets/images/Trois_5.png",
         description: "経験値を稼いで、レベルアップ！集めたコインは「(トロワの)ショップ」で強化に使用することができるよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "スコアシステム",
-        description: "「何秒生き残れたか」があなたのスコアとなるよ。一秒でも長く生き残ろう!333秒生き残れたらクリアだよ!",
+        image: "/assets/images/Trois_5.png",
+        description: "「何秒生き残れたか」があなたのスコアとなるよ。\n一秒でも長く生き残ろう!333秒生き残れたらクリアだよ!",
         hint: "画面をタップして次へ"
     },
     {
         title: "勝利の鍵",
+        image: "/assets/images/Trois_7.png",
         description: "レベルを上げて、最強の装備を整えたら準備はいいかな？\n最後まで生き残りましょうね!",
         hint: ""
     }
@@ -100,24 +107,21 @@ export default function TutorialScreen() {
             {/* --- メインコンテンツ --- */}
             <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 px-6 md:px-16 py-8 relative z-10">
                 
-                {/* ナビゲーターキャラクター: トロワ */}
-                <div className="relative group shrink-0">
-                    {/* 背後の光輪エフェクト（削除済） */}
-                    
-                    {/* キャラクター画像配置用エリア */}
-                    <div className="relative w-48 h-64 md:w-64 md:h-[360px] rounded-3xl border-2 border-dashed border-amber-900/30 bg-white/5 backdrop-blur-[2px] flex flex-col items-center justify-center text-amber-200/30 transition-all hover:border-amber-400/50">
-                        <div className="text-center space-y-2">
-                            <span className="text-2xl font-black tracking-widest block">trois</span>
-                            <span className="text-xs font-bold uppercase tracking-tighter opacity-50">Image Placeholder</span>
-                        </div>
+                {/* ナビゲーターキャラクター: トロワ — 少し右下へオフセット */}
+                <div className="relative group shrink-0 translate-x-12 translate-y-8 md:translate-x-20 md:translate-y-12">
+                    {/* キャラクタースペース */}
+                    <div className="relative w-56 h-72 md:w-72 md:h-[450px] flex items-center justify-center">
+                        <img 
+                            src={TUTORIAL_PAGES[currentPage].image} 
+                            alt="Trois" 
+                            className="w-full h-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] animate-[float-breathing_5s_ease-in-out_infinite] scale-[1.75] origin-bottom translate-y-64 md:translate-y-80"
+                        />
                         
-                            {/* キャラクター名バッジ */}
-                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 wood-panel px-6 py-2 rounded-full font-black text-sm text-amber-100 shadow-xl border-2 border-[#2d1b18]">
-                                トロワ
-                            </div>
+                        {/* キャラクター名バッジ — 吹き出しの邪魔にならないよう足元（左側、大幅に下）に配置 */}
+                        <div className="absolute -bottom-36 left-0 wood-panel px-6 py-2 rounded-full font-black text-sm text-amber-100 shadow-xl border-2 border-[#2d1b18] z-20">
+                            トロワ
+                        </div>
                     </div>
-                    
-                        {/* decorative ornament removed per request */}
                 </div>
 
                 {/* 説明文エリア — 実物の羊皮紙に見えるリアルなパネル */}
