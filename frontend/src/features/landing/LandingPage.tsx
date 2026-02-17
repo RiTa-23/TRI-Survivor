@@ -44,7 +44,7 @@ export default function LandingPage() {
                     <div className="absolute -top-20 -left-20 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full pointer-events-none mix-blend-screen" />
                     
                     <h1 className="font-black tracking-tighter drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] leading-none flex flex-col md:block">
-                        <span className="text-4xl md:text-6xl lg:text-7xl fantasy-title text-transparent bg-clip-text bg-gradient-to-br from-red-500 via-red-600 to-red-950 filter drop-shadow-[0_2px_4px_rgba(255,0,0,0.3)] block md:inline-block md:mr-4">
+                        <span className="text-4xl md:text-6xl lg:text-7xl fantasy-title text-transparent bg-clip-text bg-gradient-to-br from-red-400 via-red-600 to-red-800 filter drop-shadow-[0_0_10px_rgba(255,100,100,0.5)] block md:inline-block md:mr-4 brightness-125">
                             TRI-
                         </span>
                         <br className="hidden md:block" />
@@ -91,7 +91,7 @@ export default function LandingPage() {
                          {/* Aura */}
                          <div className="character-aura w-[150%] h-[150%] bg-purple-900/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                          {/* Image */}
-                         <img src="/assets/images/basic_enemy.png" 
+                         <img src="/assets/images/enemy_1.png" 
                              className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] filter brightness-90 saturate-120 animate-[float-breathing_6s_ease-in-out_infinite]"
                              style={{ animationDelay: '1s' }}
                              alt="Enemy"
@@ -99,11 +99,11 @@ export default function LandingPage() {
                     </div>
 
                     {/* VS Effect (中央) */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 vs-container scale-100 md:scale-125 pointer-events-none flex items-center justify-center">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 vs-container scale-75 md:scale-150 pointer-events-none flex items-center justify-center">
                          {/* 雷エフェクト風の装飾線 */}
                          <div className="absolute w-[120%] h-[2px] bg-red-500/50 rotate-45 blur-[1px]" />
                          <div className="absolute w-[120%] h-[2px] bg-red-500/50 -rotate-45 blur-[1px]" />
-                         <span className="text-7xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-500 via-red-600 to-red-900 drop-shadow-[0_0_30px_rgba(255,0,0,0.8)] font-serif italic pr-4 relative z-10">
+                         <span className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-500 via-red-600 to-red-900 drop-shadow-[0_0_30px_rgba(255,0,0,0.8)] font-serif italic pr-4 relative z-10">
                             VS
                          </span>
                     </div>
@@ -113,7 +113,7 @@ export default function LandingPage() {
                          {/* Aura */}
                          <div className="character-aura w-[150%] h-[150%] bg-blue-900/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                          {/* Image */}
-                         <img src="/assets/images/player.png" 
+                         <img src="/assets/images/Player_1.png" 
                              className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] transform -scale-x-100 filter brightness-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] animate-[float-breathing_5s_ease-in-out_infinite]"
                              alt="Hero"
                         />
