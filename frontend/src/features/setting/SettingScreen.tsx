@@ -1,19 +1,16 @@
 // src/features/setting/SettingScreen.tsx
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Camera,
-  Volume1,
   Volume2,
   VolumeX,
-  ArrowLeft,
   CheckCircle2,
   AlertCircle,
   Save,
   User as UserIcon,
   Music,
-  Speaker,
   Home
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -70,8 +67,9 @@ export default function SettingScreen() {
 
   // 保存処理
   const handleSave = () => {
-    // 1. 空白チェック
-    if (!user.displayName.trim()) {
+    // 1. 空白チェック (トリミングしてから)
+    const trimmedDisplayName = user.displayName.trim();
+    if (!trimmedDisplayName) {
       setToastType("error");
       setToastMessage("名前を入力してください");
       setShowToast(true);
@@ -79,9 +77,14 @@ export default function SettingScreen() {
       return;
     }
 
+    // トリムした値でステートを更新
+    // (非同期更新なので、直後のlocalStorage保存にはこの変数を使用する)
+    const updatedUser = { ...user, displayName: trimmedDisplayName };
+    setUser(updatedUser);
+
     try {
       // 2. 永続化 (localStorage)
-      const settings = { user, bgmVolume, seVolume };
+      const settings = { user: updatedUser, bgmVolume, seVolume };
       localStorage.setItem("app_settings", JSON.stringify(settings));
 
       // 3. 成功トースト表示
@@ -134,8 +137,8 @@ export default function SettingScreen() {
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -50, x: "-50%" }}
             className={`fixed top-24 left-1/2 z-[100] flex items-center gap-3 px-6 py-3 rounded-xl shadow-lg border-2 backdrop-blur-sm wood-panel ${toastType === "error"
-                ? "border-red-800 text-red-200 bg-red-950/80"
-                : "border-green-800 text-green-100 bg-green-950/80"
+              ? "border-red-800 text-red-200 bg-red-950/80"
+              : "border-green-800 text-green-100 bg-green-950/80"
               }`}
           >
             {toastType === "error" ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
