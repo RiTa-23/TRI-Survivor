@@ -22,13 +22,10 @@ export default function ResultScreen() {
             hasSavedRef.current = true; // Prevent concurrent calls immediately
             try {
                 if (stats.coins > 0) {
-                    console.log("[ResultScreen] Saving coins:", stats.coins); // DEBUG
                     const response = await api.post('/users/me/coins', { amount: stats.coins });
-                    console.log("[ResultScreen] API Response:", response.data); // DEBUG
                     // Update store with latest coin amount from backend
                     if (response.data && typeof response.data.coin === 'number') {
                         useGameStore.getState().setCoins(response.data.coin);
-                        console.log("Coins saved:", response.data.coin);
                     }
                 }
             } catch (error) {
