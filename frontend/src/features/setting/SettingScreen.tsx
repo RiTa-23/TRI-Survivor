@@ -25,26 +25,32 @@ export default function SettingScreen() {
 
   // --- 状態管理 ---
   // 設定を復元するための初期化ロジック
-  const [user, setUser] = useState(() => {
+  // --- 状態管理 ---
+  // 設定を復元するための初期化ロジック
+  const [user, setUser] = useState({ id: "Gamer_01", avatarUrl: "", displayName: "Player" });
+  const [bgmVolume, setBgmVolume] = useState([75]);
+  const [seVolume, setSeVolume] = useState([50]);
+  const [isSaved, setIsSaved] = useState(false);
+
+  // マウント時にlocalStorageから設定を読み込む
+  useEffect(() => {
     const saved = localStorage.getItem("app_settings");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      return parsed.user || { id: "Gamer_01", avatarUrl: "", displayName: "Player" };
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed) {
+          if (parsed.user) setUser(parsed.user);
+          if (parsed.bgmVolume) setBgmVolume(parsed.bgmVolume);
+          if (parsed.seVolume) setSeVolume(parsed.seVolume);
+          // isSavedは読み込み直後はfalseのままでよい（変更がないため）
+        }
+      } catch (e) {
+        console.error("Failed to load settings:", e);
+      }
     }
-    return { id: "Gamer_01", avatarUrl: "", displayName: "Player" };
-  });
+  }, []);
 
-  const [bgmVolume, setBgmVolume] = useState(() => {
-    const saved = localStorage.getItem("app_settings");
-    return saved ? JSON.parse(saved).bgmVolume || [75] : [75];
-  });
 
-  const [seVolume, setSeVolume] = useState(() => {
-    const saved = localStorage.getItem("app_settings");
-    return saved ? JSON.parse(saved).seVolume || [50] : [50];
-  });
-
-  const [isSaved, setIsSaved] = useState(false);
 
   // トースト管理
   const [showToast, setShowToast] = useState(false);
