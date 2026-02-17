@@ -37,3 +37,11 @@ func (s *UserService) SyncUser(ctx context.Context, id, email, name, avatarURL s
 func (s *UserService) GetUser(ctx context.Context, id string) (*entity.User, error) {
 	return s.repo.FindByID(ctx, id)
 }
+
+// AddCoin ユーザーにコインを追加する
+func (s *UserService) AddCoin(ctx context.Context, id string, amount int) (*entity.User, error) {
+	if err := s.repo.UpdateCoin(ctx, id, amount); err != nil {
+		return nil, err
+	}
+	return s.GetUser(ctx, id)
+}

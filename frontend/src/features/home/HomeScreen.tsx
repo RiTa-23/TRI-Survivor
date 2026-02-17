@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/gameStore";
@@ -9,6 +10,18 @@ export default function HomeScreen() {
     const navigate = useNavigate();
     const { user, signOut } = useAuthStore();
     const { coins } = useGameStore();
+
+    // パーティクルデータを初回のみ生成（再レンダリング時のちらつき防止）
+    const particles = useMemo(() => 
+        Array.from({ length: 6 }, (_, i) => ({
+            width: Math.random() * 100 + 50,
+            height: Math.random() * 100 + 50,
+            top: Math.random() * 100,
+            left: Math.random() * 100,
+            delay: i * 0.5,
+            opacity: Math.random() * 0.2,
+        })),
+    []);
 
     const handleLogout = async () => {
         try {
@@ -21,95 +34,127 @@ export default function HomeScreen() {
     };
 
     return (
-        <div className="relative min-h-screen w-full bg-[#020617] text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-            {/* Background Effect (Matching LandingPage style but more robust) */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-from),_var(--tw-gradient-to))] from-slate-900 to-[#020617] z-0" />
+        <div className="relative min-h-screen w-full forest-bg text-white overflow-hidden flex flex-col">
             
-            {/* --- HUD Headerパーツ (左上: プロフィール) --- */}
-            <div className="absolute top-6 left-6 flex items-center gap-3 glass-morphism px-4 py-2 rounded-xl z-20">
-                <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center p-1 overflow-hidden shadow-inner">
-                    <UserIcon className="text-slate-400 w-5 h-5" />
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-xs font-bold text-slate-300">Logged in as</span>
-                    <span className="text-sm font-black text-white tracking-wide">
-                        {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Player"}
-                    </span>
-                </div>
-            </div>
-
-            {/* --- HUD Headerパーツ (右上: 通貨 & 設定) --- */}
-            <div className="absolute top-6 right-6 flex items-center gap-4 z-20">
-                <div className="flex items-center gap-2 glass-morphism px-4 py-2 rounded-full shadow-inner">
-                    <Coins className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
-                    <span className="text-sm font-mono font-black tracking-widest text-yellow-50">{coins.toLocaleString()}</span>
+            {/* --- 上部メニューバー (木製パネル) --- */}
+            <div className="h-20 w-full wood-panel z-30 flex items-center justify-between px-8 border-t-0 border-x-0">
+                {/* ログイン中ユーザー (左) */}
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#1b110e] border-2 border-[#5d4037] flex items-center justify-center shadow-inner overflow-hidden">
+                        <UserIcon className="text-amber-200/50 w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-amber-100/60 uppercase tracking-widest leading-tight">Adventurer</span>
+                        <span className="text-sm font-black text-amber-50 drop-shadow-sm">
+                            {user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Player"}
+                        </span>
+                    </div>
                 </div>
 
-                <Button asChild variant="ghost" className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all">
-                    <Link to="/setting">
-                        <Settings className="w-7 h-7" />
-                    </Link>
-                </Button>
-            </div>
+                {/* コインと設定 (右) */}
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 bg-black/40 px-4 py-1.5 rounded-full border border-amber-900/30">
+                        <Coins className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+                        <span className="text-sm font-mono font-black tracking-widest text-yellow-100">{coins.toLocaleString()}</span>
+                    </div>
 
-            {/* --- センターエリア --- */}
-            <div className="relative z-10 flex flex-col items-center justify-center pointer-events-none">
-                
-                {/* ランク/役割表示 */}
-                <div className="mt-4 px-6 py-1 bg-blue-500/20 rounded-full border border-blue-500/30 backdrop-blur-md">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-300">Legendary Survivor</span>
-                </div>
-            </div>
-
-            {/* --- バトル開始ボタン (右下) --- */}
-            <div className="absolute bottom-10 right-10 z-20">
-                <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                >
-                    <Button asChild className="px-16 py-10 text-2xl font-black bg-red-600 text-white hover:bg-red-500 rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.4)] border-2 border-red-400/30 glow-red transition-all">
-                        <Link to="/game" className="tracking-[0.2em] flex items-center gap-3">
-                            <span>BATTLE START</span>
+                    <Button asChild variant="ghost" className="p-2 text-amber-200/70 hover:text-white hover:bg-white/5 rounded-full transition-all">
+                        <Link to="/setting">
+                            <Settings className="w-6 h-6" />
                         </Link>
                     </Button>
-                </motion.div>
+                </div>
             </div>
 
-            {/* --- サブメニュー (左中央) --- */}
-            <div className="absolute left-8 top-1/2 -translate-y-1/2 flex flex-col gap-6 z-20">
-                <SideMenuButton to="/shop" icon={<ShoppingBag className="w-5 h-5 text-blue-400" />} label="ショップ" />
-                <SideMenuButton to="/tutorial" icon={<BookOpen className="w-5 h-5 text-emerald-400" />} label="チュートリアル" />
-            </div>
+            <div className="flex flex-1 relative">
+                {/* --- 左側メニューバー (木製パネル) --- */}
+                <div className="w-24 md:w-28 wood-panel z-20 flex flex-col items-center py-10 gap-8 border-l-0 border-y-0">
+                    <VerticalMenuButton to="/shop" icon={<ShoppingBag className="w-6 h-6" />} label="SHOP" color="text-blue-400" />
+                    <VerticalMenuButton to="/tutorial" icon={<BookOpen className="w-6 h-6" />} label="TUTORIAL" color="text-amber-400" />
+                    
+                    <div className="mt-auto mb-4">
+                        <Button
+                            onClick={handleLogout}
+                            variant="ghost"
+                            className="flex flex-col items-center gap-1 text-amber-200/50 hover:text-red-400 hover:bg-red-400/5 transition-colors group p-2"
+                        >
+                            <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                            <span className="font-black uppercase tracking-tighter text-[9px]">LOG OUT</span>
+                        </Button>
+                    </div>
+                </div>
 
-            {/* --- ログアウトエリア (左下) --- */}
-            <div className="absolute left-10 bottom-10 z-20">
-                <Button
-                    onClick={handleLogout}
-                    variant="ghost"
-                    className="px-4 py-2 flex items-center gap-2 text-slate-500 hover:text-red-400 hover:bg-red-400/5 transition-colors group"
-                >
-                    <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    <span className="font-black uppercase tracking-widest text-[10px]">Logout</span>
-                </Button>
+                {/* --- 中央: キャラクター表示エリア --- */}
+                <div className="flex-1 relative flex items-center justify-center">
+                    <div className="relative z-10 flex flex-col items-center -mt-20">
+                        {/* キャラクター画像本体 */}
+                        <motion.div 
+                            className="relative group"
+                            animate={{ y: [0, -10, 0] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            {/* 足元の影 */}
+                            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-40 h-10 bg-black/30 blur-xl rounded-full scale-x-110" />
+                            
+                            {/* キャラクター画像 */}
+                            <div className="relative w-48 h-60 md:w-64 md:h-[320px] flex items-center justify-center">
+                                <img 
+                                    src="/assets/images/player.png" 
+                                    alt="Player Character" 
+                                    className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]"
+                                />
+                            </div>
+                        </motion.div>
+                    </div>
+
+                    {/* --- 背景の装飾粒子 --- */}
+                    <div className="absolute inset-0 pointer-events-none opacity-30">
+                        {particles.map((p, i) => (
+                            <div 
+                                key={i}
+                                className="absolute bg-white rounded-full blur-xl animate-pulse"
+                                style={{
+                                    width: p.width + 'px',
+                                    height: p.height + 'px',
+                                    top: p.top + '%',
+                                    left: p.left + '%',
+                                    animationDelay: p.delay + 's',
+                                    opacity: p.opacity
+                                }}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* --- 右下: バトル開始ボタン --- */}
+                <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 z-30">
+                    <motion.div
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <Button asChild className="px-8 py-8 md:px-12 md:py-12 text-xl md:text-2xl font-black btn-fantasy-red rounded-3xl group">
+                            <Link to="/game" className="tracking-[0.25em] flex flex-col items-center leading-tight">
+                                <span className="flex items-center gap-2">
+                                    BATTLE START
+                                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                                </span>
+                            </Link>
+                        </Button>
+                    </motion.div>
+                </div>
             </div>
         </div>
     );
 }
 
-function SideMenuButton({ to, icon, label }: { to: string, icon: React.ReactNode, label: string }) {
+function VerticalMenuButton({ to, icon, label, color }: { to: string, icon: React.ReactNode, label: string, color: string }) {
     return (
-        <motion.div whileHover={{ x: 10 }}>
-            <Link to={to}>
-                <Button variant="ghost" className="w-48 justify-start gap-4 h-16 glass-morphism border-slate-700/50 hover:border-slate-400 hover:bg-white/5 transition-all group overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    <div className="relative flex items-center w-full gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center">
-                            {icon}
-                        </div>
-                        <span className="text-sm font-black tracking-wider text-slate-200">{label}</span>
-                        <ChevronRight className="ml-auto w-4 h-4 text-slate-600 group-hover:text-white transition-colors" />
-                    </div>
-                </Button>
+        <motion.div whileHover={{ y: -5 }}>
+            <Link to={to} className="flex flex-col items-center gap-2 group">
+                <div className={`w-14 h-14 rounded-2xl bg-[#1b110e] border-2 border-[#5d4037] flex items-center justify-center shadow-lg group-hover:border-white/40 group-hover:bg-[#2d1b18] transition-all ${color}`}>
+                    {icon}
+                </div>
+                <span className="text-[10px] font-black text-amber-100/50 tracking-widest group-hover:text-amber-100 transition-colors">{label}</span>
             </Link>
         </motion.div>
     );

@@ -134,8 +134,8 @@ export default function SettingScreen() {
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -50, x: "-50%" }}
             className={`fixed top-24 left-1/2 z-[100] flex items-center gap-3 px-6 py-3 rounded-xl shadow-lg border-2 backdrop-blur-sm wood-panel ${toastType === "error"
-              ? "border-red-800 text-red-200 bg-red-950/80"
-              : "border-green-800 text-green-100 bg-green-950/80"
+                ? "border-red-800 text-red-200 bg-red-950/80"
+                : "border-green-800 text-green-100 bg-green-950/80"
               }`}
           >
             {toastType === "error" ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
