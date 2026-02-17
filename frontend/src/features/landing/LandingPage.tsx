@@ -69,8 +69,12 @@ export default function LandingPage() {
 
                 {/* GAME START ボタン */}
                 <div className="motion-safe:animate-pulse w-full md:w-auto">
-                    <Button asChild className="w-full md:w-auto px-12 py-8 md:px-16 md:py-10 text-3xl md:text-4xl font-black btn-fantasy-red rounded-xl shadow-[0_0_40px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border-4 border-amber-200/80">
-                        <Link to="/auth">GAME START</Link>
+                    <Button asChild className="w-full md:w-auto px-12 py-8 md:px-16 md:py-10 text-3xl md:text-4xl font-black btn-fantasy-red rounded-xl shadow-[0_0_40px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border-4 border-amber-200/80 group">
+                        <Link to="/auth" className="flex items-center justify-center">
+                            <span className="font-serif tracking-[0.15em] text-white drop-shadow-[0_4px_2px_rgba(0,0,0,0.8)]">
+                                GAME START
+                            </span>
+                        </Link>
                     </Button>
                 </div>
             </div>
