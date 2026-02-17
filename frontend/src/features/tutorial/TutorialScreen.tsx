@@ -7,43 +7,43 @@ const TUTORIAL_PAGES = [
     {
         title: "チュートリアルへようこそ！",
         image: "/assets/images/Trois_3.png",
-        description: "ナビゲータマスコットの私と一緒に、このゲームについて\n学びましょう♪",
+        description: "ナビゲータマスコットの私と一緒に、\nこのゲームについて学びましょう♪",
         hint: "画面をタップして次へ"
     },
     {
         title: "TRI-Survivorとは？",
         image: "/assets/images/Trois_5.png",
-        description: "TRI-Survivorは、押し寄せるモンスターを攻撃して、生存を目指すサバイバー系ゲームだよ。",
+        description: "TRI-Survivorは、押し寄せるモンスターを攻撃して、\n生存を目指すサバイバー系ゲームだよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "革新的な操作方法",
         image: "/assets/images/Trois_5.png",
-        description: "カメラに指をかざしてね！指を向けた方向へキャラクターを操作できるよ。",
+        description: "カメラに指をかざしてね！\n指を向けた方向へキャラクターを操作できるよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "自動攻撃と必殺技",
         image: "/assets/images/Trois_6.png",
-        description: "通常攻撃は自動で行われるよ！特定のジェスチャーによって強力な必殺技を発動することもできるみたい……！？",
+        description: "通常攻撃は自動で行われるよ！ 特定のジェスチャーによって強力な必殺技を発動することもできるみたい……！？",
         hint: "画面をタップして次へ"
     },
     {
         title: "成長と報酬",
         image: "/assets/images/Trois_5.png",
-        description: "経験値を稼いで、レベルアップ！集めたコインは「(トロワの)ショップ」で強化に使用することができるよ。",
+        description: "経験値を稼いで、レベルアップ！ 集めたコインは\n「トロワのショップ」で強化に使用することができるよ。",
         hint: "画面をタップして次へ"
     },
     {
         title: "スコアシステム",
-        image: "/assets/images/Trois_5.png",
-        description: "「何秒生き残れたか」があなたのスコアとなるよ。\n一秒でも長く生き残ろう!333秒生き残れたらクリアだよ!",
+        image: "/assets/images/Trois_3.png",
+        description: "「何秒生き残れたか」があなたのスコアとなるよ。\n一秒でも長く生き残ろう！ 333秒生き残れたらクリアだよ!",
         hint: "画面をタップして次へ"
     },
     {
         title: "勝利の鍵",
         image: "/assets/images/Trois_7.png",
-        description: "レベルを上げて、最強の装備を整えたら準備はいいかな？\n最後まで生き残りましょうね!",
+        description: "レベルを上げて、最強の装備を整えたら準備はいいかな？\n最後まで生き残りましょうね！",
         hint: ""
     }
 ];
@@ -158,9 +158,9 @@ export default function TutorialScreen() {
             </div>
 
             {/* --- ナビゲーションエリア --- */}
-            <div className="flex items-center justify-between w-full max-w-4xl mx-auto px-8 pb-4 z-10">
+            <div className="flex items-center justify-between w-full max-w-2xl mx-auto px-8 pb-10 z-10">
                 {/* 左側: 戻る案内 */}
-                <div className="w-40 flex justify-start">
+                <div className="w-32 flex justify-center">
                     {!isFirstPage && (
                         <div 
                             className="flex flex-col items-center gap-2 text-amber-300 hover:text-white transition-all px-4 py-2 group/back"
@@ -173,7 +173,7 @@ export default function TutorialScreen() {
                 </div>
 
                 {/* 右側: 次へ案内 */}
-                <div className="w-40 flex justify-end">
+                <div className="w-32 flex justify-center">
                     {!isLastPage && (
                         <div className="flex flex-col items-center gap-2 text-amber-300 hover:text-white transition-all px-4 py-2 pointer-events-auto group/next">
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] whitespace-nowrap">TAP TO NEXT</span>
@@ -185,7 +185,7 @@ export default function TutorialScreen() {
 
             {/* ヒントメッセージ (画面最下部) */}
             {!isLastPage && (
-                <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 text-amber-200 text-xs font-black tracking-[0.4em] uppercase z-10">
+                <div className="absolute bottom-10 md:bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-4 text-amber-200 text-xs font-black tracking-[0.4em] uppercase z-10">
                     <div className="h-px w-8 bg-gradient-to-r from-transparent to-amber-400/30" />
                     <span>{TUTORIAL_PAGES[currentPage].hint}</span>
                     <div className="h-px w-8 bg-gradient-to-l from-transparent to-amber-400/30" />
