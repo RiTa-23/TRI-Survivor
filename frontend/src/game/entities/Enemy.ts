@@ -68,6 +68,8 @@ export abstract class Enemy extends Container {
     public isFrozen: boolean = false;
     private damageEffects: DamageEffect[] = [];
 
+    protected baseScale: number = 1;
+
     constructor(config: EnemyConfig) {
         super();
         // ... (snip) ...
@@ -91,7 +93,8 @@ export abstract class Enemy extends Container {
         const texHeight = Math.max(1, this.sprite.texture.height);
         const scale = (this._radius * 2) / Math.max(texWidth, texHeight);
 
-        this.sprite.scale.set(scale);
+        this.baseScale = scale;
+        this.sprite.scale.set(this.baseScale);
 
         // this.sprite.tint = config.color; 
 
@@ -139,6 +142,16 @@ export abstract class Enemy extends Container {
             const moveY = (dy / distance) * this._speed * dt;
             this.x += moveX;
             this.y += moveY;
+
+            // Flip sprite based on direction
+            // Assuming enemy_1.png faces Left by default
+            if (dx > 0) {
+                // Moving Right -> Flip to face Right
+                this.sprite.scale.x = -this.baseScale;
+            } else if (dx < 0) {
+                // Moving Left -> Reset to face Left
+                this.sprite.scale.x = this.baseScale;
+            }
         }
     }
 

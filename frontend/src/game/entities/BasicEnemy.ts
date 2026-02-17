@@ -13,7 +13,7 @@ export class BasicEnemy extends Enemy {
             speed: 50, // px/sec
             attackPower: 10,
             color: 0x9b59b6,
-            textureKey: "/assets/images/basic_enemy.png",
+            textureKey: "/assets/images/enemy_1.png",
             radius: 40,
             dropTable: {
                 exp: { min: 1, max: 3, chance: 1.0 },
