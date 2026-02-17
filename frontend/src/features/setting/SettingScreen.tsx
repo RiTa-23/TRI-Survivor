@@ -1,6 +1,6 @@
 // src/features/setting/SettingScreen.tsx
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Camera,
@@ -50,6 +50,31 @@ export default function SettingScreen() {
   const [showToast, setShowToast] = useState(false);
   const [toastType, setToastType] = useState<"success" | "error">("success");
   const [toastMessage, setToastMessage] = useState("");
+  const toastTimerRef = useRef<number | null>(null);
+
+  // トースト表示ヘルパー
+  const showToastNotification = (message: string, type: "success" | "error") => {
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+
+    toastTimerRef.current = window.setTimeout(() => {
+      setShowToast(false);
+      toastTimerRef.current = null;
+    }, 3000);
+  };
+
+  // アンマウント時のクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   // --- テーマ定義 (ファンタジー風) ---
   const theme = {
@@ -70,10 +95,7 @@ export default function SettingScreen() {
     // 1. 空白チェック (トリミングしてから)
     const trimmedDisplayName = user.displayName.trim();
     if (!trimmedDisplayName) {
-      setToastType("error");
-      setToastMessage("名前を入力してください");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      showToastNotification("名前を入力してください", "error");
       return;
     }
 
@@ -88,16 +110,10 @@ export default function SettingScreen() {
       localStorage.setItem("app_settings", JSON.stringify(settings));
 
       // 3. 成功トースト表示
-      setToastType("success");
-      setToastMessage("設定を保存しました");
       setIsSaved(true);
-      setShowToast(true);
+      showToastNotification("設定を保存しました", "success");
     } catch (e) {
-      setToastType("error");
-      setToastMessage("保存中にエラーが発生しました");
-      setShowToast(true);
-    } finally {
-      setTimeout(() => setShowToast(false), 3000);
+      showToastNotification("保存中にエラーが発生しました", "error");
     }
   };
 
