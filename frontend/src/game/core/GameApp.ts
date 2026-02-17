@@ -172,6 +172,7 @@ export class GameApp {
             width: this.app.screen.width,
             height: this.app.screen.height,
         });
+        this.tilingBg.tint = 0x88AA88; // Slightly darken the background
 
         if (!this.isDestroyed) {
             this.app.stage.addChild(this.tilingBg);
