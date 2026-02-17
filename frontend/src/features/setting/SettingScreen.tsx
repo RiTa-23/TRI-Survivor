@@ -39,10 +39,15 @@ export default function SettingScreen() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed) {
-          if (parsed.user) setUser(parsed.user);
-          if (parsed.bgmVolume) setBgmVolume(parsed.bgmVolume);
-          if (parsed.seVolume) setSeVolume(parsed.seVolume);
-          // isSavedは読み込み直後はfalseのままでよい（変更がないため）
+          if (parsed.user) {
+            setUser((prev) => ({ ...prev, ...parsed.user }));
+          }
+          if (Array.isArray(parsed.bgmVolume)) {
+            setBgmVolume(parsed.bgmVolume);
+          }
+          if (Array.isArray(parsed.seVolume)) {
+            setSeVolume(parsed.seVolume);
+          }
         }
       } catch (e) {
         console.error("Failed to load settings:", e);
