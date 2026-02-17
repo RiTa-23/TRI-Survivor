@@ -19,6 +19,7 @@ export default function ResultScreen() {
         if (!stats || hasSavedRef.current) return;
 
         const saveCoins = async () => {
+            hasSavedRef.current = true; // Prevent concurrent calls immediately
             try {
                 if (stats.coins > 0) {
                     console.log("[ResultScreen] Saving coins:", stats.coins); // DEBUG
@@ -28,12 +29,11 @@ export default function ResultScreen() {
                     if (response.data && typeof response.data.coin === 'number') {
                         useGameStore.getState().setCoins(response.data.coin);
                         console.log("Coins saved:", response.data.coin);
-                        hasSavedRef.current = true; // Mark as saved only on success
                     }
                 }
             } catch (error) {
                 console.error("Failed to save coins:", error);
-                // hasSavedRef.current remains false, allowing retry on remount
+                hasSavedRef.current = false; // Allow retry on failure
             }
         };
 
