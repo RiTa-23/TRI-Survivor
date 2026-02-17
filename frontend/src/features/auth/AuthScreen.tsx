@@ -47,8 +47,8 @@ export default function AuthScreen() {
 
             {/* タイトル＆サブタイトル（カードの外へ移動） */}
             <div className="relative z-20 text-center mb-8">
-                <h2 className="text-4xl md:text-5xl font-black fantasy-title mb-2 tracking-tight text-amber-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">冒険の記録</h2>
-                <p className="text-amber-50/80 font-serif drop-shadow-md">ログインして冒険の旅を続けよう</p>
+                <h2 className="text-4xl md:text-5xl font-black fantasy-title mb-2 tracking-tight text-amber-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">戦いの記録</h2>
+                <p className="text-amber-50/80 font-serif drop-shadow-md">ログインして再び戦場へ</p>
             </div>
 
             <div className="w-full max-w-md parchment-realistic p-10 relative z-10 shadow-2xl transform rotate-1">
@@ -59,23 +59,23 @@ export default function AuthScreen() {
                 <div className="ink-bleed one" aria-hidden />
                 <div className="inner-band" />
 
-                <div className="relative z-10 content text-center space-y-8 flex flex-col justify-end min-h-[300px]">
+                <div className="relative z-10 content text-center space-y-6 flex flex-col items-center justify-center min-h-[280px]">
                     
-                    {/* イラストエリア（アイコンで代用） */}
-                    <div className="absolute top-0 left-0 w-full h-[60%] flex items-center justify-center opacity-70 pointer-events-none">
+                    {/* イラストエリア（フローに乗せて重なりを防止） */}
+                    <div className="flex items-center justify-center pointer-events-none">
                          <div className="relative">
-                            <GiOpenBook className="w-32 h-32 text-amber-900/40" />
-                            <GiFeather className="w-16 h-16 text-amber-800/60 absolute -bottom-2 -right-4 transform -rotate-12 drop-shadow-sm" />
+                            <GiOpenBook className="w-32 h-32 text-[#a68d6d] opacity-100" />
+                            <GiFeather className="w-16 h-16 text-[#5d4a37] absolute -bottom-2 -right-4 transform -rotate-12 drop-shadow-sm opacity-100" />
                          </div>
                     </div>
 
                     {error && (
-                        <div className="p-4 bg-red-900/10 border border-red-900/20 rounded-lg text-red-700 text-sm font-bold">
+                        <div className="w-full p-4 bg-red-900/10 border border-red-900/20 rounded-lg text-red-700 text-sm font-bold">
                             {error}
                         </div>
                     )}
 
-                    <div className="space-y-4 pt-4">
+                    <div className="w-full space-y-4">
                         <Button
                             onClick={handleGoogleLogin}
                             disabled={isLoading}
@@ -94,7 +94,6 @@ export default function AuthScreen() {
                             )}
                         </Button>
                     </div>
-                    
                 </div>
             </div>
         </div>
