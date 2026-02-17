@@ -172,7 +172,9 @@ export class GameApp {
             await Assets.load([
                 "/assets/images/Player_1.png",
                 "/assets/images/enemy_1.png",
-                "/assets/images/experience.png",
+                "/assets/images/EXP_1.png",
+                "/assets/images/EXP_2.png",
+                "/assets/images/EXP_3.png",
                 "/assets/images/coin.png",
                 "/assets/images/potion.png",
                 "/assets/images/damage.png",

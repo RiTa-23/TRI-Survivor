@@ -217,11 +217,37 @@ export abstract class Enemy extends Container {
 
         // 経験値
         if (Math.random() < this._dropTable.exp.chance) {
-            const count = this._dropTable.exp.min + Math.floor(Math.random() * (this._dropTable.exp.max - this._dropTable.exp.min + 1));
-            for (let i = 0; i < count; i++) {
-                const orb = new ExperienceOrb();
+            // Calculate TOTAL experience value first
+            // Note: The drop table defines 'min' and 'max' count of default orbs (implies total value range)
+            // We interpret min/max as the Total Experience Value range for this enemy.
+            const totalExp = this._dropTable.exp.min + Math.floor(Math.random() * (this._dropTable.exp.max - this._dropTable.exp.min + 1));
+
+            let remainingExp = totalExp;
+
+            // Greedy split: 10 -> 5 -> 1
+
+            // EXP_3 (10)
+            while (remainingExp >= 10) {
+                const orb = new ExperienceOrb(10);
                 randomizePos(orb);
                 items.push(orb);
+                remainingExp -= 10;
+            }
+
+            // EXP_2 (5)
+            while (remainingExp >= 5) {
+                const orb = new ExperienceOrb(5);
+                randomizePos(orb);
+                items.push(orb);
+                remainingExp -= 5;
+            }
+
+            // EXP_1 (1)
+            while (remainingExp > 0) {
+                const orb = new ExperienceOrb(1);
+                randomizePos(orb);
+                items.push(orb);
+                remainingExp -= 1;
             }
         }
 
