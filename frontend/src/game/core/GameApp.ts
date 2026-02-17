@@ -174,7 +174,7 @@ export class GameApp {
                 "/assets/images/basic_enemy.png",
                 "/assets/images/experience.png",
                 "/assets/images/coin.png",
-                "/assets/images/heal.png",
+                "/assets/images/potion.png",
                 "/assets/images/damage.png",
                 "/assets/images/skills/gun.png",
                 "/assets/images/skills/sword.png",
