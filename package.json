@@ -10,6 +10,7 @@
         "npm-run-all": "^4.1.5"
     },
     "dependencies": {
-        "@mediapipe/tasks-vision": "^0.10.32"
+        "@mediapipe/tasks-vision": "^0.10.32",
+        "use-sound": "^5.0.0"
     }
 }
