@@ -14,8 +14,15 @@ export class ExperienceOrb extends Item {
     private _value: number;
 
     constructor(value: number = EXP_VALUE) {
+        let textureKey = "/assets/images/EXP_1.png";
+        if (value >= 10) {
+            textureKey = "/assets/images/EXP_3.png";
+        } else if (value >= 5) {
+            textureKey = "/assets/images/EXP_2.png";
+        }
+
         super({
-            textureKey: "/assets/images/experience.png",
+            textureKey: textureKey,
         });
         this._value = value;
     }

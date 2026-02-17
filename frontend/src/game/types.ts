@@ -105,7 +105,7 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
         name: "回復",
         description: "HPを 30 回復します",
         maxLevel: 999,
-        icon: "/assets/images/heal.png",
+        icon: "/assets/images/potion.png",
         value: 30, // HP restore amount
     },
     [SkillType.GET_COIN]: {

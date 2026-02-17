@@ -13,9 +13,9 @@ import { GunWeapon } from "../weapons/GunWeapon";
 import { SwordWeapon } from "../weapons/SwordWeapon";
 import { SpecialSkillType } from "../types";
 
-/** Grid tile size (one cell) */
-const GRID_SIZE = 80;
-const GRID_LINE_COLOR = 0x0d7fa3;
+/** Grid tile size (one cell) - Deprecated/Unused */
+// const GRID_SIZE = 80;
+// const GRID_LINE_COLOR = 0x0d7fa3;
 const GRID_BG_COLOR = 0x0e8aaa;
 
 /** Enemy spawn settings */
@@ -114,33 +114,7 @@ export class GameApp {
     }
 
     /** Create a single grid cell texture for infinite tiling */
-    private createGridTile(): TilingSprite {
-        const cell = new Graphics();
-
-        // Fill one grid cell
-        cell.rect(0, 0, GRID_SIZE, GRID_SIZE);
-        cell.fill({ color: GRID_BG_COLOR });
-
-        // Draw right and bottom edges (left and top are shared with neighbor)
-        cell.setStrokeStyle({ width: 1, color: GRID_LINE_COLOR });
-        cell.moveTo(GRID_SIZE, 0);
-        cell.lineTo(GRID_SIZE, GRID_SIZE);
-        cell.moveTo(0, GRID_SIZE);
-        cell.lineTo(GRID_SIZE, GRID_SIZE);
-        cell.stroke();
-
-        // Generate a repeatable texture from the cell
-        const texture = this.app.renderer.generateTexture(cell);
-        cell.destroy();
-
-        const tiling = new TilingSprite({
-            texture,
-            width: this.app.screen.width,
-            height: this.app.screen.height,
-        });
-
-        return tiling;
-    }
+    // private createGridTile(): TilingSprite { ... } // Removed
 
     public async init(container: HTMLDivElement) {
         // Initialize PixiJS Application
@@ -170,14 +144,17 @@ export class GameApp {
         // Preload Assets
         try {
             await Assets.load([
-                "/assets/images/player.png",
-                "/assets/images/basic_enemy.png",
-                "/assets/images/experience.png",
+                "/assets/images/Player_1.png",
+                "/assets/images/enemy_1.png",
+                "/assets/images/EXP_1.png",
+                "/assets/images/EXP_2.png",
+                "/assets/images/EXP_3.png",
                 "/assets/images/coin.png",
-                "/assets/images/heal.png",
+                "/assets/images/potion.png",
                 "/assets/images/damage.png",
                 "/assets/images/skills/gun.png",
                 "/assets/images/skills/sword.png",
+                "/assets/images/field_grass.png",
             ]);
         } catch (e) {
             console.error("Failed to load assets:", e);
@@ -188,7 +165,15 @@ export class GameApp {
         if (this.isDestroyed) return;
 
         // Setup infinite tiling background (added to stage directly, not world)
-        this.tilingBg = this.createGridTile();
+        // Use loaded texture
+        const grassTexture = Assets.get("/assets/images/field_grass.png");
+        this.tilingBg = new TilingSprite({
+            texture: grassTexture,
+            width: this.app.screen.width,
+            height: this.app.screen.height,
+        });
+        this.tilingBg.tint = 0x88AA88; // Slightly darken the background
+
         if (!this.isDestroyed) {
             this.app.stage.addChild(this.tilingBg);
         }

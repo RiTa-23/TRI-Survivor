@@ -68,6 +68,8 @@ export abstract class Enemy extends Container {
     public isFrozen: boolean = false;
     private damageEffects: DamageEffect[] = [];
 
+    protected baseScale: number = 1;
+
     constructor(config: EnemyConfig) {
         super();
         // ... (snip) ...
@@ -91,7 +93,8 @@ export abstract class Enemy extends Container {
         const texHeight = Math.max(1, this.sprite.texture.height);
         const scale = (this._radius * 2) / Math.max(texWidth, texHeight);
 
-        this.sprite.scale.set(scale);
+        this.baseScale = scale;
+        this.sprite.scale.set(this.baseScale);
 
         // this.sprite.tint = config.color; 
 
@@ -139,6 +142,16 @@ export abstract class Enemy extends Container {
             const moveY = (dy / distance) * this._speed * dt;
             this.x += moveX;
             this.y += moveY;
+
+            // Flip sprite based on direction
+            // Assuming enemy_1.png faces Left by default
+            if (dx > 0) {
+                // Moving Right -> Flip to face Right
+                this.sprite.scale.x = -this.baseScale;
+            } else if (dx < 0) {
+                // Moving Left -> Reset to face Left
+                this.sprite.scale.x = this.baseScale;
+            }
         }
     }
 
@@ -204,11 +217,37 @@ export abstract class Enemy extends Container {
 
         // 経験値
         if (Math.random() < this._dropTable.exp.chance) {
-            const count = this._dropTable.exp.min + Math.floor(Math.random() * (this._dropTable.exp.max - this._dropTable.exp.min + 1));
-            for (let i = 0; i < count; i++) {
-                const orb = new ExperienceOrb();
+            // Calculate TOTAL experience value first
+            // Note: The drop table defines 'min' and 'max' count of default orbs (implies total value range)
+            // We interpret min/max as the Total Experience Value range for this enemy.
+            const totalExp = this._dropTable.exp.min + Math.floor(Math.random() * (this._dropTable.exp.max - this._dropTable.exp.min + 1));
+
+            let remainingExp = totalExp;
+
+            // Greedy split: 10 -> 5 -> 1
+
+            // EXP_3 (10)
+            while (remainingExp >= 10) {
+                const orb = new ExperienceOrb(10);
                 randomizePos(orb);
                 items.push(orb);
+                remainingExp -= 10;
+            }
+
+            // EXP_2 (5)
+            while (remainingExp >= 5) {
+                const orb = new ExperienceOrb(5);
+                randomizePos(orb);
+                items.push(orb);
+                remainingExp -= 5;
+            }
+
+            // EXP_1 (1)
+            while (remainingExp > 0) {
+                const orb = new ExperienceOrb(1);
+                randomizePos(orb);
+                items.push(orb);
+                remainingExp -= 1;
             }
         }
 

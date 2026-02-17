@@ -16,7 +16,8 @@ export class HealItem extends Item {
 
     constructor(healPercent: number = HEAL_PERCENT) {
         super({
-            textureKey: "/assets/images/heal.png",
+            textureKey: "/assets/images/potion.png",
+            radius: 15,
         });
         this._healPercent = healPercent;
     }
