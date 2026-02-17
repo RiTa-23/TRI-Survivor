@@ -142,8 +142,11 @@ export default function SettingScreen() {
     handleValueChange();
   };
 
-  const adjustVolume = (current: number[], delta: number, setter: React.Dispatch<React.SetStateAction<number[]>>) => {
-    setter([Math.max(0, Math.min(100, current[0] + delta))]);
+  const adjustVolume = (delta: number, setter: React.Dispatch<React.SetStateAction<number[]>>) => {
+    setter((prev) => {
+      const next = Math.max(0, Math.min(100, prev[0] + delta));
+      return [next];
+    });
     handleValueChange();
   };
 
@@ -303,7 +306,7 @@ export default function SettingScreen() {
                       step={1}
                       className={`flex-1 ${theme.slider}`}
                     />
-                    <button onClick={() => adjustVolume(bgmVolume, 10, setBgmVolume)} className="text-[#8d6e63] hover:text-[#3e2723] transition-colors p-2 hover:bg-[#3e2723]/5 rounded-full">
+                    <button onClick={() => adjustVolume(10, setBgmVolume)} className="text-[#8d6e63] hover:text-[#3e2723] transition-colors p-2 hover:bg-[#3e2723]/5 rounded-full">
                       <Volume2 size={18} />
                     </button>
                   </div>
@@ -334,7 +337,7 @@ export default function SettingScreen() {
                       step={1}
                       className={`flex-1 ${theme.slider}`}
                     />
-                    <button onClick={() => adjustVolume(seVolume, 10, setSeVolume)} className="text-[#8d6e63] hover:text-[#3e2723] transition-colors p-2 hover:bg-[#3e2723]/5 rounded-full">
+                    <button onClick={() => adjustVolume(10, setSeVolume)} className="text-[#8d6e63] hover:text-[#3e2723] transition-colors p-2 hover:bg-[#3e2723]/5 rounded-full">
                       <Volume2 size={18} />
                     </button>
                   </div>
