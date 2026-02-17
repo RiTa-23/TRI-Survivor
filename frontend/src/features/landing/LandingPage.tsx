@@ -107,7 +107,7 @@ export default function LandingPage() {
                 <div className="absolute w-[600px] h-[600px] border-2 border-red-500/10 rounded-full animate-[spin-slow_20s_linear_infinite] pointer-events-none hidden md:block" />
                 <div className="absolute w-[400px] h-[400px] border border-amber-500/10 rounded-full animate-[spin-slow_15s_linear_infinite_reverse] pointer-events-none hidden md:block" />
 
-                <div className="relative w-full h-full flex items-center justify-center perspective-1000">
+                <div className="relative w-full h-full flex items-center justify-center [perspective:1000px]">
                     {/* Enemy Group */}
                     <div className="absolute top-[5%] right-[2%] md:top-[12%] md:right-[10%] w-[35%] md:w-[50%] max-w-md z-10 flex flex-col items-center">
                          {/* Aura */}
