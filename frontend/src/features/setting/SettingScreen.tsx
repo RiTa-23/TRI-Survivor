@@ -73,17 +73,21 @@ export default function SettingScreen() {
 
   // トースト表示ヘルパー
   const showToastNotification = (message: string, type: "success" | "error") => {
-    if (toastTimerRef.current) {
+    // 既存のタイマーを確実にクリア
+    if (toastTimerRef.current !== null) {
       window.clearTimeout(toastTimerRef.current);
     }
+
     setToastMessage(message);
     setToastType(type);
     setShowToast(true);
 
-    toastTimerRef.current = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       setShowToast(false);
       toastTimerRef.current = null;
     }, 3000);
+
+    toastTimerRef.current = timer;
   };
 
   // アンマウント時のクリーンアップ
@@ -171,6 +175,7 @@ export default function SettingScreen() {
       <AnimatePresence>
         {showToast && (
           <motion.div
+            key={toastMessage}
             initial={{ opacity: 0, y: -50, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -50, x: "-50%" }}
