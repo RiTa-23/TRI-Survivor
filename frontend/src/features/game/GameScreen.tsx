@@ -35,10 +35,32 @@ export default function GameScreen() {
     const [skillOptions, setSkillOptions] = useState<SkillOption[]>([]);
 
 
+    // Refs for accessing state in closures (GameApp callbacks)
+    const isLevelUpModalOpenRef = useRef(false);
+    const skillOptionsRef = useRef<SkillOption[]>([]);
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+    const selectedIndexRef = useRef<number | null>(null);
+
+    // Sync refs
+    useEffect(() => {
+        isLevelUpModalOpenRef.current = isLevelUpModalOpen;
+    }, [isLevelUpModalOpen]);
+
+    useEffect(() => {
+        skillOptionsRef.current = skillOptions;
+    }, [skillOptions]);
+
+    useEffect(() => {
+        selectedIndexRef.current = selectedIndex;
+    }, [selectedIndex]);
+
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastStatusRef = useRef<string>("");
     const lastUpdateTsRef = useRef<number>(0);
     const lastStatsRef = useRef<string>("");
+
+    // Debounce/Throttle confirm action to prevent double firing
+    const lastConfirmTimeRef = useRef<number>(0);
 
     useEffect(() => {
         if (!containerRef.current || !videoRef.current || !canvasRef.current) return;
@@ -47,6 +69,7 @@ export default function GameScreen() {
         const initGame = async () => {
             // Reset state
             setIsLevelUpModalOpen(false);
+            setSelectedIndex(null);
 
             // Destroy previous instance if it exists
             if (gameAppRef.current) {
@@ -74,8 +97,47 @@ export default function GameScreen() {
                         setStatus(msg);
                     }
                 },
-                (_move) => {
-                    // Special move callback (now unused for overlay)
+                (vector) => {
+                    // Hand Move Callback
+
+                    // 1. Check if Modal is Open
+                    if (isLevelUpModalOpenRef.current && vector) {
+                        const now = Date.now();
+
+                        // Gesture Control Logic
+
+                        // X-Axis -> Selection (Left / Center / Right)
+                        let newIndex = 1; // Default Center
+                        if (vector.x < -0.3) newIndex = 0;      // Left
+                        else if (vector.x > 0.3) newIndex = 2;   // Right
+
+                        // Clamp index to available options
+                        const maxIndex = Math.max(0, skillOptionsRef.current.length - 1);
+                        newIndex = Math.min(newIndex, maxIndex);
+
+                        // Update Selection State if changed
+                        if (selectedIndexRef.current !== newIndex) {
+                            setSelectedIndex(newIndex);
+                        }
+
+                        // Y-Axis (Up) -> Confirm
+                        // vector.y is negative for UP (tip < base)
+                        if (vector.y < -0.6) {
+                            // Cooldown for confirm
+                            if (now - lastConfirmTimeRef.current > 1000) {
+                                lastConfirmTimeRef.current = now;
+
+                                const options = skillOptionsRef.current;
+                                if (options[newIndex]) {
+                                    handleSkillSelect(options[newIndex].type);
+                                }
+                            }
+                        }
+
+                        return; // Skip other game input logic if modal is open (conceptually)
+                    }
+
+                    // Normal Game Input Logic (Overlay timer etc)
                     if (timerRef.current) clearTimeout(timerRef.current);
                     timerRef.current = setTimeout(() => {
                         timerRef.current = null;
@@ -92,6 +154,7 @@ export default function GameScreen() {
                 (options: SkillOption[]) => {
                     setSkillOptions(options);
                     setIsLevelUpModalOpen(true);
+                    setSelectedIndex(1); // Default to center
                 },
                 // onGameEnd Callback
                 (finalStats: PlayerStats, isClear: boolean) => {
@@ -126,6 +189,7 @@ export default function GameScreen() {
         if (gameAppRef.current) {
             gameAppRef.current.applySkill(type);
             setIsLevelUpModalOpen(false);
+            setSelectedIndex(null);
         }
     };
 
@@ -139,6 +203,7 @@ export default function GameScreen() {
                 <SkillSelectionModal
                     options={skillOptions}
                     onSelect={handleSkillSelect}
+                    selectedIndex={selectedIndex}
                 />
             )}
 

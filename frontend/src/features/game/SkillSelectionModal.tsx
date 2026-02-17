@@ -4,9 +4,10 @@ import { type SkillOption, SkillType } from "../../game/types";
 interface Props {
     options: SkillOption[];
     onSelect: (type: SkillType) => void;
+    selectedIndex?: number | null;
 }
 
-export const SkillSelectionModal: React.FC<Props> = ({ options, onSelect }) => {
+export const SkillSelectionModal: React.FC<Props> = ({ options, onSelect, selectedIndex }) => {
     return (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
             <div className="flex w-full max-w-5xl flex-col items-center gap-8 p-4">
@@ -15,11 +16,15 @@ export const SkillSelectionModal: React.FC<Props> = ({ options, onSelect }) => {
                 </h2>
 
                 <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-3">
-                    {options.map((option) => (
+                    {options.map((option, index) => (
                         <button
                             key={option.type}
                             onClick={() => onSelect(option.type)}
-                            className="group relative flex flex-col items-center gap-4 overflow-hidden rounded-xl border-2 border-slate-600 bg-slate-800/90 p-6 text-white transition-all hover:-translate-y-2 hover:border-yellow-400 hover:bg-slate-700 hover:shadow-[0_0_30px_rgba(250,204,21,0.3)] active:scale-95"
+                            className={`group relative flex flex-col items-center gap-4 overflow-hidden rounded-xl border-2 bg-slate-800/90 p-6 text-white transition-all hover:-translate-y-2 hover:bg-slate-700 active:scale-95
+                            ${selectedIndex === index
+                                    ? "border-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.6)] scale-105 bg-slate-700"
+                                    : "border-slate-600 hover:border-yellow-400 hover:shadow-[0_0_30px_rgba(250,204,21,0.3)]"
+                                }`}
                         >
                             {/* Card Header & Icon */}
                             <div className="relative mb-2 flex h-24 w-24 items-center justify-center rounded-full bg-slate-900 shadow-inner group-hover:shadow-[0_0_20px_rgba(250,204,21,0.2)]">
