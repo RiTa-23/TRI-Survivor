@@ -24,6 +24,7 @@ func SetupRouter(e *echo.Echo, userHandler *handler.UserHandler, settingsHandler
 
 	v1.POST("/users", userHandler.SyncUser)
 	v1.GET("/users/me", userHandler.GetMe)
+	v1.POST("/users/me/coins", userHandler.AddCoin)
 
 	// Settings
 	v1.GET("/settings", settingsHandler.GetSettings)

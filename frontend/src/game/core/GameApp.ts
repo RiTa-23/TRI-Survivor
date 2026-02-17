@@ -24,6 +24,7 @@ const SPAWN_DISTANCE = 1000;
 const MAX_ENEMIES = 100;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 const SPECIAL_EFFECT_DURATION = 10.0;
+const GAME_CLEAR_TIME = 333; // 5 minutes 33 seconds
 
 /** Obstacle settings */
 const MAX_OBSTACLES = 15;
@@ -57,6 +58,7 @@ export class GameApp {
     private isPaused = false;
     private onStatsUpdate?: (stats: PlayerStats) => void;
     private onLevelUpCallback?: (options: SkillOption[]) => void;
+    private onGameEndCallback?: (stats: PlayerStats, isClear: boolean) => void;
     private elapsedTime: number = 0;
     private killCount: number = 0;
     private lastEmittedTime: number = 0;
@@ -90,7 +92,8 @@ export class GameApp {
         onStatusChange?: (status: string) => void,
         onSpecialMove?: (moveName: string) => void,
         onStatsUpdate?: (stats: PlayerStats) => void,
-        onLevelUp?: (options: SkillOption[]) => void
+        onLevelUp?: (options: SkillOption[]) => void,
+        onGameEnd?: (stats: PlayerStats, isClear: boolean) => void
     ) {
         this.app = new Application();
         // this.player will be initialized in init()
@@ -100,6 +103,7 @@ export class GameApp {
 
         this.onStatsUpdate = onStatsUpdate;
         this.onLevelUpCallback = onLevelUp;
+        this.onGameEndCallback = onGameEnd;
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
@@ -279,6 +283,18 @@ export class GameApp {
             if (this.isPaused) return;
 
             this.elapsedTime += dt;
+
+            // Check Game Clear
+            if (this.elapsedTime >= GAME_CLEAR_TIME && !this.isDestroyed) {
+                this.handleGameEnd(true);
+                return;
+            }
+
+            // Check Game Over
+            if (this.player.hp <= 0 && !this.isDestroyed) {
+                this.handleGameEnd(false);
+                return;
+            }
 
             // Player movement & animation update
             if (this.debugMode && this.keysPressed.size > 0) {
@@ -968,6 +984,31 @@ export class GameApp {
         // Toggle detection based on gauge
         const isReady = this.specialGauge >= this.specialMaxCooldown;
         this.handTrackingManager.setSpecialMoveDetection(isReady);
+    }
+
+    private handleGameEnd(isClear: boolean) {
+        this.pauseGame();
+        this.isDestroyed = true; // Prevent multiple calls
+        // Emit final stats
+        if (this.onGameEndCallback) {
+            this.onGameEndCallback({
+                coins: this.player.coins,
+                exp: this.player.exp,
+                hp: this.player.hp,
+                maxHp: this.player.maxHp,
+                level: this.player.level,
+                nextLevelExp: this.player.nextLevelExp,
+                weapons: this.player.activeWeapons.map(w => ({ type: w.type, level: w.level })),
+                passives: Array.from(this.player.getSkills().entries())
+                    .filter(([t]) => t !== SkillType.HEAL && t !== SkillType.GET_COIN)
+                    .map(([type, level]) => ({ type, level })),
+                specialGauge: this.specialGauge,
+                maxSpecialGauge: this.specialMaxCooldown,
+                activeSpecialType: this.activeSpecialType,
+                time: this.elapsedTime,
+                killCount: this.killCount,
+            }, isClear);
+        }
     }
 
     private handleSpecialMove(moveName: string) {
