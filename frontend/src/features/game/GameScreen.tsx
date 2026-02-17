@@ -108,8 +108,8 @@ export default function GameScreen() {
 
                         // X-Axis -> Selection (Left / Center / Right)
                         let newIndex = 1; // Default Center
-                        if (vector.x < -0.3) newIndex = 0;      // Left
-                        else if (vector.x > 0.3) newIndex = 2;   // Right
+                        if (vector.x < -0.65) newIndex = 0;      // Left
+                        else if (vector.x > 0.65) newIndex = 2;   // Right
 
                         // Clamp index to available options
                         const maxIndex = Math.max(0, skillOptionsRef.current.length - 1);
@@ -122,7 +122,7 @@ export default function GameScreen() {
 
                         // Y-Axis (Up) -> Confirm
                         // vector.y is negative for UP (tip < base)
-                        if (vector.y < -0.6) {
+                        if (vector.y < -0.9) {
                             // Cooldown for confirm
                             if (now - lastConfirmTimeRef.current > 1000) {
                                 lastConfirmTimeRef.current = now;
