@@ -77,7 +77,7 @@ export default function SettingScreen() {
       {showToast && (
         <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 px-6 py-3 rounded-full shadow-2xl animate-in slide-in-from-top-full duration-300 ${theme.toast}`}>
           <CheckCircle2 size={20} />
-          <span className="font-bold text-sm tracking-tight">記録を保存しました</span>
+          <span className="font-bold text-sm tracking-tight">変更を保存しました</span>
         </div>
       )}
 
