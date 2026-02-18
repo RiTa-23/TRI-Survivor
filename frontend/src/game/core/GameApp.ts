@@ -145,7 +145,7 @@ export class GameApp {
         try {
             await Assets.load([
                 "/assets/images/Player_1.png",
-                "/assets/images/enemy_1.png",
+                "/assets/images/enemy/enemy_1.png",
                 "/assets/images/EXP_1.png",
                 "/assets/images/EXP_2.png",
                 "/assets/images/EXP_3.png",
@@ -154,6 +154,15 @@ export class GameApp {
                 "/assets/images/damage.png",
                 "/assets/images/skills/gun.png",
                 "/assets/images/skills/sword.png",
+                "/assets/images/skills/atk.png",
+                "/assets/images/skills/def.png",
+                "/assets/images/skills/spd.png",
+                "/assets/images/skills/as.png",
+                "/assets/images/skills/proj.png",
+                "/assets/images/skills/pck.png",
+                "/assets/images/skills/exp.png",
+                "/assets/images/skills/gold.png",
+                "/assets/images/skills/cdr.png",
                 "/assets/images/field_grass.png",
             ]);
         } catch (e) {

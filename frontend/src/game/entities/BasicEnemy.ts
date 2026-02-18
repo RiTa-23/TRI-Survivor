@@ -7,13 +7,13 @@ import { Enemy } from "./Enemy";
  * 最もシンプルな敵タイプで、他の敵の参考実装にもなる。
  */
 export class BasicEnemy extends Enemy {
-    constructor() {
+    constructor(config?: { textureKey?: string }) {
         super({
             hp: 30,
             speed: 50, // px/sec
             attackPower: 10,
             color: 0x9b59b6,
-            textureKey: "/assets/images/enemy_1.png",
+            textureKey: config?.textureKey || "/assets/images/enemy/enemy_1.png",
             radius: 40,
             dropTable: {
                 exp: { min: 1, max: 3, chance: 1.0 },
