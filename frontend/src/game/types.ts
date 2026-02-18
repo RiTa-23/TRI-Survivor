@@ -63,43 +63,43 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
         name: "攻撃力アップ",
         description: "攻撃力が 2 上昇します",
         maxLevel: 5,
-        icon: "/assets/images/skills/attack_up.png",
+        icon: "/assets/images/skills/atk.png",
     },
     [SkillType.DEFENSE_UP]: {
         name: "防御力アップ",
         description: "受けるダメージを 10% 軽減します",
         maxLevel: 5,
-        icon: "/assets/images/skills/defense_up.png",
+        icon: "/assets/images/skills/def.png",
     },
     [SkillType.SPEED_UP]: {
         name: "スピードアップ",
         description: "移動速度が 10% 上昇します",
         maxLevel: 5,
-        icon: "/assets/images/skills/speed_up.png",
+        icon: "/assets/images/skills/spd.png",
     },
     [SkillType.COOLDOWN_DOWN]: {
         name: "ラピッドファイア",
         description: "攻撃間隔が 10% 短縮されます",
         maxLevel: 5,
-        icon: "/assets/images/skills/cooldown_down.png",
+        icon: "/assets/images/skills/as.png",
     },
     [SkillType.MULTI_SHOT]: {
         name: "マルチショット",
         description: "発射数が 1 増加します",
         maxLevel: 1, // Lower max level for powerful skill
-        icon: "/assets/images/skills/multi_shot.png",
+        icon: "/assets/images/skills/proj.png",
     },
     [SkillType.MAGNET_UP]: {
         name: "マグネット範囲",
         description: "アイテム回収範囲が 25% 広がります",
         maxLevel: 5,
-        icon: "/assets/images/skills/magnet_up.png",
+        icon: "/assets/images/skills/pck.png",
     },
     [SkillType.EXP_UP]: {
         name: "成長促進",
         description: "経験値獲得量が 10% 増加します",
         maxLevel: 5,
-        icon: "/assets/images/skills/exp_up.png",
+        icon: "/assets/images/skills/exp.png",
     },
     [SkillType.HEAL]: {
         name: "回復",
@@ -112,14 +112,14 @@ export const SKILL_DEFINITIONS: Record<SkillType, SkillData> = {
         name: "宝物",
         description: "コインを 50 獲得します",
         maxLevel: 999,
-        icon: "/assets/images/coin.png",
+        icon: "/assets/images/skills/gold.png",
         value: 50, // Coin amount
     },
     [SkillType.SPECIAL_COOLDOWN_CUT]: {
         name: "集中力",
         description: "必殺技のチャージ時間を 10% 短縮します",
         maxLevel: 5,
-        icon: "/assets/images/skills/cooldown_down.png", // Reuse icon for now
+        icon: "/assets/images/skills/cdr.png",
     },
     // Weapons
     [SkillType.GUN]: {
