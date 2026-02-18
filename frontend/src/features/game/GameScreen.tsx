@@ -37,6 +37,10 @@ export default function GameScreen() {
     // Tutorial State
     const [isTutorialVisible, setIsTutorialVisible] = useState(true);
 
+    // Safety State
+    const [showFingerWarning, setShowFingerWarning] = useState(false);
+    const isWaitingForFingerResetRef = useRef(false);
+
     // Refs for accessing state in closures (GameApp callbacks)
     const isLevelUpModalOpenRef = useRef(false);
     const skillOptionsRef = useRef<SkillOption[]>([]);
@@ -46,6 +50,10 @@ export default function GameScreen() {
     // Sync refs
     useEffect(() => {
         isLevelUpModalOpenRef.current = isLevelUpModalOpen;
+        if (isLevelUpModalOpen) {
+            isWaitingForFingerResetRef.current = true;
+            setShowFingerWarning(false);
+        }
     }, [isLevelUpModalOpen]);
 
     useEffect(() => {
@@ -128,6 +136,20 @@ export default function GameScreen() {
 
                         // Y-Axis (Up) -> Confirm
                         // vector.y is negative for UP (tip < base)
+
+                        // Check for initial high finger position (Safety)
+                        if (isWaitingForFingerResetRef.current) {
+                            if (vector.y < -0.8) {
+                                // Still high, show warning and block confirm
+                                setShowFingerWarning(true);
+                                return;
+                            } else {
+                                // Finger dropped, clear warning and enable confirm
+                                isWaitingForFingerResetRef.current = false;
+                                setShowFingerWarning(false);
+                            }
+                        }
+
                         if (vector.y < -0.9) {
                             // Cooldown for confirm
                             if (now - lastConfirmTimeRef.current > 1000) {
@@ -210,6 +232,15 @@ export default function GameScreen() {
                     options={skillOptions}
                     selectedIndex={selectedIndex}
                 />
+            )}
+
+            {/* Safety Warning Overlay */}
+            {showFingerWarning && isLevelUpModalOpen && (
+                <div className="absolute inset-0 z-[60] flex items-center justify-center pointer-events-none">
+                    <div className="bg-red-600/90 text-white px-8 py-4 rounded-full text-2xl font-bold animate-bounce shadow-lg border-4 border-white">
+                        指が上がりすぎ　画面に対して指を垂直に向けて
+                    </div>
+                </div>
             )}
 
 
