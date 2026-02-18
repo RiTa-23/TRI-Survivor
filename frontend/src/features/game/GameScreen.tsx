@@ -115,52 +115,54 @@ export default function GameScreen() {
                     // Hand Move Callback
 
                     // 1. Check if Modal is Open
-                    if (isLevelUpModalOpenRef.current && vector) {
-                        const now = Date.now();
+                    if (isLevelUpModalOpenRef.current) {
+                        if (vector) {
+                            const now = Date.now();
 
-                        // Gesture Control Logic
+                            // Gesture Control Logic
 
-                        // X-Axis -> Selection (Left / Center / Right)
-                        let newIndex = 1; // Default Center
-                        if (vector.x < -0.55) newIndex = 0;      // Left
-                        else if (vector.x > 0.55) newIndex = 2;   // Right
+                            // X-Axis -> Selection (Left / Center / Right)
+                            let newIndex = 1; // Default Center
+                            if (vector.x < -0.55) newIndex = 0;      // Left
+                            else if (vector.x > 0.55) newIndex = 2;   // Right
 
-                        // Clamp index to available options
-                        const maxIndex = Math.max(0, skillOptionsRef.current.length - 1);
-                        newIndex = Math.min(newIndex, maxIndex);
+                            // Clamp index to available options
+                            const maxIndex = Math.max(0, skillOptionsRef.current.length - 1);
+                            newIndex = Math.min(newIndex, maxIndex);
 
-                        // Update Selection State if changed
-                        if (selectedIndexRef.current !== newIndex) {
-                            setSelectedIndex(newIndex);
-                        }
-
-                        // Y-Axis (Up) -> Confirm
-                        // vector.y is negative for UP (tip < base)
-
-                        // Check for initial high finger position (Safety)
-                        if (isWaitingForFingerResetRef.current) {
-                            if (vector.y < -0.3) {
-                                // Still high, show warning and block confirm
-                                setShowFingerWarning(true);
-                                return;
-                            } else if (vector.y > -0.1) {
-                                // Finger dropped significantly (closer to neutral), clear warning and enable confirm
-                                isWaitingForFingerResetRef.current = false;
-                                setShowFingerWarning(false);
-                            } else {
-                                // In hysteresis zone (-0.3 to -0.1), keep blocking but don't toggle warning
-                                return;
+                            // Update Selection State if changed
+                            if (selectedIndexRef.current !== newIndex) {
+                                setSelectedIndex(newIndex);
                             }
-                        }
 
-                        if (vector.y < -0.6) {
-                            // Cooldown for confirm
-                            if (now - lastConfirmTimeRef.current > 1000) {
-                                lastConfirmTimeRef.current = now;
+                            // Y-Axis (Up) -> Confirm
+                            // vector.y is negative for UP (tip < base)
 
-                                const options = skillOptionsRef.current;
-                                if (options[newIndex]) {
-                                    handleSkillSelect(options[newIndex].type);
+                            // Check for initial high finger position (Safety)
+                            if (isWaitingForFingerResetRef.current) {
+                                if (vector.y < -0.3) {
+                                    // Still high, show warning and block confirm
+                                    setShowFingerWarning(true);
+                                    return;
+                                } else if (vector.y > -0.1) {
+                                    // Finger dropped significantly (closer to neutral), clear warning and enable confirm
+                                    isWaitingForFingerResetRef.current = false;
+                                    setShowFingerWarning(false);
+                                } else {
+                                    // In hysteresis zone (-0.3 to -0.1), keep blocking but don't toggle warning
+                                    return;
+                                }
+                            }
+
+                            if (vector.y < -0.6) {
+                                // Cooldown for confirm
+                                if (now - lastConfirmTimeRef.current > 1000) {
+                                    lastConfirmTimeRef.current = now;
+
+                                    const options = skillOptionsRef.current;
+                                    if (options[newIndex]) {
+                                        handleSkillSelect(options[newIndex].type);
+                                    }
                                 }
                             }
                         }
