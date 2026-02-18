@@ -30,6 +30,7 @@ const SPAWN_DISTANCE = 1000;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 const SPECIAL_EFFECT_DURATION = 10.0;
 const GAME_CLEAR_TIME = 333; // 5 minutes 33 seconds
+const MAX_DIFFICULTY_MULTIPLIER = 5.0; // Stat cap (5x)
 
 /** Obstacle settings */
 const MAX_OBSTACLES = 15;
@@ -385,11 +386,11 @@ export class GameApp {
             enemy.isFrozen = true;
         }
 
-        // Apply difficulty scaling (Double stats every minute)
-        const minutes = Math.floor(this.elapsedTime / 60);
-        const multiplier = Math.pow(2, minutes);
+        // Apply difficulty scaling (Linear, capped)
+        const minutes = this.elapsedTime / 60;
+        const multiplier = Math.min(1 + minutes * 0.5, MAX_DIFFICULTY_MULTIPLIER);
 
-        if (minutes > 0) {
+        if (multiplier > 1) {
             enemy.maxHp *= multiplier;
             enemy.hp = enemy.maxHp;
             enemy.attackPower *= multiplier;
