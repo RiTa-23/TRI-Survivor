@@ -54,6 +54,7 @@ function ShopItemCard({
   price,
   image,
   description,
+  category,
   onHover,
 }: ShopItemCardProps) {
   const { coins, addCoins } = useGameStore();
@@ -66,7 +67,7 @@ function ShopItemCard({
     }
   };
 
-  const item: ShopItem = { id, name, price, image, description, category: "weapon" }; // category is ignored here
+  const item: ShopItem = { id, name, price, image, description, category };
 
   return (
     <motion.div
