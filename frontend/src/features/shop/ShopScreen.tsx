@@ -293,8 +293,10 @@ export default function ShopScreen() {
                 </motion.div>
               ) : (
                 <motion.div
+                  key="greeting"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                   className="flex-1 flex flex-col items-center justify-center text-center space-y-2 relative z-10"
                 >
                   <p className="text-sm font-black text-[#3e2723] font-serif leading-relaxed tracking-wider">
