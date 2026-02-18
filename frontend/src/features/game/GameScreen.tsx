@@ -6,12 +6,17 @@ import { Button } from "@/components/ui/button";
 import { ArrowUp, Coins, Heart, Zap, Clock, Skull } from "lucide-react";
 import { SkillSelectionModal } from "./SkillSelectionModal";
 
+import { useGameStore } from "@/store/gameStore";
+
 export default function GameScreen() {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameAppRef = useRef<GameApp | null>(null);
     const navigate = useNavigate();
+
+    // Get selected loadout from store
+    const { selectedWeapon, selectedSpecialMove } = useGameStore();
 
     const [status, setStatus] = useState<string>("Initializing...");
     const [stats, setStats] = useState<PlayerStats>({
@@ -184,7 +189,7 @@ export default function GameScreen() {
                         setStats(s);
                     }
                 },
-                (options: SkillOption[]) => {
+                ({ options }: { options: SkillOption[] }) => {
                     setSkillOptions(options);
                     setIsLevelUpModalOpen(true);
                     // Default to center (index 1) but clamp to valid range
@@ -197,7 +202,9 @@ export default function GameScreen() {
                 // onGameEnd Callback
                 (finalStats: PlayerStats, isClear: boolean) => {
                     navigate("/result", { state: { stats: finalStats, isClear } });
-                }
+                },
+                selectedWeapon,
+                selectedSpecialMove
             );
 
             gameAppRef.current = gameApp;
