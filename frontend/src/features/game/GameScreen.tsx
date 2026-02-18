@@ -34,11 +34,43 @@ export default function GameScreen() {
     const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
     const [skillOptions, setSkillOptions] = useState<SkillOption[]>([]);
 
+    // Tutorial State
+    const [isTutorialVisible, setIsTutorialVisible] = useState(true);
+
+    // Safety State
+    const [showFingerWarning, setShowFingerWarning] = useState(false);
+    const isWaitingForFingerResetRef = useRef(false);
+
+    // Refs for accessing state in closures (GameApp callbacks)
+    const isLevelUpModalOpenRef = useRef(false);
+    const skillOptionsRef = useRef<SkillOption[]>([]);
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+    const selectedIndexRef = useRef<number | null>(null);
+
+    // Sync refs
+    useEffect(() => {
+        isLevelUpModalOpenRef.current = isLevelUpModalOpen;
+        if (isLevelUpModalOpen) {
+            isWaitingForFingerResetRef.current = true;
+            setShowFingerWarning(false);
+        }
+    }, [isLevelUpModalOpen]);
+
+    useEffect(() => {
+        skillOptionsRef.current = skillOptions;
+    }, [skillOptions]);
+
+    useEffect(() => {
+        selectedIndexRef.current = selectedIndex;
+    }, [selectedIndex]);
 
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastStatusRef = useRef<string>("");
     const lastUpdateTsRef = useRef<number>(0);
     const lastStatsRef = useRef<string>("");
+
+    // Debounce/Throttle confirm action to prevent double firing
+    const lastConfirmTimeRef = useRef<number>(0);
 
     useEffect(() => {
         if (!containerRef.current || !videoRef.current || !canvasRef.current) return;
@@ -47,6 +79,8 @@ export default function GameScreen() {
         const initGame = async () => {
             // Reset state
             setIsLevelUpModalOpen(false);
+            setSelectedIndex(null);
+            setIsTutorialVisible(true);
 
             // Destroy previous instance if it exists
             if (gameAppRef.current) {
@@ -60,6 +94,9 @@ export default function GameScreen() {
                 (msg) => {
                     // Urgent per-frame side effects
                     if (msg.startsWith("Active:")) {
+                        // Hide tutorial on first movement
+                        setIsTutorialVisible(false);
+
                         if (timerRef.current) {
                             clearTimeout(timerRef.current);
                             timerRef.current = null;
@@ -74,8 +111,66 @@ export default function GameScreen() {
                         setStatus(msg);
                     }
                 },
-                (_move) => {
-                    // Special move callback (now unused for overlay)
+                (vector) => {
+                    // Hand Move Callback
+
+                    // 1. Check if Modal is Open
+                    if (isLevelUpModalOpenRef.current) {
+                        if (vector) {
+                            const now = Date.now();
+
+                            // Gesture Control Logic
+
+                            // X-Axis -> Selection (Left / Center / Right)
+                            let newIndex = 1; // Default Center
+                            if (vector.x < -0.55) newIndex = 0;      // Left
+                            else if (vector.x > 0.55) newIndex = 2;   // Right
+
+                            // Clamp index to available options
+                            const maxIndex = Math.max(0, skillOptionsRef.current.length - 1);
+                            newIndex = Math.min(newIndex, maxIndex);
+
+                            // Update Selection State if changed
+                            if (selectedIndexRef.current !== newIndex) {
+                                setSelectedIndex(newIndex);
+                            }
+
+                            // Y-Axis (Up) -> Confirm
+                            // vector.y is negative for UP (tip < base)
+
+                            // Check for initial high finger position (Safety)
+                            if (isWaitingForFingerResetRef.current) {
+                                if (vector.y < -0.3) {
+                                    // Still high, show warning and block confirm
+                                    setShowFingerWarning(true);
+                                    return;
+                                } else if (vector.y > -0.1) {
+                                    // Finger dropped significantly (closer to neutral), clear warning and enable confirm
+                                    isWaitingForFingerResetRef.current = false;
+                                    setShowFingerWarning(false);
+                                } else {
+                                    // In hysteresis zone (-0.3 to -0.1), keep blocking but don't toggle warning
+                                    return;
+                                }
+                            }
+
+                            if (vector.y < -0.6) {
+                                // Cooldown for confirm
+                                if (now - lastConfirmTimeRef.current > 1000) {
+                                    lastConfirmTimeRef.current = now;
+
+                                    const options = skillOptionsRef.current;
+                                    if (options[newIndex]) {
+                                        handleSkillSelect(options[newIndex].type);
+                                    }
+                                }
+                            }
+                        }
+
+                        return; // Skip other game input logic if modal is open (conceptually)
+                    }
+
+                    // Normal Game Input Logic (Overlay timer etc)
                     if (timerRef.current) clearTimeout(timerRef.current);
                     timerRef.current = setTimeout(() => {
                         timerRef.current = null;
@@ -92,6 +187,12 @@ export default function GameScreen() {
                 (options: SkillOption[]) => {
                     setSkillOptions(options);
                     setIsLevelUpModalOpen(true);
+                    // Default to center (index 1) but clamp to valid range
+                    // If 1 option -> index 0
+                    // If 2 options -> index 1
+                    // If 3 options -> index 1
+                    const initialIndex = Math.min(1, Math.max(0, options.length - 1));
+                    setSelectedIndex(initialIndex);
                 },
                 // onGameEnd Callback
                 (finalStats: PlayerStats, isClear: boolean) => {
@@ -126,6 +227,7 @@ export default function GameScreen() {
         if (gameAppRef.current) {
             gameAppRef.current.applySkill(type);
             setIsLevelUpModalOpen(false);
+            setSelectedIndex(null);
         }
     };
 
@@ -138,8 +240,17 @@ export default function GameScreen() {
             {isLevelUpModalOpen && (
                 <SkillSelectionModal
                     options={skillOptions}
-                    onSelect={handleSkillSelect}
+                    selectedIndex={selectedIndex}
                 />
+            )}
+
+            {/* Safety Warning Overlay */}
+            {showFingerWarning && isLevelUpModalOpen && (
+                <div className="absolute inset-0 z-[60] flex items-center justify-center pointer-events-none">
+                    <div className="bg-red-600/90 text-white px-8 py-4 rounded-full text-2xl font-bold animate-bounce shadow-lg border-4 border-white">
+                        指を下に向けながら選択してください
+                    </div>
+                </div>
             )}
 
 
@@ -339,6 +450,25 @@ export default function GameScreen() {
                     {stats.specialGauge >= stats.maxSpecialGauge ? "READY" : `${Math.ceil(stats.maxSpecialGauge - stats.specialGauge)}s`}
                 </div>
             </div>
+            {/* Tutorial Overlay */}
+            {isTutorialVisible && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">
+                    <div className="flex flex-col items-center gap-6 p-8 bg-black/40 rounded-3xl border border-white/20 shadow-2xl animate-pulse-slow">
+                        <div className="relative w-32 h-32 flex items-center justify-center bg-slate-800/50 rounded-full border-4 border-yellow-400/50">
+                            <span className="text-6xl">👆</span>
+                            <div className="absolute inset-0 rounded-full border-4 border-yellow-400/30 animate-ping"></div>
+                        </div>
+                        <div className="text-center space-y-2">
+                            <h2 className="text-3xl font-bold text-yellow-300 drop-shadow-md">
+                                カメラの前で指を動かして操作
+                            </h2>
+                            <p className="text-xl text-white/90">
+                                指を動かすとキャラクターが移動します
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

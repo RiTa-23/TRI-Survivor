@@ -90,7 +90,7 @@ export class GameApp {
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
         onStatusChange?: (status: string) => void,
-        onSpecialMove?: (moveName: string) => void,
+        onHandMove?: (vector: Vector2D | null) => void,
         onStatsUpdate?: (stats: PlayerStats) => void,
         onLevelUp?: (options: SkillOption[]) => void,
         onGameEnd?: (stats: PlayerStats, isClear: boolean) => void
@@ -107,8 +107,8 @@ export class GameApp {
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
+            if (onHandMove) onHandMove(vector);
         }, onStatusChange, (move) => {
-            if (onSpecialMove) onSpecialMove(move);
             this.handleSpecialMove(move);
         });
     }
