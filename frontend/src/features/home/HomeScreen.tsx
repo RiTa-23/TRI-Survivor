@@ -3,13 +3,13 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/gameStore";
-import { Settings, LogOut, Coins, ShoppingBag, BookOpen, User as UserIcon } from "lucide-react";
+import { Settings, LogOut, Coins, ShoppingBag, BookOpen, User as UserIcon, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function HomeScreen() {
     const navigate = useNavigate();
     const { user, signOut } = useAuthStore();
-    const { coins, selectedWeapon, setSelectedWeapon } = useGameStore();
+    const { coins, selectedWeapon, setSelectedWeapon, selectedSpecialMove, setSelectedSpecialMove } = useGameStore();
 
     // パーティクルデータを初回のみ生成（再レンダリング時のちらつき防止）
     const particles = useMemo(() => 
@@ -88,11 +88,7 @@ export default function HomeScreen() {
                 <div className="flex-1 relative flex items-center justify-center">
                     
                     {/* --- スキル選択 (武器選択) エリア --- */}
-                    <div className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-8">
-                        <div className="flex flex-col items-center gap-2">
-                            <span className="text-[10px] font-black text-amber-200/40 uppercase tracking-[0.3em] whitespace-nowrap">Skill Selection</span>
-                            <div className="w-px h-12 bg-gradient-to-b from-transparent via-amber-900/50 to-transparent" />
-                        </div>
+                    <div className="absolute left-6 md:left-12 top-[55%] -translate-y-1/2 z-20 flex flex-col gap-8">
 
                         <div className="flex flex-col gap-6">
                             {/* 剣の選択肢 */}
@@ -140,6 +136,66 @@ export default function HomeScreen() {
 
                                 {selectedWeapon === 'gun' && (
                                     <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center shadow-[0_0_15px_rgba(96,165,250,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- 必殺技選択 エリア --- */}
+                    <div className="absolute right-6 md:right-12 top-[45%] -translate-y-1/2 z-20 flex flex-col gap-8">
+
+                        <div className="flex flex-col gap-6">
+                            {/* 無量空処の選択肢 */}
+                            <div 
+                                onClick={() => setSelectedSpecialMove('unlimited_void')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedSpecialMove === 'unlimited_void' 
+                                        ? 'border-purple-400 bg-purple-900/40 shadow-[0_0_30px_rgba(168,85,247,0.4)]' 
+                                        : 'border-purple-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-purple-700'}`}
+                            >
+                                {/* 必殺技のイメージ画像: 無量空処 (青い目のマーク) */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 relative">
+                                    {/* 魔方陣のような背景発光 */}
+                                    <div className="absolute inset-0 rounded-full bg-cyan-500/10 blur-xl animate-pulse" />
+                                    <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                                        <Eye 
+                                            size={44} 
+                                            className="text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-pulse" 
+                                            strokeWidth={1.5}
+                                        />
+                                    </div>
+                                </div>
+                                <span className={`text-[10px] font-black tracking-wider transition-colors ${selectedSpecialMove === 'unlimited_void' ? 'text-purple-100' : 'text-purple-100/40'}`}>MURYOUKUUSHO</span>
+                                
+                                {selectedSpecialMove === 'unlimited_void' && (
+                                    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-purple-400 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* コンの選択肢 */}
+                            <div 
+                                onClick={() => setSelectedSpecialMove('kon')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedSpecialMove === 'kon' 
+                                        ? 'border-red-400 bg-red-900/40 shadow-[0_0_30px_rgba(248,113,113,0.4)]' 
+                                        : 'border-red-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-red-900/50'}`}
+                            >
+                                {/* 必殺技のイメージ画像: KON */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 overflow-visible">
+                                    <img 
+                                        src="/assets/images/Kon.png" 
+                                        alt="Kon" 
+                                        className="max-w-[140%] max-h-[140%] object-contain drop-shadow-[0_10px_20px_rgba(255,0,0,0.5)] transform translate-y-[-4px]"
+                                    />
+                                </div>
+                                <span className={`text-[10px] font-black tracking-wider transition-colors ${selectedSpecialMove === 'kon' ? 'text-red-100' : 'text-red-100/40'}`}>KON</span>
+
+                                {selectedSpecialMove === 'kon' && (
+                                    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-red-400 flex items-center justify-center shadow-[0_0_15px_rgba(248,113,113,0.6)] border-4 border-[#1b110e]">
                                         <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
                                     </div>
                                 )}
