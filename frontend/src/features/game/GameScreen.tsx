@@ -34,6 +34,8 @@ export default function GameScreen() {
     const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
     const [skillOptions, setSkillOptions] = useState<SkillOption[]>([]);
 
+    // Tutorial State
+    const [isTutorialVisible, setIsTutorialVisible] = useState(true);
 
     // Refs for accessing state in closures (GameApp callbacks)
     const isLevelUpModalOpenRef = useRef(false);
@@ -70,6 +72,7 @@ export default function GameScreen() {
             // Reset state
             setIsLevelUpModalOpen(false);
             setSelectedIndex(null);
+            setIsTutorialVisible(true);
 
             // Destroy previous instance if it exists
             if (gameAppRef.current) {
@@ -83,6 +86,9 @@ export default function GameScreen() {
                 (msg) => {
                     // Urgent per-frame side effects
                     if (msg.startsWith("Active:")) {
+                        // Hide tutorial on first movement
+                        setIsTutorialVisible(false);
+
                         if (timerRef.current) {
                             clearTimeout(timerRef.current);
                             timerRef.current = null;
@@ -404,6 +410,25 @@ export default function GameScreen() {
                     {stats.specialGauge >= stats.maxSpecialGauge ? "READY" : `${Math.ceil(stats.maxSpecialGauge - stats.specialGauge)}s`}
                 </div>
             </div>
+            {/* Tutorial Overlay */}
+            {isTutorialVisible && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">
+                    <div className="flex flex-col items-center gap-6 p-8 bg-black/40 rounded-3xl border border-white/20 shadow-2xl animate-pulse-slow">
+                        <div className="relative w-32 h-32 flex items-center justify-center bg-slate-800/50 rounded-full border-4 border-yellow-400/50">
+                            <span className="text-6xl">👆</span>
+                            <div className="absolute inset-0 rounded-full border-4 border-yellow-400/30 animate-ping"></div>
+                        </div>
+                        <div className="text-center space-y-2">
+                            <h2 className="text-3xl font-bold text-yellow-300 drop-shadow-md">
+                                カメラの前で指を動かして操作
+                            </h2>
+                            <p className="text-xl text-white/90">
+                                指を動かすとキャラクターが移動します
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
