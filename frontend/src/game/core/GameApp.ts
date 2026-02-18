@@ -62,8 +62,10 @@ export class GameApp {
 
     // --- State ---
     private isPaused = false;
+    private onStatusChange?: (status: string) => void;
+    private onHandMove?: (vector: Vector2D | null) => void;
     private onStatsUpdate?: (stats: PlayerStats) => void;
-    private onLevelUpCallback?: (options: SkillOption[]) => void;
+    private onLevelUpCallback?: (result: { options: SkillOption[] }) => void;
     private onGameEndCallback?: (stats: PlayerStats, isClear: boolean) => void;
     private elapsedTime: number = 0;
     private killCount: number = 0;
@@ -91,24 +93,33 @@ export class GameApp {
     private static readonly KON_HITBOX_OFFSET_X = 200; // Based on shape
     private static readonly INSTANT_KILL_DAMAGE = Number.MAX_SAFE_INTEGER;
 
+    private initialWeaponType: 'sword' | 'gun';
+
     constructor(
         videoElement: HTMLVideoElement,
         canvasElement: HTMLCanvasElement,
         onStatusChange?: (status: string) => void,
         onHandMove?: (vector: Vector2D | null) => void,
         onStatsUpdate?: (stats: PlayerStats) => void,
-        onLevelUp?: (options: SkillOption[]) => void,
-        onGameEnd?: (stats: PlayerStats, isClear: boolean) => void
+        onLevelUp?: (result: { options: SkillOption[] }) => void,
+        onGameEnd?: (stats: PlayerStats, isClear: boolean) => void,
+        initialWeapon: 'sword' | 'gun' = 'sword',
+        initialSpecialSkill: 'unlimited_void' | 'kon' = 'unlimited_void'
     ) {
         this.app = new Application();
-        // this.player will be initialized in init()
         this.world = new Container();
         this.videoElement = videoElement;
         this.canvasElement = canvasElement;
 
+        this.onStatusChange = onStatusChange;
+        this.onHandMove = onHandMove;
         this.onStatsUpdate = onStatsUpdate;
         this.onLevelUpCallback = onLevelUp;
         this.onGameEndCallback = onGameEnd;
+
+        // Set initial weapon and special skill
+        this.activeSpecialType = initialSpecialSkill === 'kon' ? SpecialSkillType.KON : SpecialSkillType.MURYO_KUSHO;
+        this.initialWeaponType = initialWeapon;
 
         this.handTrackingManager = new HandTrackingManager((vector) => {
             this.currentDirection = vector;
@@ -216,7 +227,11 @@ export class GameApp {
             this.world.addChild(this.player);
 
             // Initial Weapon
-            this.player.addWeapon(new SwordWeapon());
+            if (this.initialWeaponType === 'gun') {
+                this.player.addWeapon(new GunWeapon((b) => this.spawnBullet(b)));
+            } else {
+                this.player.addWeapon(new SwordWeapon());
+            }
 
 
             // Initialize Domain Expansion Overlay (BEHIND world)
@@ -767,7 +782,7 @@ export class GameApp {
         const options = this.generateSkillOptions();
 
         if (this.onLevelUpCallback) {
-            this.onLevelUpCallback(options);
+            this.onLevelUpCallback({ options });
         } else {
             // If no callback is registered, we must resume immediately or the game freezes
             console.warn("No onLevelUpCallback registered, resuming game immediately.");
