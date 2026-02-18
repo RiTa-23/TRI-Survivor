@@ -22,9 +22,11 @@ import { Enemy4 } from "../entities/Enemy4";
 const GRID_BG_COLOR = 0x0e8aaa;
 
 /** Enemy spawn settings */
-const SPAWN_INTERVAL_MS = 500;
+const INITIAL_SPAWN_INTERVAL = 1000;
+const MIN_SPAWN_INTERVAL = 200;
+const INITIAL_MAX_ENEMIES = 100;
+const ABS_MAX_ENEMIES = 500;
 const SPAWN_DISTANCE = 1000;
-const MAX_ENEMIES = 100;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 const SPECIAL_EFFECT_DURATION = 10.0;
 const GAME_CLEAR_TIME = 333; // 5 minutes 33 seconds
@@ -313,8 +315,11 @@ export class GameApp {
             this.checkPlayerObstacleCollisions();
 
             // Spawn enemies periodically
+            const currentSpawnInterval = Math.max(MIN_SPAWN_INTERVAL, INITIAL_SPAWN_INTERVAL - (this.elapsedTime / 10) * 50);
+            const currentMaxEnemies = Math.min(ABS_MAX_ENEMIES, INITIAL_MAX_ENEMIES + (this.elapsedTime / 10) * 2);
+
             this.spawnTimer += dtMs;
-            if (this.spawnTimer >= SPAWN_INTERVAL_MS && this.enemies.length < MAX_ENEMIES) {
+            if (this.spawnTimer >= currentSpawnInterval && this.enemies.length < currentMaxEnemies) {
                 this.spawnTimer = 0;
                 this.spawnEnemy();
             }
