@@ -20,7 +20,7 @@ const syncUserWithBackend = async (user: User) => {
         const { email, user_metadata } = user;
         if (email) {
             // 1. Check if user exists in public.users
-            const { data: existingUser, error: fetchError } = await supabase
+            const { error: fetchError } = await supabase
                 .from('users')
                 .select('id')
                 .eq('id', user.id)
