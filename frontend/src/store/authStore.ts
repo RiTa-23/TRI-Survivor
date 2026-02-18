@@ -15,19 +15,45 @@ interface AuthState {
     signOut: () => Promise<void>;
 }
 
-// ユーザー同期ロジック (共通化)
 const syncUserWithBackend = async (user: User) => {
     try {
         const { email, user_metadata } = user;
         if (email) {
+            // 1. Check if user exists in public.users
+            const { data: existingUser, error: fetchError } = await supabase
+                .from('users')
+                .select('id')
+                .eq('id', user.id)
+                .single();
+
+            // 2. If not found, insert
+            if (fetchError && fetchError.code === 'PGRST116') {
+                console.log('User not found in public.users, inserting...');
+                const { error: insertError } = await supabase
+                    .from('users')
+                    .insert({
+                        id: user.id,
+                        email: email,
+                        name: user_metadata.full_name || email,
+                        avatar_url: user_metadata.avatar_url,
+                    });
+
+                if (insertError) {
+                    console.error('Failed to insert user into public.users:', insertError);
+                } else {
+                    console.log('Successfully inserted user into public.users');
+                }
+            }
+
+            // 3. Call backend API (keep existing logic for coins/sync)
             const response = await api.post('/users', {
                 id: user.id,
                 email: email,
                 name: user_metadata.full_name || email,
                 avatarUrl: user_metadata.avatar_url,
             });
-            console.log('User synced with backend');
-            
+            console.log('User synced with backend API');
+
             // バックエンドから取得した最新のコイン枚数を gameStore に反映
             if (response.data && typeof response.data.coin === 'number') {
                 useGameStore.getState().setCoins(response.data.coin);
