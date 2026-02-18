@@ -173,10 +173,10 @@ const WEAPON_ITEMS: ShopItem[] = [
 ];
 
 const STATUS_ITEMS: ShopItem[] = [
-  { id: "s4", name: "スピードアップ", price: 120, image: "/images/status-speed.png", description: "移動速度と攻撃速度が上昇。", category: "status" },
-  { id: "s3", name: "防御力アップ", price: 150, image: "/images/status-def.png", description: "防御力が上昇。受けるダメージを軽減。", category: "status" },
-  { id: "s2", name: "攻撃力アップ", price: 180, image: "/images/status-atk.png", description: "攻撃力が上昇。物理攻撃が強くなる。", category: "status" },
-  { id: "s1", name: "HPアップ", price: 200, image: "/images/status-hp.png", description: "最大HPが上昇する。耐久力が大幅にアップ。", category: "status" },
+  { id: "s4", name: "スピードアップ", price: 120, image: "/assets/images/box_red_1.png", description: "移動速度と攻撃速度が上昇。", category: "status" },
+  { id: "s3", name: "防御力アップ", price: 150, image: "/assets/images/box_red_1.png", description: "防御力が上昇。受けるダメージを軽減。", category: "status" },
+  { id: "s2", name: "攻撃力アップ", price: 180, image: "/assets/images/box_red_1.png", description: "攻撃力が上昇。物理攻撃が強くなる。", category: "status" },
+  { id: "s1", name: "HPアップ", price: 200, image: "/assets/images/box_red_1.png", description: "最大HPが上昇する。耐久力が大幅にアップ。", category: "status" },
 ];
 
 export default function ShopScreen() {

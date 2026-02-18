@@ -11,9 +11,7 @@ import {
   Save,
   User as UserIcon,
   Music,
-  Home,
-  Moon,
-  Sun
+  Home
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -30,7 +28,6 @@ export default function SettingScreen() {
   const [user, setUser] = useState({ id: "Gamer_01", avatarUrl: "", displayName: "Player" });
   const [bgmVolume, setBgmVolume] = useState([75]);
   const [seVolume, setSeVolume] = useState([50]);
-  const [darkMode, setDarkMode] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   // マウント時にlocalStorageから設定を読み込む
@@ -49,9 +46,6 @@ export default function SettingScreen() {
           }
           if (Array.isArray(parsed.seVolume)) {
             setSeVolume(parsed.seVolume);
-          }
-          if (typeof parsed.darkMode === "boolean") {
-            setDarkMode(parsed.darkMode);
           }
 
           // ロード完了時は「保存済み」状態にする
@@ -129,7 +123,7 @@ export default function SettingScreen() {
 
     try {
       // 2. 永続化 (localStorage)
-      const settings = { user: updatedUser, bgmVolume, seVolume, darkMode };
+      const settings = { user: updatedUser, bgmVolume, seVolume };
       localStorage.setItem("app_settings", JSON.stringify(settings));
 
       // 3. 成功トースト表示
@@ -358,30 +352,6 @@ export default function SettingScreen() {
               </div>
             </div>
 
-            {/* システム設定セクション */}
-            <div className="pt-2">
-              <h2 className="text-lg font-black tracking-wider text-[#5d4037] mb-6 flex items-center gap-2 border-b border-[#8d6e63]/30 pb-2">
-                <Sun size={18} className="text-[#8d6e63]" />
-                SYSTEM SETTINGS
-              </h2>
-
-              <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-bold text-[#5d4037] uppercase tracking-widest">Dark Mode</span>
-                <button
-                  onClick={() => {
-                    setDarkMode(!darkMode);
-                    handleValueChange();
-                  }}
-                  className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none border-2 border-[#8d6e63]/30 ${darkMode ? "bg-[#3e2723]" : "bg-[#e8d9b4]"}`}
-                >
-                  <div
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform duration-300 flex items-center justify-center shadow-md ${darkMode ? "translate-x-7 bg-[#d7ccc8]" : "translate-x-0 bg-[#3e2723]"}`}
-                  >
-                    {darkMode ? <Moon size={12} className="text-[#3e2723]" /> : <Sun size={12} className="text-[#e8d9b4]" />}
-                  </div>
-                </button>
-              </div>
-            </div>
 
           </div>
         </div>
