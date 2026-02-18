@@ -143,10 +143,13 @@ export default function GameScreen() {
                                 // Still high, show warning and block confirm
                                 setShowFingerWarning(true);
                                 return;
-                            } else {
-                                // Finger dropped, clear warning and enable confirm
+                            } else if (vector.y > -0.1) {
+                                // Finger dropped significantly (closer to neutral), clear warning and enable confirm
                                 isWaitingForFingerResetRef.current = false;
                                 setShowFingerWarning(false);
+                            } else {
+                                // In hysteresis zone (-0.3 to -0.1), keep blocking but don't toggle warning
+                                return;
                             }
                         }
 
