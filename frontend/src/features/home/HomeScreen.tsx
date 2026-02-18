@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 export default function HomeScreen() {
     const navigate = useNavigate();
     const { user, signOut } = useAuthStore();
-    const { coins } = useGameStore();
+    const { coins, selectedWeapon, setSelectedWeapon } = useGameStore();
 
     // パーティクルデータを初回のみ生成（再レンダリング時のちらつき防止）
     const particles = useMemo(() => 
@@ -86,6 +86,67 @@ export default function HomeScreen() {
 
                 {/* --- 中央: キャラクター表示エリア --- */}
                 <div className="flex-1 relative flex items-center justify-center">
+                    
+                    {/* --- スキル選択 (武器選択) エリア --- */}
+                    <div className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-8">
+                        <div className="flex flex-col items-center gap-2">
+                            <span className="text-[10px] font-black text-amber-200/40 uppercase tracking-[0.3em] whitespace-nowrap">Skill Selection</span>
+                            <div className="w-px h-12 bg-gradient-to-b from-transparent via-amber-900/50 to-transparent" />
+                        </div>
+
+                        <div className="flex flex-col gap-6">
+                            {/* 剣の選択肢 */}
+                            <div 
+                                onClick={() => setSelectedWeapon('sword')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedWeapon === 'sword' 
+                                        ? 'border-amber-400 bg-amber-900/40 shadow-[0_0_30px_rgba(251,191,36,0.4)]' 
+                                        : 'border-amber-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-amber-700'}`}
+                            >
+                                {/* 剣のイメージ画像 */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                                    <img 
+                                        src="/assets/images/sword.png" 
+                                        alt="Sword" 
+                                        className="w-full h-full object-contain drop-shadow-[0_8px_15px_rgba(0,0,0,0.6)]"
+                                    />
+                                </div>
+                                <span className={`text-xs font-black tracking-[0.2em] transition-colors ${selectedWeapon === 'sword' ? 'text-amber-100' : 'text-amber-100/40'}`}>SWORD</span>
+                                
+                                {selectedWeapon === 'sword' && (
+                                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center shadow-[0_0_15px_rgba(251,191,36,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 銃の選択肢 */}
+                            <div 
+                                onClick={() => setSelectedWeapon('gun')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedWeapon === 'gun' 
+                                        ? 'border-blue-400 bg-blue-900/40 shadow-[0_0_30px_rgba(96,165,250,0.4)]' 
+                                        : 'border-amber-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-blue-900/50'}`}
+                            >
+                                {/* 銃のイメージ画像 — センタリングを維持しつつ拡大 */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 overflow-visible">
+                                    <img 
+                                        src="/assets/images/handgun.png" 
+                                        alt="Handgun" 
+                                        className="max-w-[150%] max-h-[150%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.7)] transform translate-x-12 translate-y-[-6px]"
+                                    />
+                                </div>
+                                <span className={`text-xs font-black tracking-[0.2em] transition-colors ${selectedWeapon === 'gun' ? 'text-blue-100' : 'text-amber-100/40'}`}>HANDGUN</span>
+
+                                {selectedWeapon === 'gun' && (
+                                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center shadow-[0_0_15px_rgba(96,165,250,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="relative z-10 flex flex-col items-center -mt-20">
                         {/* キャラクター画像本体 */}
                         <motion.div 
