@@ -88,7 +88,6 @@ export class GameApp {
     private isKonActive: boolean = false;
     private konVelocity: number = 1500; // Faster
     private konHitboxRadius: number = 800; // Smaller than visual length to better match shape
-    private static readonly KON_VISUAL_SCALE = 4.0;
     private static readonly KON_HITBOX_OFFSET_X = 200; // Based on shape
     private static readonly INSTANT_KILL_DAMAGE = Number.MAX_SAFE_INTEGER;
 
