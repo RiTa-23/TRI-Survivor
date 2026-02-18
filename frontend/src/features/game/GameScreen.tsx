@@ -122,8 +122,8 @@ export default function GameScreen() {
 
                         // X-Axis -> Selection (Left / Center / Right)
                         let newIndex = 1; // Default Center
-                        if (vector.x < -0.65) newIndex = 0;      // Left
-                        else if (vector.x > 0.65) newIndex = 2;   // Right
+                        if (vector.x < -0.55) newIndex = 0;      // Left
+                        else if (vector.x > 0.55) newIndex = 2;   // Right
 
                         // Clamp index to available options
                         const maxIndex = Math.max(0, skillOptionsRef.current.length - 1);
@@ -139,7 +139,7 @@ export default function GameScreen() {
 
                         // Check for initial high finger position (Safety)
                         if (isWaitingForFingerResetRef.current) {
-                            if (vector.y < -0.8) {
+                            if (vector.y < -0.3) {
                                 // Still high, show warning and block confirm
                                 setShowFingerWarning(true);
                                 return;
@@ -150,7 +150,7 @@ export default function GameScreen() {
                             }
                         }
 
-                        if (vector.y < -0.9) {
+                        if (vector.y < -0.6) {
                             // Cooldown for confirm
                             if (now - lastConfirmTimeRef.current > 1000) {
                                 lastConfirmTimeRef.current = now;
@@ -182,7 +182,12 @@ export default function GameScreen() {
                 (options: SkillOption[]) => {
                     setSkillOptions(options);
                     setIsLevelUpModalOpen(true);
-                    setSelectedIndex(1); // Default to center
+                    // Default to center (index 1) but clamp to valid range
+                    // If 1 option -> index 0
+                    // If 2 options -> index 1
+                    // If 3 options -> index 1
+                    const initialIndex = Math.min(1, Math.max(0, options.length - 1));
+                    setSelectedIndex(initialIndex);
                 },
                 // onGameEnd Callback
                 (finalStats: PlayerStats, isClear: boolean) => {
@@ -238,7 +243,7 @@ export default function GameScreen() {
             {showFingerWarning && isLevelUpModalOpen && (
                 <div className="absolute inset-0 z-[60] flex items-center justify-center pointer-events-none">
                     <div className="bg-red-600/90 text-white px-8 py-4 rounded-full text-2xl font-bold animate-bounce shadow-lg border-4 border-white">
-                        指が上がりすぎ　画面に対して指を垂直に向けて
+                        指を下に向けながら選択してください
                     </div>
                 </div>
             )}
