@@ -3,13 +3,13 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useGameStore } from "@/store/gameStore";
-import { Settings, LogOut, Coins, ShoppingBag, BookOpen, User as UserIcon } from "lucide-react";
+import { Settings, LogOut, Coins, ShoppingBag, BookOpen, User as UserIcon, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function HomeScreen() {
     const navigate = useNavigate();
     const { user, signOut } = useAuthStore();
-    const { coins } = useGameStore();
+    const { coins, selectedWeapon, setSelectedWeapon, selectedSpecialMove, setSelectedSpecialMove } = useGameStore();
 
     // パーティクルデータを初回のみ生成（再レンダリング時のちらつき防止）
     const particles = useMemo(() => 
@@ -86,6 +86,123 @@ export default function HomeScreen() {
 
                 {/* --- 中央: キャラクター表示エリア --- */}
                 <div className="flex-1 relative flex items-center justify-center">
+                    
+                    {/* --- スキル選択 (武器選択) エリア --- */}
+                    <div className="absolute left-6 md:left-12 top-[55%] -translate-y-1/2 z-20 flex flex-col gap-8">
+
+                        <div className="flex flex-col gap-6">
+                            {/* 剣の選択肢 */}
+                            <div 
+                                onClick={() => setSelectedWeapon('sword')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedWeapon === 'sword' 
+                                        ? 'border-amber-400 bg-amber-900/40 shadow-[0_0_30px_rgba(251,191,36,0.4)]' 
+                                        : 'border-amber-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-amber-700'}`}
+                            >
+                                {/* 剣のイメージ画像 */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+                                    <img 
+                                        src="/assets/images/sword.png" 
+                                        alt="Sword" 
+                                        className="w-full h-full object-contain drop-shadow-[0_8px_15px_rgba(0,0,0,0.6)]"
+                                    />
+                                </div>
+                                <span className={`text-xs font-black tracking-[0.2em] transition-colors ${selectedWeapon === 'sword' ? 'text-amber-100' : 'text-amber-100/40'}`}>SWORD</span>
+                                
+                                {selectedWeapon === 'sword' && (
+                                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center shadow-[0_0_15px_rgba(251,191,36,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 銃の選択肢 */}
+                            <div 
+                                onClick={() => setSelectedWeapon('gun')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedWeapon === 'gun' 
+                                        ? 'border-blue-400 bg-blue-900/40 shadow-[0_0_30px_rgba(96,165,250,0.4)]' 
+                                        : 'border-amber-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-blue-900/50'}`}
+                            >
+                                {/* 銃のイメージ画像 — センタリングを維持しつつ拡大 */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 overflow-visible">
+                                    <img 
+                                        src="/assets/images/handgun.png" 
+                                        alt="Handgun" 
+                                        className="max-w-[150%] max-h-[150%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.7)] transform translate-x-12 translate-y-[-6px]"
+                                    />
+                                </div>
+                                <span className={`text-xs font-black tracking-[0.2em] transition-colors ${selectedWeapon === 'gun' ? 'text-blue-100' : 'text-amber-100/40'}`}>HANDGUN</span>
+
+                                {selectedWeapon === 'gun' && (
+                                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center shadow-[0_0_15px_rgba(96,165,250,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- 必殺技選択 エリア --- */}
+                    <div className="absolute right-6 md:right-12 top-[45%] -translate-y-1/2 z-20 flex flex-col gap-8">
+
+                        <div className="flex flex-col gap-6">
+                            {/* 無量空処の選択肢 */}
+                            <div 
+                                onClick={() => setSelectedSpecialMove('unlimited_void')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedSpecialMove === 'unlimited_void' 
+                                        ? 'border-purple-400 bg-purple-900/40 shadow-[0_0_30px_rgba(168,85,247,0.4)]' 
+                                        : 'border-purple-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-purple-700'}`}
+                            >
+                                {/* 必殺技のイメージ画像: 無量空処 (青い目のマーク) */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 relative">
+                                    {/* 魔方陣のような背景発光 */}
+                                    <div className="absolute inset-0 rounded-full bg-cyan-500/10 blur-xl animate-pulse" />
+                                    <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                                        <Eye 
+                                            size={44} 
+                                            className="text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-pulse" 
+                                            strokeWidth={1.5}
+                                        />
+                                    </div>
+                                </div>
+                                <span className={`text-[10px] font-black tracking-wider transition-colors ${selectedSpecialMove === 'unlimited_void' ? 'text-purple-100' : 'text-purple-100/40'}`}>MURYOUKUUSHO</span>
+                                
+                                {selectedSpecialMove === 'unlimited_void' && (
+                                    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-purple-400 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* コンの選択肢 */}
+                            <div 
+                                onClick={() => setSelectedSpecialMove('kon')}
+                                className={`relative w-28 h-32 md:w-32 md:h-40 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group
+                                    ${selectedSpecialMove === 'kon' 
+                                        ? 'border-red-400 bg-red-900/40 shadow-[0_0_30px_rgba(248,113,113,0.4)]' 
+                                        : 'border-red-900/30 bg-black/40 grayscale hover:grayscale-0 hover:border-red-900/50'}`}
+                            >
+                                {/* 必殺技のイメージ画像: KON */}
+                                <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 overflow-visible">
+                                    <img 
+                                        src="/assets/images/Kon.png" 
+                                        alt="Kon" 
+                                        className="max-w-[140%] max-h-[140%] object-contain drop-shadow-[0_10px_20px_rgba(255,0,0,0.5)] transform translate-y-[-4px]"
+                                    />
+                                </div>
+                                <span className={`text-[10px] font-black tracking-wider transition-colors ${selectedSpecialMove === 'kon' ? 'text-red-100' : 'text-red-100/40'}`}>KON</span>
+
+                                {selectedSpecialMove === 'kon' && (
+                                    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-red-400 flex items-center justify-center shadow-[0_0_15px_rgba(248,113,113,0.6)] border-4 border-[#1b110e]">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#1b110e]" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="relative z-10 flex flex-col items-center -mt-20">
                         {/* キャラクター画像本体 */}
                         <motion.div 
