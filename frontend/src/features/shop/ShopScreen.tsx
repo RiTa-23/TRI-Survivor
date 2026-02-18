@@ -1,11 +1,22 @@
 // src/features/shop/ShopScreen.tsx
 
 import { useNavigate } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
-
+import { useState } from "react";
+import {
+  Axe,
+  BicepsFlexed,
+  Coins as CoinIcon,
+  Home,
+  LockKeyhole,
+  LockKeyholeOpen,
+  Info
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useGameStore } from "@/store/gameStore";
+import { motion, AnimatePresence } from "framer-motion";
+const troisImage = "/assets/images/Trois(SD1).png";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,123 +27,125 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-
-import {
-  LockKeyhole,
-  LockKeyholeOpen,
-  ArrowLeft,
-  Axe,
-  BicepsFlexed
-} from "lucide-react"
-
-import { useState } from "react"
+} from "@/components/ui/alert-dialog";
 
 // -----------------------------
-// 修正：型定義 (ShopItem Interface)
+// 型定義 (ShopItem Interface)
 // -----------------------------
 interface ShopItem {
+  id: string;
   name: string;
   price: number;
   image: string;
   description: string;
+  category: "weapon" | "status";
 }
 
 // -----------------------------
-// 商品カードコンポーネント
+// 商品カードコンポーネント (RPGテーマ)
 // -----------------------------
 interface ShopItemCardProps extends ShopItem {
-  coins: number;
-  // 修正：any を排除し ShopItem | null を指定
   onHover: (item: ShopItem | null) => void;
 }
 
-export function ShopItemCard({
+function ShopItemCard({
+  id,
   name,
   price,
   image,
   description,
-  coins,
   onHover,
 }: ShopItemCardProps) {
-  const [purchased, setPurchased] = useState(false)
+  const { coins, addCoins } = useGameStore();
+  const [purchased, setPurchased] = useState(false);
 
   const handlePurchase = () => {
-    setPurchased(true)
-  }
+    if (coins >= price) {
+      addCoins(-price);
+      setPurchased(true);
+    }
+  };
 
-  // 修正：型安全なアイテムオブジェクトの作成
-  const currentItem: ShopItem = { name, price, image, description };
+  const item: ShopItem = { id, name, price, image, description, category: "weapon" }; // category is ignored here
 
   return (
-    <Card
-      onMouseEnter={() => onHover(currentItem)}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      onMouseEnter={() => onHover(item)}
       onMouseLeave={() => onHover(null)}
       className={`
-        w-[180px] h-[250px]
-        flex flex-col justify-between
-        rounded-xl cursor-pointer
-        border border-yellow-500/70
-        shadow-none
-        hover:shadow-[0_0_28px_rgba(255,215,0,0.8)]
-        transition-all
-        ${purchased ? "bg-gray-200" : "bg-white"}
+        w-[160px] h-[240px]
+        flex flex-col
+        rounded-xl relative
+        border-2 border-[#8d6e63]/30
+        bg-[#e8d9b4]/20 backdrop-blur-sm
+        hover:border-amber-500/50 hover:bg-[#e8d9b4]/40
+        transition-all duration-300
+        overflow-hidden
+        ${purchased ? "opacity-80 grayscale-[0.5]" : ""}
       `}
     >
-      <CardHeader className="text-center py-1">
-        <CardTitle className="text-sm font-bold text-black">
+      <div className="bg-[#3e2723]/10 py-2 border-b border-[#8d6e63]/20">
+        <h3 className="text-xs font-black text-center text-[#5d4037] truncate px-2 font-serif uppercase tracking-wider">
           {name}
-        </CardTitle>
-      </CardHeader>
+        </h3>
+      </div>
 
-      <CardContent className="flex justify-center items-center h-[70px] pt-1">
+      <div className="flex-1 flex items-center justify-center p-4">
         <img
           src={image}
           alt={name}
-          className="w-14 h-14 object-contain"
+          className="w-16 h-16 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "https://placehold.co/100x100?text=Item";
+          }}
         />
-      </CardContent>
+      </div>
 
-      <CardFooter className="flex flex-col gap-1 pb-2 px-2">
-        <div className="text-center text-sm font-bold flex items-center justify-center gap-1 text-yellow-300">
-          <span className="text-yellow-200 text-lg">🪙</span>
-          <span className={price > coins && !purchased ? "text-red-500" : ""}>{price}</span>
+      <div className="p-3 bg-[#3e2723]/5 space-y-2">
+        <div className="flex items-center justify-center gap-1.5">
+          <CoinIcon size={14} className="text-yellow-600" />
+          <span className={`text-sm font-black font-mono tracking-tighter ${coins < price && !purchased ? "text-red-700" : "text-[#5d4037]"}`}>
+            {price.toLocaleString()}
+          </span>
         </div>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
-              className="
-                w-full text-xs py-2 flex items-center justify-center gap-2 font-bold
-                bg-black/70 text-white
-                border border-yellow-500/60
-                hover:bg-black
-                transition-all
-                disabled:opacity-50
-              "
-              disabled={purchased || price > coins}
+              className={`
+                w-full h-9 text-[10px] font-black tracking-widest uppercase
+                transition-all border-b-4
+                ${purchased
+                  ? "bg-[#5d4037]/20 text-[#5d4037]/50 border-transparent cursor-default shadow-none"
+                  : coins < price
+                    ? "bg-[#3e2723]/10 text-[#3e2723]/40 border-[#3e2723]/20 shadow-none cursor-not-allowed"
+                    : "btn-fantasy-red border-red-900 active:border-b-0 active:translate-y-1"
+                }
+              `}
+              disabled={purchased || coins < price}
             >
               {purchased ? (
-                <><LockKeyholeOpen size={14} />購入済み</>
-              ) : price > coins ? (
-                <><LockKeyhole size={14} />コイン不足</>
+                <span className="flex items-center gap-1.5"><LockKeyholeOpen size={12} /> 購入済み</span>
+              ) : coins < price ? (
+                <span className="flex items-center gap-1.5"><LockKeyhole size={12} /> コイン不足</span>
               ) : (
-                <><LockKeyhole size={14} />購入する</>
+                <span className="flex items-center gap-1.5"><LockKeyhole size={12} /> 購入する</span>
               )}
             </Button>
           </AlertDialogTrigger>
 
-          <AlertDialogContent className="bg-white text-black border border-yellow-500">
+          <AlertDialogContent className="bg-[#e8d9b4] border-4 border-[#3e2723] rounded-2xl font-serif">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-yellow-600 font-bold">購入しますか？</AlertDialogTitle>
-              <AlertDialogDescription>
-                {name} を {price} コインで購入します。
+              <AlertDialogTitle className="text-2xl font-black text-[#3e2723] tracking-wider uppercase">購入しますか？</AlertDialogTitle>
+              <AlertDialogDescription className="text-[#5d4037] text-lg font-medium leading-relaxed">
+                <span className="font-black underline">{name}</span> を <span className="font-black text-red-800">{price} コイン</span> で購入します。
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="bg-slate-700 hover:bg-slate-600 text-white">いいえ</AlertDialogCancel>
+            <AlertDialogFooter className="gap-4">
+              <AlertDialogCancel className="bg-transparent border-2 border-[#8d6e63] text-[#5d4037] hover:bg-[#3e2723]/10 font-bold px-6">いいえ</AlertDialogCancel>
               <AlertDialogAction
-                className="bg-white border border-yellow-500 text-yellow-600 font-bold hover:bg-yellow-50"
+                className="bg-[#3e2723] text-amber-100 hover:bg-[#2d1b18] font-black px-8 shadow-lg active:translate-y-1 transition-all"
                 onClick={handlePurchase}
               >
                 はい
@@ -140,111 +153,186 @@ export function ShopItemCard({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </CardFooter>
-    </Card>
+      </div>
+    </motion.div>
   );
 }
 
 // -----------------------------
 // ショップ画面
 // -----------------------------
+const WEAPON_ITEMS: ShopItem[] = [
+  { id: "w2", name: "盾", price: 150, image: "/images/item-normal.png", description: "受けるダメージを軽減し、さらに自動でHPが少しずつ回復する。", category: "weapon" },
+  { id: "w4", name: "アックス", price: 250, image: "/images/item-ultra.png", description: "自分の周りを高速で回転し続け、接近する敵をなぎ倒す。", category: "weapon" },
+  { id: "w3", name: "弓", price: 300, image: "/images/item-epic.png", description: "遠距離から敵を自動で射抜く。安全な距離を保って攻撃可能。", category: "weapon" },
+  { id: "w5", name: "魔導書", price: 400, image: "/images/item-rod.png", description: "進行方向に向かって、すべてを貫通する強力なビームを放つ。", category: "weapon" },
+  { id: "w1", name: "魔剣", price: 500, image: "/images/item-legend.png", description: "近距離のオート攻撃に加え、攻撃方向に強力な斬撃を放つ。", category: "weapon" },
+  { id: "w6", name: "魔法陣", price: 600, image: "/images/item-circle.png", description: "周囲に強力な魔法陣を展開し、範囲内の敵に絶大なダメージを与える。", category: "weapon" },
+];
+
+const STATUS_ITEMS: ShopItem[] = [
+  { id: "s4", name: "スピードアップ", price: 120, image: "/images/status-speed.png", description: "移動速度と攻撃速度が上昇。", category: "status" },
+  { id: "s3", name: "防御力アップ", price: 150, image: "/images/status-def.png", description: "防御力が上昇。受けるダメージを軽減。", category: "status" },
+  { id: "s2", name: "攻撃力アップ", price: 180, image: "/images/status-atk.png", description: "攻撃力が上昇。物理攻撃が強くなる。", category: "status" },
+  { id: "s1", name: "HPアップ", price: 200, image: "/images/status-hp.png", description: "最大HPが上昇する。耐久力が大幅にアップ。", category: "status" },
+];
+
 export default function ShopScreen() {
   const navigate = useNavigate();
-
-  // 修正：State の型定義から any を排除
-  const [hoverItem, setHoverItem] = useState<ShopItem | null>(null)
-  const [coins] = useState(200)
-
-  // アイテムリストの型定義（自動的に ShopItem[] と推論されます）
-  const weaponItems: ShopItem[] = [
-    { name: "レジェンドソード", price: 500, image: "/images/item-legend.png", description: "古代の英雄が使ったとされる伝説の剣。攻撃力 +50。" },
-    { name: "エピックボウ", price: 300, image: "/images/item-epic.png", description: "遠距離攻撃に優れた弓。クリティカル率が上昇する。" },
-    { name: "レアダガー", price: 150, image: "/images/item-rare.png", description: "素早い攻撃が可能な短剣。スピード +10。" },
-    { name: "ノーマルシールド", price: 80, image: "/images/item-normal.png", description: "基本的な盾。防御力を少し上げる。" },
-    { name: "ウルトラランス", price: 600, image: "/images/item-ultra.png", description: "強力な突き攻撃が可能な槍。攻撃力 +40。" },
-    { name: "マジックロッド", price: 250, image: "/images/item-rod.png", description: "魔法攻撃力を上げる杖。MP 回復速度が上昇。" },
-    { name: "ファイアソード", price: 400, image: "/images/item-fire.png", description: "炎の力を宿した剣。追加で火属性ダメージを与える。" },
-    { name: "アイスボウ", price: 350, image: "/images/item-ice.png", description: "氷の矢を放つ弓。敵の動きを遅くする効果あり。" },
-  ].sort((a, b) => a.price - b.price)
-
-  const statusItems: ShopItem[] = [
-    { name: "HPアップ", price: 200, image: "/images/status-hp.png", description: "最大HPが上昇する。耐久力が大幅にアップ。" },
-    { name: "攻撃力アップ", price: 180, image: "/images/status-atk.png", description: "攻撃力が上昇。物理攻撃が強くなる。" },
-    { name: "防御力アップ", price: 150, image: "/images/status-def.png", description: "防御力が上昇。受けるダメージを軽減。" },
-    { name: "スピードアップ", price: 120, image: "/images/status-speed.png", description: "移動速度と攻撃速度が上昇。" },
-    { name: "クリティカル率アップ", price: 220, image: "/images/status-crit.png", description: "クリティカル発生率が上昇。大ダメージを狙える。" },
-    { name: "回避率アップ", price: 160, image: "/images/status-dodge.png", description: "敵の攻撃を回避しやすくなる。" },
-    { name: "魔法耐性アップ", price: 190, image: "/images/status-magic.png", description: "魔法攻撃に対する耐性が上昇。" },
-    { name: "スタミナアップ", price: 140, image: "/images/status-stamina.png", description: "スタミナが増加し、長時間戦えるようになる。" },
-  ].sort((a, b) => a.price - b.price)
+  const { coins } = useGameStore();
+  const [hoverItem, setHoverItem] = useState<ShopItem | null>(null);
 
   return (
-    <div className="relative min-h-screen bg-white text-black flex flex-col items-center p-6">
+    <div className="relative min-h-screen w-full forest-bg overflow-hidden flex flex-col items-center">
 
-      {/* 所持コイン枠 */}
-      <div className="absolute top-7 right-7 bg-white border border-yellow-500 rounded-lg px-4 py-2 flex items-center gap-2 min-w-[60px] justify-center h-[46px]">
-        <span className="text-yellow-500 text-xl">🪙</span>
+      {/* --- 上部バー (木製パネル) --- */}
+      <div className="h-20 w-full wood-panel z-30 flex items-center justify-between px-6 border-t-0 border-x-0 relative shadow-2xl">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/home")}
+          className="flex items-center gap-2 px-4 py-2 text-amber-200/60 hover:text-white hover:bg-white/5 rounded-lg transition-all font-bold group"
+        >
+          <Home className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+          <span className="text-sm font-serif uppercase tracking-widest leading-none">ホームへ</span>
+        </Button>
+
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-2xl md:text-3xl font-black tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-serif uppercase">
+          トロワ SHOP
+        </h1>
+
+        <div className="flex items-center gap-4 bg-black/40 px-5 py-2 rounded-full border-2 border-amber-900/40 shadow-inner">
+          <CoinIcon className="w-5 h-5 text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)]" />
+          <span className="text-lg font-mono font-black tracking-widest text-yellow-100">{coins.toLocaleString()}</span>
+        </div>
       </div>
 
-      {/* 詳細パネル */}
-      <div className="absolute top-44 left-12 w-64 bg-white text-black border border-black rounded-lg p-4">
-        {hoverItem ? (
-          <>
-            <div className="font-bold text-yellow-600 mb-2">{hoverItem.name}</div>
-            <div className="text-sm">{hoverItem.description}</div>
-          </>
-        ) : (
-          <div className="text-sm text-gray-500 text-center">アン・ドゥ・トロワ♪<br />トロワのショップにようこそ！</div>
-        )}
-      </div>
+      {/* --- メインコンテンツ --- */}
+      <div className="flex-1 w-full max-w-6xl px-4 pt-2 pb-12 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 z-10 animate-in fade-in slide-in-from-bottom-5 duration-700 overflow-hidden">
 
-      {/* キャラ画像 */}
-      <img
-        src="/images/character.png"
-        alt="character"
-        className="absolute bottom-40 left-[8.75rem] w-48"
-      />
+        {/* 左側: 商品リストエリア */}
+        <div className="flex flex-col gap-6">
+          <Tabs defaultValue="weapon" className="w-full">
+            <div className="flex justify-between items-center mb-4">
+              <TabsList className="bg-[#3e2723]/30 p-1 rounded-2xl border border-[#8d6e63]/20 backdrop-blur-md">
+                <TabsTrigger
+                  value="weapon"
+                  className="px-8 py-3 rounded-xl font-black text-xs tracking-widest uppercase transition-all data-[state=active]:bg-[#e8d9b4] data-[state=active]:text-[#3e2723] data-[state=active]:shadow-lg flex items-center gap-2"
+                >
+                  <Axe size={16} /> 武器
+                </TabsTrigger>
+                <TabsTrigger
+                  value="status"
+                  className="px-8 py-3 rounded-xl font-black text-xs tracking-widest uppercase transition-all data-[state=active]:bg-[#e8d9b4] data-[state=active]:text-[#3e2723] data-[state=active]:shadow-lg flex items-center gap-2"
+                >
+                  <BicepsFlexed size={16} /> ステータス
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-      <button
-        onClick={() => navigate("/home")}
-        className="absolute top-4 left-4 p-2 rounded-lg border border-black/40 bg-black/10 hover:bg-black/20 transition-colors"
-      >
-        <ArrowLeft size={24} />
-      </button>
+            <ScrollArea className="h-[calc(100vh-180px)] max-h-[640px] min-h-[380px] w-full parchment-realistic pl-60 pr-2 lg:pl-[400px] lg:pr-100 rounded-3xl relative">
+              {/* Parchment decorative elements */}
+              <div className="fibers" aria-hidden />
+              <div className="wrinkles" aria-hidden />
+              <div className="wave" aria-hidden />
+              <div className="ink-bleed one" aria-hidden />
+              <div className="corner-wear" aria-hidden />
+              <div className="inner-band" />
 
-      <h1 className="text-3xl font-bold mb-6 text-yellow-600">Shop</h1>
+              <TabsContent value="weapon" className="m-0 focus-visible:outline-none">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 pb-10">
+                  {WEAPON_ITEMS.map((item) => (
+                    <ShopItemCard key={item.id} {...item} onHover={setHoverItem} />
+                  ))}
+                </div>
+              </TabsContent>
 
-      <div className="w-full flex justify-end">
-        <Tabs defaultValue="weapon" className="max-w-4xl w-full">
-          <TabsList className="flex justify-end w-full pr-6 mb-4 bg-black/10 rounded-full p-1">
-            <TabsTrigger value="weapon" className="px-6 py-2 rounded-full data-[state=active]:bg-green-300/30 data-[state=active]:text-green-700">
-              <Axe size={18} /> 武器
-            </TabsTrigger>
-            <TabsTrigger value="status" className="px-6 py-2 rounded-full data-[state=active]:bg-green-300/30 data-[state=active]:text-green-700">
-              <BicepsFlexed size={18} /> ステータス
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="weapon">
-            <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
-              <div className="flex flex-row flex-wrap justify-center gap-5 mt-6">
-                {weaponItems.map((item) => (
-                  <ShopItemCard key={item.name} {...item} coins={coins} onHover={setHoverItem} />
-                ))}
-              </div>
+              <TabsContent value="status" className="m-0 focus-visible:outline-none">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 pb-10">
+                  {STATUS_ITEMS.map((item) => (
+                    <ShopItemCard key={item.id} {...item} onHover={setHoverItem} />
+                  ))}
+                </div>
+              </TabsContent>
             </ScrollArea>
-          </TabsContent>
+          </Tabs>
+        </div>
 
-          <TabsContent value="status">
-            <ScrollArea className="h-[360px] w-full rounded-md border border-black/20 bg-black/5 p-4">
-              <div className="flex flex-row flex-wrap justify-center gap-5 mt-6">
-                {statusItems.map((item) => (
-                  <ShopItemCard key={item.name} {...item} coins={coins} onHover={setHoverItem} />
-                ))}
+        {/* 右側: 詳細・キャラクターエリア */}
+        <div className="flex flex-col gap-6">
+          {/* 詳細パネル (羊皮紙) / 常に吹き出しとして表示 */}
+          <div className="parchment-realistic p-6 h-[160px] flex flex-col items-center justify-center relative group shadow-xl">
+            {/* 吹き出しの尻尾 (挨拶時のみ表示) */}
+            {!hoverItem && (
+              <div className="absolute -bottom-3 right-20 w-6 h-6 bg-[#f0deb2] rotate-45 border-r border-b border-[#8d6e63]/30 z-0 shadow-lg" />
+            )}
+
+            <div className="inner-band" />
+            <div className="fibers opacity-40" />
+
+            <AnimatePresence mode="wait">
+              {hoverItem ? (
+                <motion.div
+                  key={hoverItem.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="w-full relative z-10"
+                >
+                  <h3 className="text-[10px] font-black text-[#5d4037] border-b border-[#8d6e63]/30 pb-1.5 mb-3 flex items-center gap-2 uppercase tracking-tighter leading-none">
+                    <Info size={14} className="text-[#8d6e63]" /> アイテム詳細
+                  </h3>
+                  <div className="space-y-1">
+                    <div className="text-lg font-black text-[#3e2723] font-serif leading-tight">
+                      {hoverItem.name}
+                    </div>
+                    <div className="text-[#5d4037] text-xs leading-relaxed font-serif italic">
+                      {hoverItem.description}
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex-1 flex flex-col items-center justify-center text-center space-y-2 relative z-10"
+                >
+                  <p className="text-sm font-black text-[#3e2723] font-serif leading-relaxed tracking-wider">
+                    「アン・ドゥ・トロワ♪<br />トロワのショップにようこそ！」
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* キャラクタープレビュー */}
+          <div className="flex-1 bg-[#1b110e]/40 backdrop-blur-md rounded-3xl border-2 border-amber-900/30 relative flex flex-col items-center justify-end p-0 overflow-hidden group shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-0" />
+
+            {/* 装飾光エフェクト */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-amber-500/10 blur-[100px] rounded-full group-hover:bg-amber-500/15 transition-all duration-1000" />
+
+            <motion.div
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="relative z-10 flex flex-col items-center"
+            >
+              <img
+                src={troisImage}
+                alt="character"
+                className="w-full h-auto drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)] scale-125 origin-bottom translate-y-10"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/assets/images/player.png";
+                }}
+              />
+              <div className="mt-4 wood-panel px-6 py-2 rounded-xl text-amber-100 text-[10px] font-black tracking-[0.3em] uppercase border-2 border-[#3e2723] shadow-lg leading-none">
+                トロワ
               </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+            </motion.div>
+
+            {/* 足元の影 */}
+            <div className="absolute bottom-12 w-32 h-6 bg-black/50 blur-xl rounded-full scale-x-150 z-0" />
+          </div>
+        </div>
       </div>
     </div>
   );
