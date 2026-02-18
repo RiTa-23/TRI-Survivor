@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, TilingSprite, Assets } from "pixi.js";
+import { Application, Container, Graphics, TilingSprite, Assets, Sprite } from "pixi.js";
 import { Player } from "../entities/Player";
 import { Enemy } from "../entities/Enemy";
 import { BasicEnemy } from "../entities/BasicEnemy";
@@ -75,7 +75,7 @@ export class GameApp {
     // --- Special Skill State ---
     private specialGauge: number = 0;
     private specialMaxCooldown: number = 20; // Initial cooldown 20s
-    private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
+    private activeSpecialType: SpecialSkillType = SpecialSkillType.KON;
     private specialEffectTimer: number = 0;
     private isSpecialEffectActive: boolean = false;
     private domainOverlayWithFade: Graphics | null = null;
@@ -172,6 +172,7 @@ export class GameApp {
                 "/assets/images/skills/gold.png",
                 "/assets/images/skills/cdr.png",
                 "/assets/images/field_grass.png",
+                "/assets/images/fox.png",
             ]);
         } catch (e) {
             console.error("Failed to load assets:", e);
@@ -249,27 +250,15 @@ export class GameApp {
             this.konGraphics = new Container();
             this.konGraphics.visible = false;
 
-            const s = GameApp.KON_VISUAL_SCALE; // Scale factor
-            const g = new Graphics();
+            const foxSprite = Sprite.from("/assets/images/fox.png");
 
-            // Main Head (Orange Triangle)
-            g.poly([-150 * s, 0, 150 * s, -100 * s, 150 * s, 100 * s]);
-            g.fill({ color: 0xFF8800 });
+            // Adjust scale and anchor
+            // Previous shape was roughly 300x400 * scale(4.0) -> Huge
+            // Let's make the sprite reasonably large but not screen-covering
+            foxSprite.anchor.set(0.5);
+            foxSprite.scale.set(1.7); // Keep the scale factor for now, adjust if too big/small
 
-            // Ears
-            g.poly([50 * s, -100 * s, 100 * s, -200 * s, 150 * s, -100 * s]);
-            g.poly([50 * s, 100 * s, 100 * s, 200 * s, 150 * s, 100 * s]);
-            g.fill({ color: 0xCC6600 });
-
-            // Eyes (White + Black)
-            g.circle(0, -30 * s, 15 * s);
-            g.circle(0, 30 * s, 15 * s);
-            g.fill({ color: 0xFFFFFF });
-            g.circle(-5 * s, -30 * s, 5 * s);
-            g.circle(-5 * s, 30 * s, 5 * s);
-            g.fill({ color: 0x000000 });
-
-            this.konGraphics.addChild(g);
+            this.konGraphics.addChild(foxSprite);
 
             // Add to stage (Top most)
             this.app.stage.addChild(this.konGraphics);
