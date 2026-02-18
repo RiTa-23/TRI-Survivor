@@ -396,6 +396,16 @@ export class GameApp {
             enemy.isFrozen = true;
         }
 
+        // Apply difficulty scaling (Double stats every minute)
+        const minutes = Math.floor(this.elapsedTime / 60);
+        const multiplier = Math.pow(2, minutes);
+
+        if (minutes > 0) {
+            enemy.maxHp *= multiplier;
+            enemy.hp = enemy.maxHp;
+            enemy.attackPower *= multiplier;
+        }
+
         this.enemies.push(enemy);
         this.world.addChild(enemy);
     }
