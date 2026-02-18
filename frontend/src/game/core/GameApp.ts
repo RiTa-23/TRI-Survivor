@@ -12,6 +12,9 @@ import type { SkillOption, PlayerStats } from "../types";
 import { GunWeapon } from "../weapons/GunWeapon";
 import { SwordWeapon } from "../weapons/SwordWeapon";
 import { SpecialSkillType } from "../types";
+import { Enemy2 } from "../entities/Enemy2";
+import { Enemy3 } from "../entities/Enemy3";
+import { Enemy4 } from "../entities/Enemy4";
 
 /** Grid tile size (one cell) - Deprecated/Unused */
 // const GRID_SIZE = 80;
@@ -146,6 +149,9 @@ export class GameApp {
             await Assets.load([
                 "/assets/images/Player_1.png",
                 "/assets/images/enemy/enemy_1.png",
+                "/assets/images/enemy/enemy_2.png",
+                "/assets/images/enemy/enemy_3.png",
+                "/assets/images/enemy/enemy_4.png",
                 "/assets/images/EXP_1.png",
                 "/assets/images/EXP_2.png",
                 "/assets/images/EXP_3.png",
@@ -361,7 +367,19 @@ export class GameApp {
 
     /** Spawn a new enemy at a random position around the player */
     private spawnEnemy(): void {
-        const enemy = new BasicEnemy();
+        let enemy: Enemy;
+        const rand = Math.random();
+
+        // Spawn logic override (weighted random)
+        if (rand < 0.6) {
+            enemy = new Enemy3();
+        } else if (rand < 0.85) {
+            enemy = new Enemy2();
+        } else if (rand < 0.98) {
+            enemy = new Enemy4();
+        } else {
+            enemy = new BasicEnemy();
+        }
 
         // Random angle around the player
         const angle = Math.random() * Math.PI * 2;
