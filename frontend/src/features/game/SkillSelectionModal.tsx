@@ -3,11 +3,10 @@ import { type SkillOption, SkillType } from "../../game/types";
 
 interface Props {
     options: SkillOption[];
-    onSelect: (type: SkillType) => void;
     selectedIndex?: number | null;
 }
 
-export const SkillSelectionModal: React.FC<Props> = ({ options, onSelect, selectedIndex }) => {
+export const SkillSelectionModal: React.FC<Props> = ({ options, selectedIndex }) => {
     return (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
             <div className="flex w-full max-w-5xl flex-col items-center gap-8 p-4">

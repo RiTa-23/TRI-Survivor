@@ -208,7 +208,6 @@ export default function GameScreen() {
             {isLevelUpModalOpen && (
                 <SkillSelectionModal
                     options={skillOptions}
-                    onSelect={handleSkillSelect}
                     selectedIndex={selectedIndex}
                 />
             )}
