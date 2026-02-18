@@ -1,0 +1,93 @@
+import { Container, Sprite } from "pixi.js";
+import type { Player } from "./Player";
+
+/** アイテムの初期化パラメータ */
+export interface ItemConfig {
+    /** テクスチャパス */
+    textureKey: string;
+    /** 当たり判定の半径 (未指定時はDEFAULT_RADIUS) */
+    radius?: number;
+}
+
+const DEFAULT_RADIUS = 10;
+
+/**
+ * アイテムの基底クラス
+ *
+ * 全てのアイテムタイプはこのクラスを継承する。
+ * プレイヤーが近づくとマグネットのように吸い寄せられ、
+ * 接触すると回収されて効果を発動する。
+ */
+export abstract class Item extends Container {
+    protected sprite: Sprite;
+    protected _radius: number;
+    protected _collected: boolean = false;
+
+    /** アイテム出現からの経過時間（アニメーション用） */
+    protected age: number = 0;
+
+    constructor(config: ItemConfig) {
+        super();
+        this._radius = config.radius ?? DEFAULT_RADIUS;
+
+        this.sprite = Sprite.from(config.textureKey);
+        this.sprite.anchor.set(0.5);
+
+        // アスペクト比を維持してサイズ調整
+        // テクスチャロード完了前(1x1)の場合は1として計算し、極端なスケールを防ぐ
+        const texWidth = Math.max(1, this.sprite.texture.width);
+        const texHeight = Math.max(1, this.sprite.texture.height);
+        const scale = (this._radius * 2) / Math.max(texWidth, texHeight);
+        this.sprite.scale.set(scale);
+
+        // this.sprite.tint = config.color; // Tint can be applied if needed
+
+        this.addChild(this.sprite);
+    }
+
+    /** 毎フレームの更新 */
+    public update(dt: number, player: Player): void {
+        if (this._collected) return;
+
+        this.age += dt;
+
+        // 浮遊アニメーション（上下に揺れる）
+        this.sprite.y = Math.sin(this.age * 3) * 3;
+
+        // マグネット範囲内ならプレイヤーに吸い寄せる
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 0 && distance < player.magnetRadius) {
+            // 近いほど速く吸い寄せる
+            const factor = 1 - distance / player.magnetRadius;
+            const speed = player.magnetSpeed * (0.5 + factor * 1.5);
+            this.x += (dx / distance) * speed * dt;
+            this.y += (dy / distance) * speed * dt;
+        }
+    }
+
+    /** プレイヤーとの当たり判定（回収判定） */
+    public isCollidingWith(targetX: number, targetY: number, targetRadius: number): boolean {
+        const dx = this.x - targetX;
+        const dy = this.y - targetY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < this._radius + targetRadius;
+    }
+
+    /** アイテムを回収する */
+    public collect(player: Player): void {
+        if (this._collected) return;
+        this._collected = true;
+        this.visible = false;
+        this.onCollect(player);
+    }
+
+    /** サブクラスで実装：回収時の効果 */
+    protected abstract onCollect(player: Player): void;
+
+    // --- Getters ---
+    public get radius(): number { return this._radius; }
+    public get collected(): boolean { return this._collected; }
+}

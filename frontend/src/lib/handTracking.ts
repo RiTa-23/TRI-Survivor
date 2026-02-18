@@ -12,6 +12,7 @@ export class HandTrackingManager {
     private onDirectionUpdate: (vector: Vector2D | null) => void;
     private onStatusChange?: (status: string) => void;
     private onSpecialMove?: (moveName: string) => void;
+    private isSpecialMoveDetectionEnabled: boolean = false;
 
     constructor(
         onDirectionUpdate: (vector: Vector2D | null) => void,
@@ -21,6 +22,10 @@ export class HandTrackingManager {
         this.onDirectionUpdate = onDirectionUpdate;
         this.onStatusChange = onStatusChange;
         this.onSpecialMove = onSpecialMove;
+    }
+
+    public setSpecialMoveDetection(enabled: boolean) {
+        this.isSpecialMoveDetectionEnabled = enabled;
     }
 
     private isFingerExtended(landmarks: any[], fingerName: "Index" | "Middle" | "Ring" | "Pinky" | "Thumb"): boolean {
@@ -236,7 +241,7 @@ export class HandTrackingManager {
                 const palmFacing = this.isPalmFacingCamera(landmarks, handedness);
 
                 // Detect Special Move
-                const specialMove = this.detectSpecialMove(landmarks);
+                const specialMove = this.isSpecialMoveDetectionEnabled ? this.detectSpecialMove(landmarks) : null;
                 if (specialMove) {
                     this.onSpecialMove?.(specialMove);
                     this.onStatusChange?.(`SPECIAL: ${specialMove}`);
