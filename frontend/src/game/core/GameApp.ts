@@ -61,9 +61,8 @@ export class GameApp {
     private isDestroyed = false;
 
     // --- State ---
+    // --- State ---
     private isPaused = false;
-    private onStatusChange?: (status: string) => void;
-    private onHandMove?: (vector: Vector2D | null) => void;
     private onStatsUpdate?: (stats: PlayerStats) => void;
     private onLevelUpCallback?: (result: { options: SkillOption[] }) => void;
     private onGameEndCallback?: (stats: PlayerStats, isClear: boolean) => void;
@@ -111,8 +110,8 @@ export class GameApp {
         this.videoElement = videoElement;
         this.canvasElement = canvasElement;
 
-        this.onStatusChange = onStatusChange;
-        this.onHandMove = onHandMove;
+        // this.onStatusChange = onStatusChange; // Removed unused
+        // this.onHandMove = onHandMove; // Removed unused
         this.onStatsUpdate = onStatsUpdate;
         this.onLevelUpCallback = onLevelUp;
         this.onGameEndCallback = onGameEnd;
