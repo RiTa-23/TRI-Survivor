@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGameStore } from "@/store/gameStore";
 import { motion, AnimatePresence } from "framer-motion";
 const troisImage = "/assets/images/Trois(SD1).png";
+const placeholderImg = "/assets/images/box_black_1.png";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -98,7 +99,7 @@ function ShopItemCard({
           alt={name}
           className="w-16 h-16 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = "https://placehold.co/100x100?text=Item";
+            (e.target as HTMLImageElement).src = placeholderImg;
           }}
         />
       </div>
