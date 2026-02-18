@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, TilingSprite, Assets } from "pixi.js";
+import { Application, Container, Graphics, TilingSprite, Assets, Sprite } from "pixi.js";
 import { Player } from "../entities/Player";
 import { Enemy } from "../entities/Enemy";
 import { BasicEnemy } from "../entities/BasicEnemy";
@@ -12,6 +12,9 @@ import type { SkillOption, PlayerStats } from "../types";
 import { GunWeapon } from "../weapons/GunWeapon";
 import { SwordWeapon } from "../weapons/SwordWeapon";
 import { SpecialSkillType } from "../types";
+import { Enemy2 } from "../entities/Enemy2";
+import { Enemy3 } from "../entities/Enemy3";
+import { Enemy4 } from "../entities/Enemy4";
 
 /** Grid tile size (one cell) - Deprecated/Unused */
 // const GRID_SIZE = 80;
@@ -19,12 +22,15 @@ import { SpecialSkillType } from "../types";
 const GRID_BG_COLOR = 0x0e8aaa;
 
 /** Enemy spawn settings */
-const SPAWN_INTERVAL_MS = 500;
+const INITIAL_SPAWN_INTERVAL = 1000;
+const MIN_SPAWN_INTERVAL = 200;
+const INITIAL_MAX_ENEMIES = 100;
+const ABS_MAX_ENEMIES = 500;
 const SPAWN_DISTANCE = 1000;
-const MAX_ENEMIES = 100;
 const DESPAWN_DISTANCE = SPAWN_DISTANCE * 1.5;
 const SPECIAL_EFFECT_DURATION = 10.0;
 const GAME_CLEAR_TIME = 333; // 5 minutes 33 seconds
+const MAX_DIFFICULTY_MULTIPLIER = 5.0; // Stat cap (5x)
 
 /** Obstacle settings */
 const MAX_OBSTACLES = 15;
@@ -70,7 +76,7 @@ export class GameApp {
     // --- Special Skill State ---
     private specialGauge: number = 0;
     private specialMaxCooldown: number = 20; // Initial cooldown 20s
-    private activeSpecialType: SpecialSkillType = SpecialSkillType.MURYO_KUSHO;
+    private activeSpecialType: SpecialSkillType = SpecialSkillType.KON;
     private specialEffectTimer: number = 0;
     private isSpecialEffectActive: boolean = false;
     private domainOverlayWithFade: Graphics | null = null;
@@ -82,7 +88,6 @@ export class GameApp {
     private isKonActive: boolean = false;
     private konVelocity: number = 1500; // Faster
     private konHitboxRadius: number = 800; // Smaller than visual length to better match shape
-    private static readonly KON_VISUAL_SCALE = 4.0;
     private static readonly KON_HITBOX_OFFSET_X = 200; // Based on shape
     private static readonly INSTANT_KILL_DAMAGE = Number.MAX_SAFE_INTEGER;
 
@@ -145,7 +150,10 @@ export class GameApp {
         try {
             await Assets.load([
                 "/assets/images/Player_1.png",
-                "/assets/images/enemy_1.png",
+                "/assets/images/enemy/enemy_1.png",
+                "/assets/images/enemy/enemy_2.png",
+                "/assets/images/enemy/enemy_3.png",
+                "/assets/images/enemy/enemy_4.png",
                 "/assets/images/EXP_1.png",
                 "/assets/images/EXP_2.png",
                 "/assets/images/EXP_3.png",
@@ -154,7 +162,17 @@ export class GameApp {
                 "/assets/images/damage.png",
                 "/assets/images/skills/gun.png",
                 "/assets/images/skills/sword.png",
+                "/assets/images/skills/atk.png",
+                "/assets/images/skills/def.png",
+                "/assets/images/skills/spd.png",
+                "/assets/images/skills/as.png",
+                "/assets/images/skills/proj.png",
+                "/assets/images/skills/pck.png",
+                "/assets/images/skills/exp.png",
+                "/assets/images/skills/gold.png",
+                "/assets/images/skills/cdr.png",
                 "/assets/images/field_grass.png",
+                "/assets/images/fox.png",
             ]);
         } catch (e) {
             console.error("Failed to load assets:", e);
@@ -232,27 +250,15 @@ export class GameApp {
             this.konGraphics = new Container();
             this.konGraphics.visible = false;
 
-            const s = GameApp.KON_VISUAL_SCALE; // Scale factor
-            const g = new Graphics();
+            const foxSprite = Sprite.from("/assets/images/fox.png");
 
-            // Main Head (Orange Triangle)
-            g.poly([-150 * s, 0, 150 * s, -100 * s, 150 * s, 100 * s]);
-            g.fill({ color: 0xFF8800 });
+            // Adjust scale and anchor
+            // Previous shape was roughly 300x400 * scale(4.0) -> Huge
+            // Let's make the sprite reasonably large but not screen-covering
+            foxSprite.anchor.set(0.5);
+            foxSprite.scale.set(1.7); // Keep the scale factor for now, adjust if too big/small
 
-            // Ears
-            g.poly([50 * s, -100 * s, 100 * s, -200 * s, 150 * s, -100 * s]);
-            g.poly([50 * s, 100 * s, 100 * s, 200 * s, 150 * s, 100 * s]);
-            g.fill({ color: 0xCC6600 });
-
-            // Eyes (White + Black)
-            g.circle(0, -30 * s, 15 * s);
-            g.circle(0, 30 * s, 15 * s);
-            g.fill({ color: 0xFFFFFF });
-            g.circle(-5 * s, -30 * s, 5 * s);
-            g.circle(-5 * s, 30 * s, 5 * s);
-            g.fill({ color: 0x000000 });
-
-            this.konGraphics.addChild(g);
+            this.konGraphics.addChild(foxSprite);
 
             // Add to stage (Top most)
             this.app.stage.addChild(this.konGraphics);
@@ -298,8 +304,11 @@ export class GameApp {
             this.checkPlayerObstacleCollisions();
 
             // Spawn enemies periodically
+            const currentSpawnInterval = Math.max(MIN_SPAWN_INTERVAL, INITIAL_SPAWN_INTERVAL - (this.elapsedTime / 10) * 50);
+            const currentMaxEnemies = Math.min(ABS_MAX_ENEMIES, INITIAL_MAX_ENEMIES + (this.elapsedTime / 10) * 2);
+
             this.spawnTimer += dtMs;
-            if (this.spawnTimer >= SPAWN_INTERVAL_MS && this.enemies.length < MAX_ENEMIES) {
+            if (this.spawnTimer >= currentSpawnInterval && this.enemies.length < currentMaxEnemies) {
                 this.spawnTimer = 0;
                 this.spawnEnemy();
             }
@@ -352,7 +361,19 @@ export class GameApp {
 
     /** Spawn a new enemy at a random position around the player */
     private spawnEnemy(): void {
-        const enemy = new BasicEnemy();
+        let enemy: Enemy;
+        const rand = Math.random();
+
+        // Spawn logic override (weighted random)
+        if (rand < 0.6) {
+            enemy = new Enemy3();
+        } else if (rand < 0.85) {
+            enemy = new Enemy2();
+        } else if (rand < 0.98) {
+            enemy = new Enemy4();
+        } else {
+            enemy = new BasicEnemy();
+        }
 
         // Random angle around the player
         const angle = Math.random() * Math.PI * 2;
@@ -362,6 +383,16 @@ export class GameApp {
         // If special effect is active, freeze the new enemy immediately
         if (this.isSpecialEffectActive && this.activeSpecialType === SpecialSkillType.MURYO_KUSHO) {
             enemy.isFrozen = true;
+        }
+
+        // Apply difficulty scaling (Linear, capped)
+        const minutes = this.elapsedTime / 60;
+        const multiplier = Math.min(1 + minutes * 0.5, MAX_DIFFICULTY_MULTIPLIER);
+
+        if (multiplier > 1) {
+            enemy.maxHp *= multiplier;
+            enemy.hp = enemy.maxHp;
+            enemy.attackPower *= multiplier;
         }
 
         this.enemies.push(enemy);

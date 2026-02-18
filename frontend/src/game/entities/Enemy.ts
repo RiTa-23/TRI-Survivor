@@ -271,9 +271,15 @@ export abstract class Enemy extends Container {
     // --- Getters ---
 
     public get hp(): number { return this._hp; }
+    public set hp(value: number) { this._hp = value; }
+
     public get maxHp(): number { return this._maxHp; }
+    public set maxHp(value: number) { this._maxHp = value; }
+
     public get speed(): number { return this._speed; }
+
     public get attackPower(): number { return this._attackPower; }
+    public set attackPower(value: number) { this._attackPower = value; }
     public get radius(): number { return this._radius; }
     public get alive(): boolean { return this._alive; }
 }

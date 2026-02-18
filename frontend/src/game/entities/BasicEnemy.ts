@@ -1,22 +1,15 @@
 import { Enemy } from "./Enemy";
-
-/**
- * 基本的な敵
- * 
- * 低速でプレイヤーに向かって直進する。
- * 最もシンプルな敵タイプで、他の敵の参考実装にもなる。
- */
 export class BasicEnemy extends Enemy {
-    constructor() {
+    constructor(config?: { textureKey?: string }) {
         super({
-            hp: 30,
-            speed: 50, // px/sec
-            attackPower: 10,
+            hp: 200,
+            speed: 50,
+            attackPower: 50,
             color: 0x9b59b6,
-            textureKey: "/assets/images/enemy_1.png",
+            textureKey: config?.textureKey || "/assets/images/enemy/enemy_1.png",
             radius: 40,
             dropTable: {
-                exp: { min: 1, max: 3, chance: 1.0 },
+                exp: { min: 25, max: 50, chance: 1.0 },
                 coinChance: 0.3,
                 healChance: 0.05,
             },
