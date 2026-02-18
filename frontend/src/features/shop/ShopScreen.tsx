@@ -231,7 +231,7 @@ export default function ShopScreen() {
               </TabsList>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-180px)] max-h-[640px] min-h-[380px] w-full parchment-realistic pl-60 pr-2 lg:pl-[400px] lg:pr-100 rounded-3xl relative">
+            <ScrollArea className="h-[calc(100vh-180px)] max-h-[640px] min-h-[380px] w-full parchment-realistic pl-4 pr-2 lg:pl-[400px] lg:pr-4 rounded-3xl relative">
               {/* Parchment decorative elements */}
               <div className="fibers" aria-hidden />
               <div className="wrinkles" aria-hidden />
